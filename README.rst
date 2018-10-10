@@ -1,3 +1,7 @@
+.. image:: https://api.travis-ci.org/MD-Studio/cerulean.svg?branch=develop
+    :target: https://travis-ci.org/MD-Studio/cerulean
+    :alt: Build Status
+
 ################################################################################
 Cerulean
 ################################################################################
