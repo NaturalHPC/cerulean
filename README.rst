@@ -2,6 +2,10 @@
     :target: https://travis-ci.org/MD-Studio/cerulean
     :alt: Build Status
 
+.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
+    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=develop
+    :alt: Requirements Status
+
 ################################################################################
 Cerulean
 ################################################################################
