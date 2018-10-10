@@ -10,6 +10,10 @@
     :target: https://www.codacy.com/app/LourensVeen/cerulean
     :alt: Codacy Grade
 
+.. image:: https://api.codacy.com/project/badge/Coverage/d4e477891b6d452589c94e2164cf6d7e
+    :target: https://www.codacy.com/app/LourensVeen/cerulean
+    :alt: Code Coverage
+
 .. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
     :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=develop
     :alt: Requirements Status
@@ -19,9 +23,9 @@ Cerulean
 ################################################################################
 
 Cerulean is a Python 3 library for talking to HPC clusters and supercomputers.
-It lets you copy files between local and SFTP filesystems using ``pathlib``-like
-API, it lets you start processes locally and remotely via SSH, and it lets you
-submit jobs to schedulers such as Slurm and Torque/PBS.
+It lets you copy files between local and SFTP filesystems using a
+``pathlib``-like API, it lets you start processes locally and remotely via SSH,
+and it lets you submit jobs to schedulers such as Slurm and Torque/PBS.
 
 Documentation and Help
 **********************
