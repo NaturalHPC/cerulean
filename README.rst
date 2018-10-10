@@ -1,6 +1,14 @@
+.. image:: https://readthedocs.org/projects/cerulean/badge/?version=latest
+    :target: https://cerulean.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Build Status
+
 .. image:: https://api.travis-ci.org/MD-Studio/cerulean.svg?branch=develop
     :target: https://travis-ci.org/MD-Studio/cerulean
     :alt: Build Status
+
+.. image:: https://api.codacy.com/project/badge/Grade/d4e477891b6d452589c94e2164cf6d7e
+    :target: https://www.codacy.com/app/LourensVeen/cerulean
+    :alt: Codacy Grade
 
 .. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
     :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=develop
@@ -10,172 +18,75 @@
 Cerulean
 ################################################################################
 
-A Python 3 library for talking to HPC clusters and supercomputers
+Cerulean is a Python 3 library for talking to HPC clusters and supercomputers.
+It lets you copy files between local and SFTP filesystems using ``pathlib``-like
+API, it lets you start processes locally and remotely via SSH, and it lets you
+submit jobs to schedulers such as Slurm and Torque/PBS.
 
-Project Setup
-*************
+Documentation and Help
+**********************
 
-Here we provide some details about the project setup. Most of the choices are explained in the `guide <https://guide.esciencecenter.nl>`_. Links to the relevant sections are included below.
-Feel free to remove this text when the development of the software package takes off.
+Cerulean can be installed as usual using pip:
 
-For a quick reference on software development, we refer to `the software guide checklist <https://guide.esciencecenter.nl/best_practices/checklist.html>`_.
+`pip install cerulean`
 
-Version control
+Instructions on how to use Cerulean can be found in `the Cerulean documentation
+<https://cerulean.readthedocs.io>`_.
+
+Code of Conduct
 ---------------
 
-Once your Python package is created, put it under
-`version control <https://guide.esciencecenter.nl/best_practices/version_control.html>`_!
-We recommend using `git <http://git-scm.com/>`_ and `github <https://github.com/>`_.
+Before we get to asking questions and reporting bugs, we'd like to point out
+that this project is governed by a code of conduct, as described in
+CODE_OF_CONDUCT.rst, and we expect you to adhere to it. Please be nice to your
+fellow humans.
 
-.. code-block:: console
+Questions
+---------
 
-  cd cerulean
-  git init
-  git add -A
-  git commit
+If you have a question that the documentation does not answer for you, then you
+have found a bug in the documentation. We'd love to fix it, but we need a bit of
+help from you to do so. Please do the following:
 
-To put your code on github, follow `this tutorial <https://help.github.com/articles/adding-an-existing-project-to-github-using-the-command-line/>`_.
+#. use the search functionality `here
+   <https://github.com/MD-Studio/cerulean/issues>`__
+   to see if someone already filed the same issue;
+#. if your issue search did not yield any relevant results, make a new
+   issue;
+#. apply the "Question" label; apply other labels when relevant.
 
-Python versions
----------------
+We'll answer your question, and improve the documentation where necessary.
+Thanks!
 
-This repository is set up with Python versions:
-* 3.4
-* 3.5
-* 3.6
+Bugs
+----
 
-Add or remove Python versions based on project requirements. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html>`_ contains more information about Python versions and writing Python 2 and 3 compatible code.
+Like most software, Cerulean is made by humans, and we make mistakes. If you
+think you've found a bug in Cerulean, please let us know! Reporting bugs goes as
+follows.
 
-Package management and dependencies
------------------------------------
+#. Use the search functionality `here
+   <https://github.com/yatiml/yatiml/issues>`_
+   to see if someone already filed the same issue.
+#. If your issue search did not yield any relevant results, make a new issue.
+   Please explain:
+   - what you were trying to achieve,
+   - what you did to make that happen,
+   - what you expected the result to be,
+   - what happened instead.
+   It really helps to have the actual code for a simple example that
+   demonstrates the issue, but excerpts and error messages and a
+   description are welcome too.
+#. Finally, apply any relevant labels to the newly created issue.
 
-You can use either `pip` or `conda` for installing dependencies and package management. This repository does not force you to use one or the other, as project requirements differ. For advice on what to use, please check `the relevant section of the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#dependencies-and-package-management>`_.
+With that, we should be able to fix the problem, but we may ask for some more
+information if we can't figure it out right away.
 
-* Dependencies should be added to `setup.py` in the `install_requires` list.
-
-Packaging/One command install
------------------------------
-
-You can distribute your code using pipy or conda. Again, the project template does not enforce the use of either one. `The guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#building-and-packaging-code>`_ can help you decide which tool to use for packaging.
-
-Testing and code coverage
--------------------------
-
-* Tests should be put in the ``tests`` folder.
-* The testing framework used is `PyTest <https://pytest.org>`_
-
-  - `PyTest introduction <http://pythontesting.net/framework/pytest/pytest-introduction/>`_
-
-* Tests can be run with ``python setup.py test``
-
-  - This is configured in ``setup.py`` and ``setup.cfg``
-
-* Use `Travis CI <https://travis-ci.com/>`_ to automatically run tests and to test using multiple Python versions
-
-  - Configuration can be found in ``.travis.yml``
-  - `Getting started with Travis CI <https://docs.travis-ci.com/user/getting-started/>`_
-
-* TODO: add something about code quality/coverage tool?
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#testing>`_
-
-Documentation
--------------
-
-* Documentation should be put in the ``docs`` folder. The contents have been generated using ``sphinx-quickstart`` (Sphinx version 1.6.5).
-* We recommend writing the documentation using Restructured Text (reST) and Google style docstrings.
-
-  - `Restructured Text (reST) and Sphinx CheatSheet <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
-  - `Google style docstring examples <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html>`_.
-
-* To generate html documentation run ``python setup.py build_sphinx``
-
-  - This is configured in ``setup.cfg``
-  - Alternatively, run ``make html`` in the ``docs`` folder.
-
-* The ``docs/_static`` and ``docs/_templates`` contain an (empty) ``.gitignore`` file, to be able to add them to the repository. These two files can be safely removed (or you can just leave them there).
-* To put the documentation on `Read the Docs <https://readthedocs.org>`_, log in to your Read the Docs account, and import the repository (under 'My Projects').
-
-  - Include the link to the documentation in this README_.
-
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#writingdocumentation>`_
-
-Coding style conventions and code quality
------------------------------------------
-
-* Check your code style with ``prospector``
-* You may need run ``pip install .[dev]`` first, to install the required dependencies
-* You can use ``yapf`` to fix the readability of your code style and ``isort`` to format and group your imports
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#coding-style-conventions>`_
-
-CHANGELOG.rst
--------------
-
-* Document changes to your software package
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/releases.html#changelogmd>`_
-
-CITATION.cff
-------------
-
-* To allow others to cite your software, add a ``CITATION.cff`` file
-* It only makes sense to do this once there is something to cite (e.g., a software release with a DOI).
-* To generate a CITATION.cff file given a DOI, use `doi2cff <https://github.com/citation-file-format/doi2cff>`_.
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/documentation.html#citation-file>`_
-
-CODE_OF_CONDUCT.rst
--------------------
-
-* Information about how to behave professionally
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/documentation.html#code-of-conduct>`_
-
-CONTRIBUTING.rst
-----------------
-
-* Information about how to contribute to this software package
-* `Relevant section in the guide <https://guide.esciencecenter.nl/software/documentation.html#contribution-guidelines>`_
-
-MANIFEST.in
+Development
 -----------
 
-* List non-Python files that should be included in a source distribution
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/language_guides/python.html#building-and-packaging-code>`_
-
-NOTICE
-------
-
-* List of licenses of the project and dependencies
-* `Relevant section in the guide <https://guide.esciencecenter.nl/best_practices/licensing.html#notice>`_
-
-Installation
-------------
-
-To install cerulean, do:
-
-.. code-block:: console
-
-  git clone https://github.com/MD-Studio/cerulean.git
-  cd cerulean
-  pip install .
-
-
-Run tests (including coverage) with:
-
-.. code-block:: console
-
-  python setup.py test
-
-
-Documentation
-*************
-
-.. _README:
-
-Include a link to your project's full documentation here.
-
-Contributing
-************
-
-If you want to contribute to the development of Cerulean,
-have a look at the `contribution guidelines <CONTRIBUTING.rst>`_.
+More information for Cerulean developers may be found in `the Cerulean
+documentation <https://cerulean.readthedocs.io>`_.
 
 License
 *******
@@ -193,10 +104,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-
-
-Credits
-*******
-
-This package was created with `Cookiecutter <https://github.com/audreyr/cookiecutter>`_ and the `NLeSC/python-template <https://github.com/NLeSC/python-template>`_.
