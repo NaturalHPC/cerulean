@@ -1,0 +1,73 @@
+version: '3'
+
+services:
+    ssh:
+        container_name: cerulean-test-ssh
+        image: cerulean-test-base
+        build:
+            context: container-base
+        ports: ['22']
+
+    torque-6:
+        container_name: cerulean-test-torque-6
+        image: cerulean-test-torque-6
+        hostname: cerulean-test-torque-6
+        build:
+            context: container-torque
+        ports: ['22']
+        cap_add: ['SYS_RESOURCE']
+
+    slurm-14-11:
+        container_name: cerulean-test-slurm-14-11
+        image: cerulean-test-slurm-14-11
+        build:
+            context: container-slurm
+            dockerfile: slurm-14-11.Dockerfile
+        ports: ['22']
+
+    slurm-15-08:
+        container_name: cerulean-test-slurm-15-08
+        image: cerulean-test-slurm-15-08
+        build:
+            context: container-slurm
+            dockerfile: slurm-15-08.Dockerfile
+        ports: ['22']
+
+    slurm-16-05:
+        container_name: cerulean-test-slurm-16-05
+        image: cerulean-test-slurm-16-05
+        build:
+            context: container-slurm
+            dockerfile: slurm-16-05.Dockerfile
+        ports: ['22']
+
+    slurm-17-02:
+        container_name: cerulean-test-slurm-17-02
+        image: cerulean-test-slurm-17-02
+        build:
+            context: container-slurm
+            dockerfile: slurm-17-02.Dockerfile
+        ports: ['22']
+
+    slurm-17-11:
+        container_name: cerulean-test-slurm-17-11
+        image: cerulean-test-slurm-17-11
+        build:
+            context: container-slurm
+            dockerfile: slurm-17-11.Dockerfile
+        ports: ['22']
+
+    cerulean-test:
+        container_name: cerulean-test
+        depends_on:
+            - ssh
+            - torque-6
+            - slurm-14-11
+            - slurm-15-08
+            - slurm-16-05
+            - slurm-17-02
+            - slurm-17-11
+        build:
+            context: ../
+            dockerfile: tests/container-test/Dockerfile
+        image: cerulean-test-container

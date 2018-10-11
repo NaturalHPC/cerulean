@@ -1,9 +1,14 @@
 # Config file for automatic testing at travis-ci.org
+sudo: required
+
 language: python
 python:
   - "3.4"
   - "3.5"
   - "3.6"
+
+services:
+  - docker
 
 # command to install dependencies
 install:

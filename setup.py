@@ -43,9 +43,12 @@ setup(
         'recommonmark'
     ],
     tests_require=[
+        'docker',
+        'docker-compose',
         'pytest',
         'pytest-cov',
         'pycodestyle',
+        'sh',
     ],
     extras_require={
         'dev':  ['prospector[with_pyroma]', 'yapf', 'isort'],
