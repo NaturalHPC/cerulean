@@ -3,8 +3,6 @@ FROM phusion/baseimage:0.9.22
 
 USER root
 
-RUN apt-get update
-
 # Add cerulean user
 RUN groupadd --system cerulean && useradd --system --gid cerulean --create-home cerulean --shell /bin/bash
 RUN echo cerulean:kingfisher | chpasswd
@@ -44,7 +42,7 @@ RUN sed -i -e 's^Subsystem[[:space:]]*sftp[[:space:]]*/usr/lib/openssh/sftp-serv
 
 
 # Add OpenMPI
-RUN apt-get install -y openmpi-bin
+RUN apt-get update && apt-get install -y openmpi-bin
 
 # Add start-up scripts
 ADD start-services.sh /etc/start-services.sh

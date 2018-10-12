@@ -2,10 +2,8 @@ FROM cerulean-test-base
 
 USER root
 
-RUN apt-get update
-
 # Install munge (needed by slurm)
-RUN apt-get install -y munge libmunge2
+RUN apt-get update && apt-get install -y munge libmunge2
 RUN chmod 0700 /etc/munge /var/log/munge && \
 chmod 0711 /var/lib/munge && \
 mkdir /var/run/munge && \
@@ -34,7 +32,7 @@ RUN chmod 600 /usr/local/etc/slurm/slurm.key
 ADD install_slurm.sh /usr/local/bin/
 ADD slurm_timeout.diff /usr/local/etc/
 WORKDIR /usr/local
-RUN apt-get --no-install-recommends install -y gcc make libssl-dev libmunge-dev tar wget patch
+RUN apt-get update && apt-get --no-install-recommends install -y gcc make libssl-dev libmunge-dev tar wget patch
 RUN /bin/bash /usr/local/bin/install_slurm.sh slurm-17-02-11-1.tar.gz
 
 ADD slurm.conf /usr/local/etc/slurm/slurm.conf

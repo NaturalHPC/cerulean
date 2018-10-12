@@ -7,13 +7,16 @@ RUN apt-get -y install wget
 
 RUN mkdir /build
 WORKDIR /build
-RUN wget http://www.adaptivecomputing.com/index.php?wpfb_dl=3244 -O torque-6.1.2.tar.gz && \
+RUN wget -nv http://www.adaptivecomputing.com/index.php?wpfb_dl=3244 -O torque-6.1.2.tar.gz && \
     tar xf torque-6.1.2.tar.gz
 
 WORKDIR /build/torque-6.1.2
-RUN ./configure && \
-    make && \
-    make install
+RUN ./configure >/tmp/configure.log 2>&1 && \
+    tail -n 20 /tmp/configure.log && \
+    make >/tmp/make.log 2>&1 && \
+    tail -n 20 /tmp/make.log && \
+    make install >/tmp/make_install.log 2>&1 && \
+    tail -n 20 /tmp/make_install.log
 
 ADD start-services.sh /etc/start-services.sh
 RUN chmod +x /etc/start-services.sh
