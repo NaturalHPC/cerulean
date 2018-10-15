@@ -1,7 +1,9 @@
+from typing import Optional
+
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.scheduler import Scheduler
-from overrides import overrides
+from cerulean.terminal import Terminal
 
 
 class DirectGnuScheduler(Scheduler):
@@ -14,10 +16,9 @@ class DirectGnuScheduler(Scheduler):
         terminal: The terminal to execute on.
     """
 
-    def __init__(self, terminal):
+    def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
 
-    @overrides
     def submit_job(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
@@ -40,7 +41,7 @@ class DirectGnuScheduler(Scheduler):
         if job_description.time_reserved is not None:
             job_script += "ulimit -t {}\n".format(
                 job_description.time_reserved)
-        escaped_command = job_description.command.replace("'", "'\\\''")
+        escaped_command = job_description.command.replace("'", "'\\\''")    # type: ignore
         escaped_args = map(lambda s: s.replace("'", "'\\\''"),
                            job_description.arguments)
         job_script += "bash -c '"
@@ -62,7 +63,6 @@ class DirectGnuScheduler(Scheduler):
 
         return output
 
-    @overrides
     def get_status(self, job_id: str) -> JobStatus:
         pid = job_id.split(' ')[0]
         exit_code, output, error = self.__terminal.run(10.0, 'ps', ['-p', pid])
@@ -72,8 +72,7 @@ class DirectGnuScheduler(Scheduler):
         else:
             return JobStatus.DONE
 
-    @overrides
-    def get_exit_code(self, job_id: str) -> int:
+    def get_exit_code(self, job_id: str) -> Optional[int]:
         exit_code_file = job_id.split(' ', maxsplit=1)[1]
         exit_code, output, error = self.__terminal.run(10.0, 'cat',
                                                        [exit_code_file])
@@ -83,7 +82,6 @@ class DirectGnuScheduler(Scheduler):
         except ValueError:
             return None
 
-    @overrides
     def cancel(self, job_id: str) -> None:
         pid = job_id.split(' ')[0]
         exit_code, output, error = self.__terminal.run(10.0, 'kill', [pid])

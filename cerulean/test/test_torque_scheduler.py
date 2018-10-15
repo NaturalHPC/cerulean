@@ -4,7 +4,7 @@ from cerulean.torque_scheduler import (_get_field_from_qstat_xml,
                                        _seconds_to_time)
 
 
-def test_job_script_name():
+def test_job_script_name() -> None:
     job_desc = JobDescription()
     job_desc.name = 'test_name'
 
@@ -13,7 +13,7 @@ def test_job_script_name():
     assert '#PBS -N test_name' in script
 
 
-def test_job_script_working_directory():
+def test_job_script_working_directory() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.working_directory = '/home/user/workdir'
@@ -23,7 +23,7 @@ def test_job_script_working_directory():
     assert '/home/user/workdir' in script
 
 
-def test_job_script_command_args():
+def test_job_script_command_args() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.command = 'echo'
@@ -34,7 +34,7 @@ def test_job_script_command_args():
     assert "echo -n Hello world testing" in script
 
 
-def test_job_script_stdout_file():
+def test_job_script_stdout_file() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.stdout_file = '/home/user/test.out'
@@ -44,7 +44,7 @@ def test_job_script_stdout_file():
     assert '/home/user/test.out' in script
 
 
-def test_job_script_stderr_file():
+def test_job_script_stderr_file() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.stderr_file = '/home/user/test.err'
@@ -54,7 +54,7 @@ def test_job_script_stderr_file():
     assert '/home/user/test.err' in script
 
 
-def test_job_script_queue_name():
+def test_job_script_queue_name() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.queue_name = 'testing_queue'
@@ -64,7 +64,7 @@ def test_job_script_queue_name():
     assert '#PBS -q testing_queue' in script
 
 
-def test_job_script_time_reserved():
+def test_job_script_time_reserved() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.time_reserved = 70
@@ -74,7 +74,7 @@ def test_job_script_time_reserved():
     assert '00:00:01:10' in script
 
 
-def test_job_script_num_nodes():
+def test_job_script_num_nodes() -> None:
     # Note: doesn't test that it works, that's what test_scheduler is for
     job_desc = JobDescription()
     job_desc.num_nodes = 42
@@ -84,7 +84,7 @@ def test_job_script_num_nodes():
     assert 'nodes=42' in script
 
 
-def test_job_script_processes_per_node():
+def test_job_script_processes_per_node() -> None:
     job_desc = JobDescription()
     job_desc.mpi_processes_per_node = 4
 
@@ -93,7 +93,7 @@ def test_job_script_processes_per_node():
     assert 'ppn=4' in script
 
 
-def test_seconds_to_time():
+def test_seconds_to_time() -> None:
     time = (2 * 24 * 60 * 60) + (13 * 60 * 60) + (7 * 60) + 48
     time_str = _seconds_to_time(time)
     assert time_str == '02:13:07:48'

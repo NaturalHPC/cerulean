@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 
 class Terminal(ABC):
@@ -11,7 +11,7 @@ class Terminal(ABC):
             command: str,
             args: List[str],
             stdin_data: str = None,
-            workdir: str = None) -> Tuple[int, str, str]:
+            workdir: str = None) -> Tuple[Optional[int], str, str]:
         """Run a shell command.
 
         Args:

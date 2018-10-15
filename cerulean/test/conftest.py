@@ -1,33 +1,44 @@
 import pytest
+from typing import Any, Dict, Generator, Tuple
+
 from cerulean.credential import PasswordCredential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
 from cerulean.file_system import FileSystem
+from cerulean.file_system_impl import FileSystemImpl
 from cerulean.local_file_system import LocalFileSystem
 from cerulean.local_terminal import LocalTerminal
+from cerulean.path import AbstractPath, Path
+from cerulean.scheduler import Scheduler
 from cerulean.sftp_file_system import SftpFileSystem
 from cerulean.slurm_scheduler import SlurmScheduler
 from cerulean.ssh_terminal import SshTerminal
+from cerulean.terminal import Terminal
 from cerulean.torque_scheduler import TorqueScheduler
 
 
+# PyTest does not export FixtureRequest, the type of the request attribute.
+# So they're annotated as Any.
+
 @pytest.fixture(scope='module')
-def password_credential():
+def password_credential() -> PasswordCredential:
     return PasswordCredential('cerulean', 'kingfisher')
 
 
 @pytest.fixture(scope='module')
-def ssh_terminal(password_credential):
+def ssh_terminal(password_credential: PasswordCredential
+        ) -> Generator[SshTerminal, None, None]:
     with SshTerminal('cerulean-test-ssh', 22, password_credential) as term:
         yield term
 
 
 @pytest.fixture(scope='module')
-def local_filesystem():
+def local_filesystem() -> Generator[LocalFileSystem, None, None]:
     yield LocalFileSystem()
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp'])
-def filesystem(request, ssh_terminal):
+def filesystem(request: Any, ssh_terminal: SshTerminal
+        ) -> Generator[FileSystemImpl, None, None]:
     if request.param == 'local':
         yield LocalFileSystem()
     elif request.param == 'sftp':
@@ -36,7 +47,8 @@ def filesystem(request, ssh_terminal):
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp'])
-def filesystem2(request, password_credential):
+def filesystem2(request: Any, password_credential: PasswordCredential
+        ) -> Generator[FileSystemImpl, None, None]:
     if request.param == 'local':
         yield LocalFileSystem()
     elif request.param == 'sftp':
@@ -47,7 +59,7 @@ def filesystem2(request, password_credential):
 
 
 @pytest.fixture(scope='module')
-def paths(filesystem):
+def paths(filesystem: FileSystem) -> Dict[str, Path]:
     root = filesystem / 'home' / 'cerulean' / 'test_files'
 
     return {
@@ -68,8 +80,16 @@ def paths(filesystem):
         }
 
 
+@pytest.fixture(scope='module')
+def lpaths(paths: Dict[str, Path]) -> Dict[str, AbstractPath]:
+    lpaths = dict()
+    for name, path in paths.items():
+        lpaths[name] = getattr(path, '_Path__path')
+    return lpaths
+
+
 @pytest.fixture(scope='module', params=['local', 'ssh'])
-def terminal(request, ssh_terminal):
+def terminal(request: Any, ssh_terminal: SshTerminal) -> Generator[Terminal, None, None]:
     if request.param == 'local':
         yield LocalTerminal()
     elif request.param == 'ssh':
@@ -85,7 +105,9 @@ def terminal(request, ssh_terminal):
     'ssh_slurm-16-05',
     'ssh_slurm-17-02',
     'ssh_slurm-17-11'])
-def scheduler_and_fs(request, ssh_terminal, password_credential):
+def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
+                     password_credential: PasswordCredential
+                     ) -> Generator[Tuple[Scheduler, FileSystem], None, None]:
     if request.param == 'local_direct':
         yield DirectGnuScheduler(LocalTerminal()), LocalFileSystem()
     elif request.param == 'ssh_direct':
@@ -118,5 +140,5 @@ def scheduler_and_fs(request, ssh_terminal, password_credential):
 
 
 @pytest.fixture(scope='module', params=[1, 2])
-def procs_per_node(request):
+def procs_per_node(request: Any) -> int:
     return request.param

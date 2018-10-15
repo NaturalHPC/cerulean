@@ -1,15 +1,18 @@
 import logging
 import time
+from typing import Tuple
 
 import pytest
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
+from cerulean.file_system import FileSystem
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
+from cerulean.scheduler import Scheduler
 from cerulean.slurm_scheduler import SlurmScheduler
 from cerulean.torque_scheduler import TorqueScheduler
 
 
-def test_scheduler(scheduler_and_fs):
+def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -32,7 +35,7 @@ def test_scheduler(scheduler_and_fs):
     (fs / 'home/cerulean/test_scheduler.out').unlink()
 
 
-def test_scheduler_cancel(scheduler_and_fs):
+def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -47,14 +50,14 @@ def test_scheduler_cancel(scheduler_and_fs):
 
     sched.cancel(job_id)
 
-    t = 0
+    t = 0.0
     while sched.get_status(job_id) != JobStatus.DONE:
         time.sleep(1.0)
         t += 1.0
         assert t < 3.0
 
 
-def test_scheduler_exit_code(scheduler_and_fs):
+def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -74,7 +77,7 @@ def test_scheduler_exit_code(scheduler_and_fs):
     # get_exit_code of a running job returns None
 
 
-def test_scheduler_timeout(scheduler_and_fs):
+def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -95,7 +98,7 @@ def test_scheduler_timeout(scheduler_and_fs):
     # assert sched.get_exit_code(job_id) != 0
 
 
-def test_scheduler_no_command(scheduler_and_fs):
+def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched = scheduler_and_fs[0]
 
     job_desc = JobDescription()
@@ -103,7 +106,7 @@ def test_scheduler_no_command(scheduler_and_fs):
         sched.submit_job(job_desc)
 
 
-def test_stderr_redirect(scheduler_and_fs):
+def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -125,7 +128,7 @@ def test_stderr_redirect(scheduler_and_fs):
     outfile.unlink()
 
 
-def test_queue_name(scheduler_and_fs):
+def test_queue_name(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     if isinstance(sched, DirectGnuScheduler):
@@ -152,7 +155,7 @@ def test_queue_name(scheduler_and_fs):
     outfile.unlink()
 
 
-def test_num_nodes(scheduler_and_fs):
+def test_num_nodes(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     if isinstance(sched, DirectGnuScheduler):
@@ -184,7 +187,7 @@ def test_num_nodes(scheduler_and_fs):
     outfile.unlink()
 
 
-def test_environment(scheduler_and_fs):
+def test_environment(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()

@@ -1,18 +1,16 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.scheduler import Scheduler
 from cerulean.terminal import Terminal
 from defusedxml import ElementTree
-from overrides import overrides
 
 
 class TorqueScheduler(Scheduler):
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
 
-    @overrides
     def submit_job(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
@@ -30,7 +28,6 @@ class TorqueScheduler(Scheduler):
         job_id = output.strip().split(' ')[-1]
         return job_id
 
-    @overrides
     def get_status(self, job_id: str) -> JobStatus:
         exit_code, output, error = self.__terminal.run(10, 'qstat',
                                                        ['-x', job_id])
@@ -64,8 +61,7 @@ class TorqueScheduler(Scheduler):
         print('get_status returning {}'.format(job_status.name))
         return job_status
 
-    @overrides
-    def get_exit_code(self, job_id: str) -> int:
+    def get_exit_code(self, job_id: str) -> Optional[int]:
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
@@ -78,7 +74,6 @@ class TorqueScheduler(Scheduler):
         job_exit_code = int(_get_field_from_qstat_xml(xml_data, 'exit_status'))
         return job_exit_code
 
-    @overrides
     def cancel(self, job_id: str) -> None:
         err, output, error = self.__terminal.run(10, 'qdel', [job_id])
 

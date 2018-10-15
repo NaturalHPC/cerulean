@@ -1,11 +1,12 @@
 import socket
-from typing import List, Tuple, cast
+from types import TracebackType
+from typing import cast, List, Optional, Tuple, Type, TYPE_CHECKING
 
 import paramiko
 from cerulean.credential import (Credential, PasswordCredential,
                                  PubKeyCredential)
 from cerulean.terminal import Terminal
-from overrides import overrides
+from cerulean.util import BaseExceptionType
 
 
 class SshTerminal(Terminal):
@@ -21,10 +22,12 @@ class SshTerminal(Terminal):
         else:
             raise RuntimeError('Unknown kind of certificate')
 
-    def __enter__(self):
+    def __enter__(self) -> 'SshTerminal':
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: Optional[BaseExceptionType],
+                 exc_value: Optional[BaseException],
+                 traceback: Optional[TracebackType]) -> None:
         self.__transport.close()
 
     def _get_sftp_client(self) -> paramiko.SFTPClient:
@@ -39,13 +42,12 @@ class SshTerminal(Terminal):
         """
         return paramiko.SFTPClient.from_transport(self.__transport)
 
-    @overrides
     def run(self,
             timeout: float,
             command: str,
             args: List[str],
             stdin_data: str = None,
-            workdir: str = None) -> Tuple[int, str]:
+            workdir: str = None) -> Tuple[Optional[int], str, str]:
 
         if workdir:
             cmd_str = 'cd {}; {} {}'.format(workdir, command, ' '.join(args))
@@ -94,7 +96,7 @@ class SshTerminal(Terminal):
         return True, data.decode('utf-8')
 
     def __get_key_from_file(self, filename: str,
-                            passphrase: str) -> paramiko.pkey.PKey:
+                            passphrase: Optional[str]) -> paramiko.pkey.PKey:
         key = None
         try:
             key = paramiko.ed25519key.Ed25519Key.from_private_key_file(

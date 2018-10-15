@@ -1,74 +1,80 @@
 import stat
-from pathlib import PurePath
-from typing import Generator, Iterator
+from pathlib import PurePosixPath
+from types import TracebackType
+from typing import cast, Generator, Iterable, Optional, Type
 
 import paramiko
 from cerulean.file_system_impl import FileSystemImpl
-from cerulean.path import EntryType, Path, Permission
+from cerulean.path import AbstractPath, EntryType, Path, Permission
 from cerulean.ssh_terminal import SshTerminal
-from overrides import overrides
+from cerulean.util import BaseExceptionType
 
 
 class SftpFileSystem(FileSystemImpl):
-    def __init__(self, terminal: SshTerminal):
+    def __init__(self, terminal: SshTerminal) -> None:
         self.__sftp = terminal._get_sftp_client()
 
-    def __enter__(self):
+    def __enter__(self) -> 'SftpFileSystem':
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: Optional[BaseExceptionType],
+                 exc_value: Optional[BaseException],
+                 traceback: Optional[TracebackType]) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         self.__sftp.close()
 
-    @overrides
-    def exists(self, path: PurePath) -> bool:
+    def __truediv__(self, segment: str) -> Path:
+        return Path(self, PurePosixPath('/' + segment))
+
+    def exists(self, path: AbstractPath) -> bool:
+        lpath = cast(PurePosixPath, path)
         try:
-            self.__sftp.stat(str(path))
+            self.__sftp.stat(str(lpath))
             return True
         except IOError:
             return False
 
-    @overrides
     def mkdir(self,
-              path: PurePath,
+              path: AbstractPath,
               mode: int = 0o777,
               parents: bool = False,
               exists_ok: bool = False) -> None:
+        lpath = cast(PurePosixPath, path)
         if parents:
-            for parent in reversed(path.parents):
+            for parent in reversed(lpath.parents):
                 if not self.exists(parent):
                     self.__sftp.mkdir(str(parent))
                     self.__sftp.chmod(str(parent), 0o777)
-        if self.exists(path):
+        if self.exists(lpath):
             if not exists_ok:
                 raise FileExistsError(
-                    'File {} exists and exists_ok was False'.format(path))
+                    'File {} exists and exists_ok was False'.format(lpath))
             else:
                 return
 
-        self.__sftp.mkdir(str(path))
-        self.__sftp.chmod(str(path), mode)
+        self.__sftp.mkdir(str(lpath))
+        self.__sftp.chmod(str(lpath), mode)
 
-    @overrides
-    def iterdir(self, path: PurePath) -> Generator[Path, None, None]:
+    def iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
+        lpath = cast(PurePosixPath, path)
         # Note: we're not using listdir_iter here, because it hangs:
         # https://github.com/paramiko/paramiko/issues/1171
-        for entry in self.__sftp.listdir(str(path)):
-            yield path / entry
+        for entry in self.__sftp.listdir(str(lpath)):
+            yield lpath / entry
 
-    @overrides
-    def rmdir(self, path: PurePath, recursive: bool = False) -> None:
-        if not self.exists(path):
+    def rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
+        lpath = cast(PurePosixPath, path)
+        if not self.exists(lpath):
             return
 
-        if not self.is_dir(path):
+        if not self.is_dir(lpath):
             raise RuntimeError("Path must refer to a directory")
 
         if recursive:
-            for entry in self.__sftp.listdir_attr(str(path)):
-                entry_path = path / entry.filename
+            for entry in self.__sftp.listdir_attr(str(lpath)):
+                entry_path = lpath / entry.filename
                 if self.is_symlink(entry_path):
                     self.__sftp.unlink(str(entry_path))
                 elif self.is_dir(entry_path):
@@ -76,59 +82,60 @@ class SftpFileSystem(FileSystemImpl):
                 else:
                     self.__sftp.unlink(str(entry_path))
 
-        self.__sftp.rmdir(str(path))
+        self.__sftp.rmdir(str(lpath))
 
-    @overrides
-    def touch(self, path: PurePath) -> None:
-        with self.__sftp.file(str(path), 'a') as f:
+    def touch(self, path: AbstractPath) -> None:
+        lpath = cast(PurePosixPath, path)
+        with self.__sftp.file(str(lpath), 'a') as f:
             pass
 
-    @overrides
-    def streaming_read(self, path: PurePath) -> Generator[bytes, None, None]:
-        with self.__sftp.file(str(path), 'rb') as f:
+    def streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+        lpath = cast(PurePosixPath, path)
+        with self.__sftp.file(str(lpath), 'rb') as f:
             data = f.read(1024 * 1024)
             while len(data) > 0:
                 yield data
                 data = f.read(1024 * 1024)
 
-    @overrides
-    def streaming_write(self, path: PurePath, data: Iterator[bytes]) -> None:
-        with self.__sftp.file(str(path), 'wb') as f:
+    def streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+        lpath = cast(PurePosixPath, path)
+        with self.__sftp.file(str(lpath), 'wb') as f:
             for chunk in data:
                 f.write(chunk)
 
-    @overrides
-    def rename(self, path: PurePath, target: PurePath) -> None:
-        self.__sftp.posix_rename(str(path), str(target))
+    def rename(self, path: AbstractPath, target: AbstractPath) -> None:
+        lpath = cast(PurePosixPath, path)
+        ltarget = cast(PurePosixPath, target)
+        self.__sftp.posix_rename(str(lpath), str(ltarget))
 
-    @overrides
-    def unlink(self, path: PurePath) -> bool:
-        self.__sftp.unlink(str(path))
+    def unlink(self, path: AbstractPath) -> None:
+        lpath = cast(PurePosixPath, path)
+        self.__sftp.unlink(str(lpath))
 
-    @overrides
-    def is_dir(self, path: PurePath) -> bool:
+    def is_dir(self, path: AbstractPath) -> bool:
+        lpath = cast(PurePosixPath, path)
         try:
-            return bool(stat.S_ISDIR(self.__stat(path).st_mode))
+            return bool(stat.S_ISDIR(self.__stat(lpath).st_mode))
         except FileNotFoundError:
             return False
 
-    @overrides
-    def is_file(self, path: PurePath) -> bool:
+    def is_file(self, path: AbstractPath) -> bool:
+        lpath = cast(PurePosixPath, path)
         try:
-            mode = self.__stat(path).st_mode
+            mode = self.__stat(lpath).st_mode
             return bool(stat.S_ISREG(mode))
         except FileNotFoundError:
             return False
 
-    @overrides
-    def is_symlink(self, path: PurePath) -> bool:
+    def is_symlink(self, path: AbstractPath) -> bool:
+        lpath = cast(PurePosixPath, path)
         try:
-            return bool(stat.S_ISLNK(self.__lstat(path).st_mode))
+            return bool(stat.S_ISLNK(self.__lstat(lpath).st_mode))
         except FileNotFoundError:
             return False
 
-    @overrides
-    def entry_type(self, path: PurePath) -> EntryType:
+    def entry_type(self, path: AbstractPath) -> EntryType:
+        lpath = cast(PurePosixPath, path)
         mode_to_type = [(stat.S_ISDIR, EntryType.DIRECTORY), (stat.S_ISREG,
                                                               EntryType.FILE),
                         (stat.S_ISLNK, EntryType.SYMBOLIC_LINK),
@@ -138,59 +145,61 @@ class SftpFileSystem(FileSystemImpl):
                         (stat.S_ISFIFO, EntryType.FIFO), (stat.S_ISSOCK,
                                                           EntryType.SOCKET)]
 
-        mode = self.__lstat(path).st_mode
+        mode = self.__lstat(lpath).st_mode
         for predicate, result in mode_to_type:
             if predicate(mode):
                 return result
-        return None
+        raise RuntimeError('Object is of unknown type, please report a'
+                           'Cerulean bug')
 
-    @overrides
-    def size(self, path: PurePath) -> int:
-        return self.__stat(path).st_size
+    def size(self, path: AbstractPath) -> int:
+        lpath = cast(PurePosixPath, path)
+        return self.__stat(lpath).st_size
 
-    @overrides
-    def uid(self, path: PurePath) -> int:
-        return self.__stat(path).st_uid
+    def uid(self, path: AbstractPath) -> int:
+        lpath = cast(PurePosixPath, path)
+        return self.__stat(lpath).st_uid
 
-    @overrides
-    def gid(self, path: PurePath) -> int:
-        return self.__stat(path).st_gid
+    def gid(self, path: AbstractPath) -> int:
+        lpath = cast(PurePosixPath, path)
+        return self.__stat(lpath).st_gid
 
-    @overrides
-    def has_permission(self, path: PurePath, permission: Permission) -> bool:
-        return bool(self.__stat(path).st_mode & permission.value)
+    def has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+        lpath = cast(PurePosixPath, path)
+        return bool(self.__stat(lpath).st_mode & permission.value)
 
-    @overrides
     def set_permission(self,
-                       path: PurePath,
+                       path: AbstractPath,
                        permission: Permission,
                        value: bool = True) -> None:
-        mode = self.__stat(path).st_mode
+        lpath = cast(PurePosixPath, path)
+        mode = self.__stat(lpath).st_mode
         if value:
             mode = mode | permission.value
         else:
             mode = mode & ~permission.value
-        self.chmod(path, mode)
+        self.chmod(lpath, mode)
 
-    @overrides
-    def chmod(self, path: PurePath, mode: int) -> None:
-        self.__sftp.chmod(str(path), mode)
+    def chmod(self, path: AbstractPath, mode: int) -> None:
+        lpath = cast(PurePosixPath, path)
+        self.__sftp.chmod(str(lpath), mode)
 
-    @overrides
-    def symlink_to(self, path: PurePath, target: PurePath) -> None:
-        self.__sftp.symlink(str(target), str(path))
+    def symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
+        lpath = cast(PurePosixPath, path)
+        ltarget = cast(PurePosixPath, target)
+        self.__sftp.symlink(str(ltarget), str(lpath))
 
-    @overrides
-    def readlink(self, path: PurePath, recursive: bool) -> Path:
+    def readlink(self, path: AbstractPath, recursive: bool) -> Path:
+        lpath = cast(PurePosixPath, path)
         if recursive:
             # SFTP's normalize() raises if there's a link loop or a \
             # non-existing target, which we don't want, so we use \
             # our own algorithm.
             max_iter = 32
-            cur_path = path
+            cur_path = lpath
             iter_count = 0
             while self.is_symlink(cur_path) and iter_count < max_iter:
-                target = PurePath(self.__sftp.readlink(str(cur_path)))
+                target = PurePosixPath(self.__sftp.readlink(str(cur_path)))
                 if not target.is_absolute():
                     target = cur_path.parent / target
                 cur_path = target
@@ -199,16 +208,16 @@ class SftpFileSystem(FileSystemImpl):
             if iter_count == max_iter:
                 raise RuntimeError('Too many symbolic links detected')
 
-            target = Path(self, self.__sftp.normalize(str(path)))
+            target = PurePosixPath(self.__sftp.normalize(str(path)))
         else:
-            target = PurePath(self.__sftp.readlink(str(path)))
+            target = PurePosixPath(self.__sftp.readlink(str(path)))
             if not target.is_absolute():
-                target = path.parent / target
+                target = lpath.parent / target
 
         return Path(self, target)
 
-    def __lstat(self, path: PurePath):
+    def __lstat(self, path: PurePosixPath) -> paramiko.SFTPAttributes:
         return self.__sftp.lstat(str(path))
 
-    def __stat(self, path: PurePath):
+    def __stat(self, path: PurePosixPath) -> paramiko.SFTPAttributes:
         return self.__sftp.stat(str(path))

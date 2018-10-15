@@ -1,40 +1,43 @@
 import errno
 import os
 import pathlib
-from pathlib import PurePath
-from typing import Any, Generator, Iterator
+from typing import cast, Any, Generator, Iterable
 
 from cerulean.file_system_impl import FileSystemImpl
-from cerulean.path import EntryType, Path, Permission
-from overrides import overrides
+from cerulean.path import AbstractPath, EntryType, Path, Permission
 
 
 class LocalFileSystem(FileSystemImpl):
-    @overrides
-    def exists(self, path: PurePath) -> bool:
+    def __truediv__(self, segment: str) -> Path:
+        # TODO: segment: Union[str, pathlib.Path]?
+        absseg = '/' + segment
+        path = pathlib.Path(absseg)
+        return Path(self, path)
+
+    def exists(self, path: AbstractPath) -> bool:
+        lpath = cast(pathlib.Path, path)
         try:
-            return pathlib.Path(path).exists()
+            return lpath.exists()
         except OSError as e:
             if e.errno == errno.ELOOP:
                 return False
             raise
 
-    @overrides
     def mkdir(self,
-              path: PurePath,
+              path: AbstractPath,
               mode: int = 0o777,
               parents: bool = False,
               exists_ok: bool = False) -> None:
-        pathlib.Path(path).mkdir(mode, parents, exists_ok)
+        lpath = cast(pathlib.Path, path)
+        lpath.mkdir(mode, parents, exists_ok)
 
-    @overrides
-    def iterdir(self, path: PurePath) -> Generator[PurePath, None, None]:
-        for entry in pathlib.Path(path).iterdir():
+    def iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
+        lpath = cast(pathlib.Path, path)
+        for entry in lpath.iterdir():
             yield entry
 
-    @overrides
-    def rmdir(self, path: PurePath, recursive: bool = False) -> None:
-        lpath = pathlib.Path(path)
+    def rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
+        lpath = cast(pathlib.Path, path)
         if not lpath.is_dir():
             raise RuntimeError('Path must refer to a directory')
 
@@ -49,46 +52,47 @@ class LocalFileSystem(FileSystemImpl):
 
         lpath.rmdir()
 
-    @overrides
-    def touch(self, path: PurePath) -> None:
-        pathlib.Path(path).touch()
+    def touch(self, path: AbstractPath) -> None:
+        lpath = cast(pathlib.Path, path)
+        lpath.touch()
 
-    @overrides
-    def streaming_read(self, path: PurePath) -> Generator[bytes, None, None]:
-        with pathlib.Path(path).open('rb') as f:
+    def streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+        lpath = cast(pathlib.Path, path)
+        with lpath.open('rb') as f:
             data = f.read(1024 * 1024)
             while len(data) > 0:
                 yield data
                 data = f.read(1024 * 1024)
 
-    @overrides
-    def streaming_write(self, path: PurePath, data: Iterator[bytes]) -> None:
-        with pathlib.Path(path).open('wb') as f:
+    def streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+        lpath = cast(pathlib.Path, path)
+        with lpath.open('wb') as f:
             for chunk in data:
                 f.write(chunk)
 
-    @overrides
-    def rename(self, path: PurePath, target: PurePath) -> None:
-        pathlib.Path(path).replace(pathlib.Path(target))
+    def rename(self, path: AbstractPath, target: AbstractPath) -> None:
+        lpath = cast(pathlib.Path, path)
+        ltarget = cast(pathlib.Path, target)
+        lpath.replace(pathlib.Path(ltarget))
 
-    @overrides
-    def unlink(self, path: PurePath) -> None:
-        pathlib.Path(path).unlink()
+    def unlink(self, path: AbstractPath) -> None:
+        lpath = cast(pathlib.Path, path)
+        lpath.unlink()
 
-    @overrides
-    def is_dir(self, path: PurePath) -> bool:
-        return pathlib.Path(path).is_dir()
+    def is_dir(self, path: AbstractPath) -> bool:
+        lpath = cast(pathlib.Path, path)
+        return lpath.is_dir()
 
-    @overrides
-    def is_file(self, path: PurePath) -> bool:
-        return pathlib.Path(path).is_file()
+    def is_file(self, path: AbstractPath) -> bool:
+        lpath = cast(pathlib.Path, path)
+        return lpath.is_file()
 
-    @overrides
-    def is_symlink(self, path: PurePath) -> bool:
-        return pathlib.Path(path).is_symlink()
+    def is_symlink(self, path: AbstractPath) -> bool:
+        lpath = cast(pathlib.Path, path)
+        return lpath.is_symlink()
 
-    @overrides
-    def entry_type(self, path: PurePath) -> EntryType:
+    def entry_type(self, path: AbstractPath) -> EntryType:
+        lpath = cast(pathlib.Path, path)
         # Note: symlink goes first, because is_dir() and is_file() will
         # dereference and return true, while we want to say it's a
         # symlink and leave it at that.
@@ -104,51 +108,54 @@ class LocalFileSystem(FileSystemImpl):
                                            EntryType.SOCKET)]
 
         for pred, entry_type in pred_to_type:
-            if pred(pathlib.Path(path)):
+            if pred(lpath):
                 return entry_type
+        raise RuntimeError('Object is of unknown type, please report a'
+                           'Cerulean bug')
 
-    @overrides
-    def size(self, path: PurePath) -> int:
-        return self.__stat(path).st_size
+    def size(self, path: AbstractPath) -> int:
+        lpath = cast(pathlib.Path, path)
+        return lpath.stat().st_size
 
-    @overrides
-    def uid(self, path: PurePath) -> int:
-        return self.__stat(path).st_uid
+    def uid(self, path: AbstractPath) -> int:
+        lpath = cast(pathlib.Path, path)
+        return lpath.stat().st_uid
 
-    @overrides
-    def gid(self, path: PurePath) -> int:
-        return self.__stat(path).st_gid
+    def gid(self, path: AbstractPath) -> int:
+        lpath = cast(pathlib.Path, path)
+        return lpath.stat().st_gid
 
-    @overrides
-    def has_permission(self, path: PurePath, permission: Permission) -> bool:
-        return bool(self.__stat(path).st_mode & permission.value)
+    def has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+        lpath = cast(pathlib.Path, path)
+        return bool(lpath.stat().st_mode & permission.value)
 
-    @overrides
-    def set_permission(self, path: PurePath, permission: Permission,
-                       value: bool) -> bool:
-        mode = self.__stat(path).st_mode
+    def set_permission(self, path: AbstractPath, permission: Permission,
+                       value: bool = True) -> None:
+        lpath = cast(pathlib.Path, path)
+        mode = lpath.stat().st_mode
         if value:
             mode = mode | permission.value
         else:
             mode = mode & ~permission.value
 
-        self.chmod(path, mode)
+        self.chmod(lpath, mode)
 
-    @overrides
-    def chmod(self, path: PurePath, mode: int) -> None:
-        pathlib.Path(path).chmod(mode)
+    def chmod(self, path: AbstractPath, mode: int) -> None:
+        lpath = cast(pathlib.Path, path)
+        lpath.chmod(mode)
 
-    @overrides
-    def symlink_to(self, path: PurePath, target: PurePath) -> None:
-        pathlib.Path(path).symlink_to(target)
+    def symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
+        lpath = cast(pathlib.Path, path)
+        ltarget = cast(pathlib.Path, target)
+        lpath.symlink_to(ltarget)
 
-    @overrides
-    def readlink(self, path: PurePath, recursive: bool) -> Path:
+    def readlink(self, path: AbstractPath, recursive: bool) -> Path:
+        lpath = cast(pathlib.Path, path)
         if recursive:
             # pathlib.Path.resolve() raises if the link is broken
             # we don't want that, so use our own implementation
             max_iter = 32
-            cur_path = pathlib.Path(path)
+            cur_path = lpath
             iter_count = 0
             while cur_path.is_symlink() and iter_count < max_iter:
                 target = pathlib.Path(os.readlink(str(cur_path)))
@@ -160,10 +167,7 @@ class LocalFileSystem(FileSystemImpl):
             if iter_count == max_iter:
                 raise RuntimeError('Too many symbolic links detected')
 
-            return cur_path
+            return Path(self, cur_path)
         else:
             return Path(self, pathlib.Path(
-                os.readlink(str(pathlib.Path(path)))))
-
-    def __stat(self, path: PurePath):
-        return pathlib.Path(path).stat()
+                os.readlink(str(lpath))))

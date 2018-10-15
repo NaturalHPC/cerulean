@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
@@ -16,7 +17,7 @@ class Scheduler(ABC):
         pass
 
     @abstractmethod
-    def get_exit_code(self, job_id: str) -> int:
+    def get_exit_code(self, job_id: str) -> Optional[int]:
         pass
 
     @abstractmethod

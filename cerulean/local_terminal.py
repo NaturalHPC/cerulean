@@ -1,22 +1,18 @@
 import logging
 from subprocess import PIPE, Popen, TimeoutExpired
-from typing import List, Tuple, cast
+from typing import List, Optional, Tuple, cast
 
 from cerulean.terminal import Terminal
-from overrides import overrides
 
 
 class LocalTerminal(Terminal):
-    def __init__(self):
-        pass
 
-    @overrides
     def run(self,
             timeout: float,
             command: str,
             args: List[str],
             stdin_data: str = None,
-            workdir: str = None) -> Tuple[int, str, str]:
+            workdir: str = None) -> Tuple[Optional[int], str, str]:
 
         all_args = [command] + args
         if workdir is not None:

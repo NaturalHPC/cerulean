@@ -1,3 +1,5 @@
+from typing import Dict, List, Optional
+
 from pathlib import PurePath
 
 
@@ -18,15 +20,15 @@ class JobDescription:
                 node.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.name = 'cerulean'
-        self.working_directory = None  # Type(str)
-        self.environment = dict()
-        self.command = None
-        self.arguments = []
-        self.stdout_file = None
-        self.stderr_file = None
-        self.queue_name = None
-        self.time_reserved = None
-        self.num_nodes = None
-        self.mpi_processes_per_node = None
+        self.working_directory = None  # type: Optional[str]
+        self.environment = dict()   # type: Dict[str, str]
+        self.command = None # type: Optional[str]
+        self.arguments = [] # type: List[str]
+        self.stdout_file = None # type: Optional[str]
+        self.stderr_file = None # type: Optional[str]
+        self.queue_name = None  # type: Optional[str]
+        self.time_reserved = None   # type: Optional[int]
+        self.num_nodes = None   # type: Optional[int]
+        self.mpi_processes_per_node = None  # type: Optional[int]

@@ -1,11 +1,13 @@
 import logging
+from typing import Dict
 
 import pytest
 from cerulean.copy_files import copy
-from cerulean.path import EntryType
+from cerulean.file_system_impl import FileSystemImpl
+from cerulean.path import EntryType, Path
 
 
-def assert_dir_copied_correctly(copied_dir):
+def assert_dir_copied_correctly(copied_dir: Path) -> None:
     assert copied_dir.exists()
     assert copied_dir.is_dir()
     assert (copied_dir / 'file0').is_file()
@@ -26,13 +28,13 @@ def assert_dir_copied_correctly(copied_dir):
     assert not (copied_dir / 'blockdev').exists()
 
 
-def test_copy_file_args(filesystem, paths):
+def test_copy_file_args(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file0 = paths['file']
     with pytest.raises(ValueError):
         copy(file0, file0, overwrite='nonexistentoption')
 
 
-def test_copy_into(filesystem, paths):
+def test_copy_into(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file0 = paths['file']
     newdir = paths['new_dir']
     newdir.mkdir()
@@ -41,7 +43,7 @@ def test_copy_into(filesystem, paths):
     newdir.rmdir(recursive=True)
 
 
-def test_copy_file_single_fs(filesystem, paths):
+def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file1 = paths['file']
     new_file = paths['new_file']
 
@@ -72,7 +74,7 @@ def test_copy_file_single_fs(filesystem, paths):
     other_file.touch()
 
 
-def test_copy_symlink_single_fs(filesystem, paths):
+def test_copy_symlink_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     link = paths['multi_link']
     new_file = paths['new_file']
 
@@ -86,7 +88,7 @@ def test_copy_symlink_single_fs(filesystem, paths):
     new_file.unlink()
 
 
-def test_copy_dir_single_fs(filesystem, paths):
+def test_copy_dir_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     dir1 = paths['dir']
     new_dir = paths['new_dir']
 
@@ -98,9 +100,11 @@ def test_copy_dir_single_fs(filesystem, paths):
     new_dir.rmdir(recursive=True)
 
 
-def test_copy_file_cross_fs(filesystem, filesystem2, paths):
+def test_copy_file_cross_fs(filesystem: FileSystemImpl,
+                            filesystem2: FileSystemImpl,
+                            paths: Dict[str, Path]) -> None:
     file1 = paths['file']
-    new_file = filesystem2 / paths['new_file']
+    new_file = filesystem2 / str(paths['new_file'])
 
     assert not new_file.exists()
     copy(file1, new_file)
@@ -129,9 +133,11 @@ def test_copy_file_cross_fs(filesystem, filesystem2, paths):
     other_file.touch()
 
 
-def test_copy_symlink_cross_fs(filesystem, filesystem2, paths):
+def test_copy_symlink_cross_fs(filesystem: FileSystemImpl,
+                               filesystem2: FileSystemImpl,
+                               paths: Dict[str, Path]) -> None:
     link = paths['multi_link']
-    new_file = filesystem2 / paths['new_file']
+    new_file = filesystem2 / str(paths['new_file'])
 
     assert not new_file.exists()
     copy(link, new_file)
@@ -143,9 +149,11 @@ def test_copy_symlink_cross_fs(filesystem, filesystem2, paths):
     new_file.unlink()
 
 
-def test_copy_dir_cross_fs(filesystem, filesystem2, paths):
+def test_copy_dir_cross_fs(filesystem: FileSystemImpl,
+                           filesystem2: FileSystemImpl,
+                           paths: Dict[str, Path]) -> None:
     dir1 = paths['dir']
-    new_dir = filesystem2 / paths['new_dir']
+    new_dir = filesystem2 / str(paths['new_dir'])
 
     assert not new_dir.exists()
     copy(dir1, new_dir)

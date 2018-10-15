@@ -6,8 +6,8 @@ overrides
 paramiko
 pytest
 pytest-cov
+pytest-mypy
 pytest-runner
-pytest-tap
 pytest-timeout
 pytest-xdist
 typing

@@ -36,7 +36,6 @@ setup(
     test_suite='tests',
     install_requires=[
         'defusedxml',
-        'overrides',
         'paramiko',
         'typing',
         'typing-extensions'

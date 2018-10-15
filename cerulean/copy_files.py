@@ -66,7 +66,8 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
                 rel_path = linked_path.relative_to(context)
                 logging.debug('Making relative link from {} to {}'.format(
                     target_path, rel_path))
-                target_path.symlink_to(rel_path)
+                target_fs = target_path.filesystem
+                target_path.symlink_to(target_fs / str(rel_path))
                 return
 
     if source_path.is_file():

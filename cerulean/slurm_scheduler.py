@@ -1,17 +1,15 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.scheduler import Scheduler
 from cerulean.terminal import Terminal
-from overrides import overrides
 
 
 class SlurmScheduler(Scheduler):
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
 
-    @overrides
     def submit_job(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
@@ -28,7 +26,6 @@ class SlurmScheduler(Scheduler):
         job_id = output.strip().split(' ')[-1]
         return job_id
 
-    @overrides
     def get_status(self, job_id: str) -> JobStatus:
         exit_code, output, error = self.__terminal.run(
             10, 'squeue', ['-j', job_id, '-h', '-o', '%T'], None, None)
@@ -70,8 +67,7 @@ class SlurmScheduler(Scheduler):
 
         return job_status
 
-    @overrides
-    def get_exit_code(self, job_id: str) -> int:
+    def get_exit_code(self, job_id: str) -> Optional[int]:
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
@@ -82,7 +78,6 @@ class SlurmScheduler(Scheduler):
         exit_code = int(output.lstrip().split(':')[0])
         return exit_code
 
-    @overrides
     def cancel(self, job_id: str) -> None:
         err, output, error = self.__terminal.run(10, 'scancel', [job_id])
 
@@ -120,7 +115,8 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
     return job_script
 
 
-def _add_option(job_script: str, option: str, value: Optional[str]) -> str:
+def _add_option(job_script: str, option: str,
+                value: Optional[Union[int, str]]) -> str:
     if value is not None:
         if value is not '':
             return job_script + '#SBATCH --{}={}\n'.format(option, value)

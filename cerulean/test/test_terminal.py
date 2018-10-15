@@ -1,7 +1,9 @@
 import pytest
 
+from cerulean.terminal import Terminal
 
-def test_terminal(terminal):
+
+def test_terminal(terminal: Terminal) -> None:
     exit_code, output, error = terminal.run(
             10.0,
             'echo', ['hello', 'world'])
@@ -10,7 +12,7 @@ def test_terminal(terminal):
     assert error == ''
 
 
-def test_terminal_stdin(terminal):
+def test_terminal_stdin(terminal: Terminal) -> None:
     exit_code, output, error = terminal.run(
             10.0,
             'cat', [],
@@ -20,7 +22,7 @@ def test_terminal_stdin(terminal):
     assert error == ''
 
 
-def test_terminal_workdir(terminal):
+def test_terminal_workdir(terminal: Terminal) -> None:
     exit_code, output, error = terminal.run(
             10.0,
             'bash', ['-c', 'pwd'],

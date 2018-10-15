@@ -1,10 +1,14 @@
 import stat
 from abc import abstractmethod
 from enum import Enum
-from pathlib import PurePath, PurePosixPath
-from typing import Generator, Iterable, List, Optional, Union
+import pathlib
+from pathlib import PurePosixPath, PureWindowsPath
+from typing import (Generator, Iterable, List, Optional, Tuple, TYPE_CHECKING,
+                    Union)
 
-from overrides import overrides
+
+if TYPE_CHECKING:
+    from cerulean.file_system_impl import FileSystemImpl
 
 
 class EntryType(Enum):
@@ -35,7 +39,10 @@ class Permission(Enum):
     STICKY = stat.S_ISVTX
 
 
-class Path(PurePosixPath):
+AbstractPath = Union[pathlib.Path, PurePosixPath, PureWindowsPath]
+
+
+class Path:
     """A path on a file system.
 
     This class implements the pathlib.PurePosixPath interface \
@@ -46,45 +53,139 @@ class Path(PurePosixPath):
     To make a Path, create a FileSystem first, then use the / operator \
     on it, e.g. fs / 'home' / 'user'. Do not construct objects of this \
     class directly.
+
+    Attributes:
+        filesystem: The file system that this path is on.
     """
+    def __init__(self, filesystem: 'FileSystemImpl', path: AbstractPath) -> None:
+        if isinstance(path, Path):
+            raise RuntimeError('AAAAAAARGH!')
+        self.__path = path
+        self.filesystem = filesystem
 
-    def __new__(cls, fs_impl, path, *args, **kwargs) -> 'Path':
-        return super().__new__(cls, path)
+    def __str__(self) -> str:
+        return str(self.__path)
 
-    def __init__(self, fs_impl: 'FileSystemImpl', path: str) -> None:
-        super().__init__()
-        self.__fs_impl = fs_impl
+    # PurePath operators
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Path):
+            return NotImplemented
+        return (self.filesystem == other.filesystem
+                and self.__path == other.__path)
+
+    def __neq__(self, other: object) -> bool:
+        if not isinstance(other, Path):
+            return NotImplemented
+        return not (self == other)
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, Path):
+            return NotImplemented
+        if self.filesystem != other.filesystem:
+            raise TypeError('\'<\' not supported between different file systems')
+        return self.__path < other.__path
+
+    def __gt__(self, other: object) -> bool:
+        return other < self
+
+    def __le__(self, other: object) -> bool:
+        return self < other or self == other
+
+    def __ge__(self, other: object) -> bool:
+        return other < self or self == other
+
+    def __truediv__(self, suffix: Union[str, 'Path']) -> 'Path':
+        if isinstance(suffix, Path):
+            path = self.__path / suffix.__path
+        else:
+            path = self.__path / suffix
+        return Path(self.filesystem, path)
+
 
     # PurePath attributes and functions
 
-    # equality check should include file system
-    # less than check should include file system
+    @property
+    def parts(self) -> Tuple[str, ...]:
+        return self.__path.parts
 
-    def __truediv__(self, suffix: Union[str, PurePath]) -> 'Path':
-        return Path(self.__fs_impl, super().__truediv__(suffix))
+    @property
+    def drive(self) -> str:
+        return self.__path.drive
+
+    @property
+    def root(self) -> str:
+        return self.__path.root
+
+    @property
+    def anchor(self) -> str:
+        return self.__path.anchor
 
     @property
     def parents(self) -> List['Path']:
-        def make_path(path: PurePath) -> 'Path':
-            return Path(self.__fs_impl, path)
+        def make_path(path: AbstractPath) -> 'Path':
+            return Path(self.filesystem, path)
 
-        return list(map(make_path, super().parents))
+        return list(map(make_path, self.__path.parents))
 
     @property
     def parent(self) -> 'Path':
-        return Path(self.__fs_impl, super().parent)
+        return Path(self.filesystem, self.__path.parent)
 
-    def joinpath(self, *other) -> 'Path':
-        return Path(self.__fs_impl, super().joinpath(*other))
+    @property
+    def name(self) -> str:
+        return self.__path.name
 
-    def relative_to(self, *other) -> 'Path':
-        return Path(self.__fs_impl, super().relative_to(*other))
+    @property
+    def suffix(self) -> str:
+        return self.__path.suffix
+
+    @property
+    def suffixes(self) -> List[str]:
+        return self.__path.suffixes
+
+    @property
+    def stem(self) -> str:
+        return self.__path.stem
+
+    def as_posix(self) -> str:
+        return self.__path.as_posix()
+
+    def as_uri(self) -> str:
+        raise NotImplementedError('Not yet implemented, please file an issue')
+
+    def is_absolute(self) -> bool:
+        return self.__path.is_absolute()
+
+    def is_reserved(self) -> bool:
+        return self.__path.is_reserved()
+
+    def joinpath(self, *other: Union[str, 'Path']) -> 'Path':
+        def get_path(segment: Union[str, 'Path']) -> str:
+            if isinstance(segment, str):
+                return segment
+            else:
+                return str(segment.__path)
+
+        native_others = map(get_path, other)
+        return Path(self.filesystem, self.__path.joinpath(*native_others))
+
+    # TODO: match
+
+    def relative_to(self, *other: Union[str, 'Path']) -> 'Path':
+        def get_path(segment: Union[str, 'Path']) -> str:
+            if isinstance(segment, str):
+                return segment
+            else:
+                return str(segment.__path)
+
+        native_others = map(get_path, other)
+        return Path(self.filesystem, self.__path.relative_to(*native_others))
 
     def with_name(self, name: str) -> 'Path':
-        return Path(self.__fs_impl, super().with_name(name))
+        return Path(self.filesystem, self.__path.with_name(name))
 
     def with_suffix(self, suffix: str) -> 'Path':
-        return Path(self.__fs_impl, super().with_suffix(suffix))
+        return Path(self.filesystem, self.__path.with_suffix(suffix))
 
     # Existence and contents
 
@@ -98,7 +199,7 @@ class Path(PurePosixPath):
         Returns:
             True iff the path exists on the filesystem.
         """
-        return self.__fs_impl.exists(self)
+        return self.filesystem.exists(self.__path)
 
     def mkdir(self,
               mode: int = 0o777,
@@ -115,7 +216,7 @@ class Path(PurePosixPath):
             parents: Whether to make parent directories.
             exists_ok: Don't raise if target already exists.
         """
-        self.__fs_impl.mkdir(self, mode, parents, exists_ok)
+        self.filesystem.mkdir(self.__path, mode, parents, exists_ok)
 
     def iterdir(self) -> Generator['Path', None, None]:
         """Iterates through a directory's contents.
@@ -123,8 +224,8 @@ class Path(PurePosixPath):
         Yields:
             Paths of entries in the directory.
         """
-        for entry in self.__fs_impl.iterdir(self):
-            yield Path(self.__fs_impl, entry)
+        for entry in self.filesystem.iterdir(self.__path):
+            yield Path(self.filesystem, entry)
 
     def rmdir(self, recursive: bool = False) -> None:
         """Removes a directory.
@@ -132,7 +233,7 @@ class Path(PurePosixPath):
         If recursive is True, remove all files and directories inside \
         as well. If recursive is False, the directory must be empty.
         """
-        self.__fs_impl.rmdir(self, recursive)
+        self.filesystem.rmdir(self.__path, recursive)
 
     def touch(self) -> None:
         """Updates the access and modification times of file.
@@ -140,7 +241,7 @@ class Path(PurePosixPath):
         If the file does not exist, it will be created, which is often \
         what this function is used for.
         """
-        self.__fs_impl.touch(self)
+        self.filesystem.touch(self.__path)
 
     def streaming_read(self) -> Generator[bytes, None, None]:
         """Streams data from a file.
@@ -148,7 +249,7 @@ class Path(PurePosixPath):
         This is a generator function that generates bytes objects \
         containing consecutive chunks of the file.
         """
-        return self.__fs_impl.streaming_read(self)
+        return self.filesystem.streaming_read(self.__path)
 
     def streaming_write(self, data: Iterable[bytes]) -> None:
         """Streams data to a file.
@@ -159,7 +260,7 @@ class Path(PurePosixPath):
         Args:
             data: An iterable of bytes containing data to be written.
         """
-        self.__fs_impl.streaming_write(self, data)
+        self.filesystem.streaming_write(self.__path, data)
 
     def read_bytes(self) -> bytes:
         """Reads file contents as a bytes object.
@@ -172,7 +273,7 @@ class Path(PurePosixPath):
             data.extend(chunk)
         return bytes(data)
 
-    def read_text(self, encoding='utf-8') -> str:
+    def read_text(self, encoding: str = 'utf-8') -> str:
         """Reads file contents as a string.
 
         Assumes UTF-8 encoding.
@@ -205,14 +306,16 @@ class Path(PurePosixPath):
         Args:
             target: The new path of the file.
         """
-        self.__fs_impl.rename(self, target)
+        if target.filesystem != self:
+            raise RuntimeError('Cannot rename across file systems')
+        self.filesystem.rename(self.__path, target.__path)
 
     def unlink(self) -> None:
         """Removes a file or device node.
 
         For removing directories, see rmdir().
         """
-        self.__fs_impl.unlink(self)
+        self.filesystem.unlink(self.__path)
 
     # File type and size
 
@@ -223,7 +326,7 @@ class Path(PurePosixPath):
             True iff the path exists and is a directory, or a symbolic \
             link pointing to a directory.
         """
-        return self.__fs_impl.is_dir(self)
+        return self.filesystem.is_dir(self.__path)
 
     def is_file(self) -> bool:
         """Returns whether the path is a file.
@@ -232,7 +335,7 @@ class Path(PurePosixPath):
             True iff the path exists and is a file, or a symbolic \
             link pointing to a file.
         """
-        return self.__fs_impl.is_file(self)
+        return self.filesystem.is_file(self.__path)
 
     def is_symlink(self) -> bool:
         """Returns whether the path is a symlink.
@@ -240,7 +343,7 @@ class Path(PurePosixPath):
         Returns:
             True iff the path exists and is a symbolic link.
         """
-        return self.__fs_impl.is_symlink(self)
+        return self.filesystem.is_symlink(self.__path)
 
     def entry_type(self) -> EntryType:
         """Returns the kind of directory entry type the path points to.
@@ -248,7 +351,7 @@ class Path(PurePosixPath):
         Returns:
             An EntryType enum value describing the filesystem entry.
         """
-        return self.__fs_impl.entry_type(self)
+        return self.filesystem.entry_type(self.__path)
 
     def size(self) -> int:
         """Returns the size of the file.
@@ -256,7 +359,7 @@ class Path(PurePosixPath):
         Returns:
             An integer with the number of bytes in the file.
         """
-        return self.__fs_impl.size(self)
+        return self.filesystem.size(self.__path)
 
     # Permissions
 
@@ -266,7 +369,7 @@ class Path(PurePosixPath):
         Returns:
             An integer with the id, or None if not supported.
         """
-        return self.__fs_impl.uid(self)
+        return self.filesystem.uid(self.__path)
 
     def gid(self) -> Optional[int]:
         """Returns the group id associated with the object.
@@ -274,7 +377,7 @@ class Path(PurePosixPath):
         Returns:
             An integer with the id, or None of not supported.
         """
-        return self.__fs_impl.gid(self)
+        return self.filesystem.gid(self.__path)
 
     def has_permission(self, permission: Permission) -> bool:
         """Checks permissions.
@@ -285,7 +388,7 @@ class Path(PurePosixPath):
         Returns:
             True iff the object exists and has the given permission.
         """
-        return self.__fs_impl.has_permission(self, permission)
+        return self.filesystem.has_permission(self.__path, permission)
 
     def set_permission(self, permission: Permission,
                        value: bool = True) -> None:
@@ -295,7 +398,7 @@ class Path(PurePosixPath):
             permission: The permission to set.
             value: Whether to enable or disable the permission.
         """
-        self.__fs_impl.set_permission(self, permission, value)
+        self.filesystem.set_permission(self.__path, permission, value)
 
     def chmod(self, mode: int) -> None:
         """Sets permissions.
@@ -305,7 +408,7 @@ class Path(PurePosixPath):
                   This uses standard POSIX mode definitions, see \
                   man chmod.
         """
-        self.__fs_impl.chmod(self, mode)
+        self.filesystem.chmod(self.__path, mode)
 
     # Symlinks
 
@@ -318,7 +421,9 @@ class Path(PurePosixPath):
         Args:
             target: The path to symlink to.
         """
-        self.__fs_impl.symlink_to(self, target)
+        if self.filesystem != target.filesystem:
+            raise RuntimeError('Cannot symlink across filesystems')
+        self.filesystem.symlink_to(self.__path, target.__path)
 
     def readlink(self, recursive: bool = False) -> 'Path':
         """Reads the target of a symbolic link.
@@ -341,4 +446,4 @@ class Path(PurePosixPath):
             RunTimeError: The recursion depth was reached, probably as a \
                     result of a link loop.
         """
-        return self.__fs_impl.readlink(self, recursive)
+        return self.filesystem.readlink(self.__path, recursive)

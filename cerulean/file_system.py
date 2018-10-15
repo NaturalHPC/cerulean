@@ -1,18 +1,15 @@
 from abc import ABC
+from pathlib import PurePath
+from typing import cast, TYPE_CHECKING, Union
 
 from cerulean.path import Path
+
+if TYPE_CHECKING:
+    from cerulean.file_system_impl import FileSystemImpl
 
 
 class FileSystem(ABC):
     """Represents a file system.
     """
-
-    def __init__(self) -> None:
-        pass
-
-    @property
-    def root(self) -> Path:
-        return Path(self, '/')
-
-    def __truediv__(self, path: Path) -> Path:
-        return Path(self, self.root / path)
+    def __truediv__(self, segment: str) -> Path:
+        raise NotImplementedError()
