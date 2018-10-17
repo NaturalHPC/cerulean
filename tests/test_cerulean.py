@@ -30,6 +30,9 @@ def test_cerulean(target_images):
     with open(path, 'r') as exit_code_file:
         lines = exit_code_file.readlines()
 
+    cov_path = os.path.abspath(os.path.join(workdir, os.pardir, 'coverage.xml'))
+    sh.docker.cp('cerulean-test:/home/cerulean/cerulean/coverage.xml', cov_path)
+
     # Clean up target containers
     sh.docker_compose.down(_cwd=workdir, _out=sys.stdout)
 
