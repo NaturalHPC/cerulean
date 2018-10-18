@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
@@ -75,7 +75,7 @@ class TorqueScheduler(Scheduler):
         return job_exit_code
 
     def cancel(self, job_id: str) -> None:
-        err, output, error = self.__terminal.run(10, 'qdel', [job_id])
+        self.__terminal.run(10, 'qdel', [job_id])
 
 
 def _job_desc_to_job_script(job_description: JobDescription) -> str:
@@ -108,7 +108,7 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
 
     job_script += '{}'.format(job_description.command)
 
-    args = map(lambda arg: "{}".format(arg), job_description.arguments)
+    args = map(str, job_description.arguments)
     job_script += ' {}'.format(' '.join(args))
 
     if job_description.stdout_file is not None:
@@ -122,7 +122,6 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
 
 
 def _get_field_from_qstat_xml(xml_data: ElementTree, field_name: str) -> str:
-    value = None
     for job in xml_data:
         print('job: {}'.format(job.tag))
         for field in job:

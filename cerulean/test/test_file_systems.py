@@ -1,15 +1,8 @@
-import os
-import pathlib
-import stat
-import time
 from typing import Dict
 
 import pytest
-from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
-from cerulean.local_file_system import LocalFileSystem
-from cerulean.path import AbstractPath, EntryType, Path, Permission
-from cerulean.sftp_file_system import SftpFileSystem
+from cerulean.path import AbstractPath, EntryType, Permission
 
 
 def test_exists(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:

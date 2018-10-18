@@ -1,6 +1,6 @@
 import socket
 from types import TracebackType
-from typing import cast, List, Optional, Tuple, Type, TYPE_CHECKING
+from typing import List, Optional, Tuple, Type, TYPE_CHECKING
 
 import paramiko
 from cerulean.credential import (Credential, PasswordCredential,

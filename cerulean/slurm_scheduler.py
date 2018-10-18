@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
@@ -73,13 +73,13 @@ class SlurmScheduler(Scheduler):
 
         err, output, error = self.__terminal.run(
             10, 'sacct', ['-j', job_id, '--noheader', '--format=ExitCode'])
-        print('sacct output ({}): {}'.format(err, output))
+        print('sacct output ({}): {} {}'.format(err, output, error))
 
         exit_code = int(output.lstrip().split(':')[0])
         return exit_code
 
     def cancel(self, job_id: str) -> None:
-        err, output, error = self.__terminal.run(10, 'scancel', [job_id])
+        self.__terminal.run(10, 'scancel', [job_id])
 
 
 def _job_desc_to_job_script(job_description: JobDescription) -> str:

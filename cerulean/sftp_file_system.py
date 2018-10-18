@@ -1,7 +1,7 @@
 import stat
 from pathlib import PurePosixPath
 from types import TracebackType
-from typing import cast, Generator, Iterable, Optional, Type
+from typing import cast, Generator, Iterable, Optional
 
 import paramiko
 from cerulean.file_system_impl import FileSystemImpl
@@ -46,6 +46,8 @@ class SftpFileSystem(FileSystemImpl):
             for parent in reversed(lpath.parents):
                 if not self.exists(parent):
                     self.__sftp.mkdir(str(parent))
+                    # The 0o777 is intentional and matches pathlib and
+                    # POSIX mkdir
                     self.__sftp.chmod(str(parent), 0o777)
         if self.exists(lpath):
             if not exists_ok:
@@ -86,7 +88,7 @@ class SftpFileSystem(FileSystemImpl):
 
     def touch(self, path: AbstractPath) -> None:
         lpath = cast(PurePosixPath, path)
-        with self.__sftp.file(str(lpath), 'a') as f:
+        with self.__sftp.file(str(lpath), 'a'):
             pass
 
     def streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:

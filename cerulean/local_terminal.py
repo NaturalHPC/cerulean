@@ -1,6 +1,5 @@
-import logging
-from subprocess import PIPE, Popen, TimeoutExpired
-from typing import List, Optional, Tuple, cast
+from subprocess import PIPE, Popen
+from typing import List, Optional, Tuple
 
 from cerulean.terminal import Terminal
 
