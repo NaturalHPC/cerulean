@@ -86,7 +86,7 @@ def run_apidoc(_):
     out = os.path.abspath(os.path.join(here, 'apidocs'))
     src = os.path.abspath(os.path.join(here, '..', 'cerulean'))
 
-    ignore_paths = []
+    ignore_paths = [os.path.join(src, 'test')]
 
     argv = [
         "-f",
@@ -107,9 +107,16 @@ def run_apidoc(_):
         argv.insert(0, apidoc.__file__)
         apidoc.main(argv)
 
+# Ignore submodules, we want only the public API
+def skip_submodules(app, what, name, obj, skip, options):
+    if 'cerulean.' in name:
+        return True
+    return skip
+
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
+    app.connect('autodoc-skip-member', skip_submodules)
 
 
 # -- Options for HTML output ----------------------------------------------
@@ -117,7 +124,7 @@ def setup(app):
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
