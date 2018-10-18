@@ -1,6 +1,6 @@
 .. image:: https://readthedocs.org/projects/cerulean/badge/?version=latest
     :target: https://cerulean.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Build Status
+    :alt: Documentation Build Status
 
 .. image:: https://api.travis-ci.org/MD-Studio/cerulean.svg?branch=develop
     :target: https://travis-ci.org/MD-Studio/cerulean
