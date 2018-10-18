@@ -199,7 +199,7 @@ class Path:
         Returns:
             True iff the path exists on the filesystem.
         """
-        return self.filesystem.exists(self.__path)
+        return self.filesystem._exists(self.__path)
 
     def mkdir(self,
               mode: int = 0o777,
@@ -216,7 +216,7 @@ class Path:
             parents: Whether to make parent directories.
             exists_ok: Don't raise if target already exists.
         """
-        self.filesystem.mkdir(self.__path, mode, parents, exists_ok)
+        self.filesystem._mkdir(self.__path, mode, parents, exists_ok)
 
     def iterdir(self) -> Generator['Path', None, None]:
         """Iterates through a directory's contents.
@@ -224,7 +224,7 @@ class Path:
         Yields:
             Paths of entries in the directory.
         """
-        for entry in self.filesystem.iterdir(self.__path):
+        for entry in self.filesystem._iterdir(self.__path):
             yield Path(self.filesystem, entry)
 
     def rmdir(self, recursive: bool = False) -> None:
@@ -233,7 +233,7 @@ class Path:
         If recursive is True, remove all files and directories inside \
         as well. If recursive is False, the directory must be empty.
         """
-        self.filesystem.rmdir(self.__path, recursive)
+        self.filesystem._rmdir(self.__path, recursive)
 
     def touch(self) -> None:
         """Updates the access and modification times of file.
@@ -241,7 +241,7 @@ class Path:
         If the file does not exist, it will be created, which is often \
         what this function is used for.
         """
-        self.filesystem.touch(self.__path)
+        self.filesystem._touch(self.__path)
 
     def streaming_read(self) -> Generator[bytes, None, None]:
         """Streams data from a file.
@@ -249,7 +249,7 @@ class Path:
         This is a generator function that generates bytes objects \
         containing consecutive chunks of the file.
         """
-        return self.filesystem.streaming_read(self.__path)
+        return self.filesystem._streaming_read(self.__path)
 
     def streaming_write(self, data: Iterable[bytes]) -> None:
         """Streams data to a file.
@@ -260,7 +260,7 @@ class Path:
         Args:
             data: An iterable of bytes containing data to be written.
         """
-        self.filesystem.streaming_write(self.__path, data)
+        self.filesystem._streaming_write(self.__path, data)
 
     def read_bytes(self) -> bytes:
         """Reads file contents as a bytes object.
@@ -308,14 +308,14 @@ class Path:
         """
         if target.filesystem != self:
             raise RuntimeError('Cannot rename across file systems')
-        self.filesystem.rename(self.__path, target.__path)
+        self.filesystem._rename(self.__path, target.__path)
 
     def unlink(self) -> None:
         """Removes a file or device node.
 
         For removing directories, see rmdir().
         """
-        self.filesystem.unlink(self.__path)
+        self.filesystem._unlink(self.__path)
 
     # File type and size
 
@@ -326,7 +326,7 @@ class Path:
             True iff the path exists and is a directory, or a symbolic \
             link pointing to a directory.
         """
-        return self.filesystem.is_dir(self.__path)
+        return self.filesystem._is_dir(self.__path)
 
     def is_file(self) -> bool:
         """Returns whether the path is a file.
@@ -335,7 +335,7 @@ class Path:
             True iff the path exists and is a file, or a symbolic \
             link pointing to a file.
         """
-        return self.filesystem.is_file(self.__path)
+        return self.filesystem._is_file(self.__path)
 
     def is_symlink(self) -> bool:
         """Returns whether the path is a symlink.
@@ -343,7 +343,7 @@ class Path:
         Returns:
             True iff the path exists and is a symbolic link.
         """
-        return self.filesystem.is_symlink(self.__path)
+        return self.filesystem._is_symlink(self.__path)
 
     def entry_type(self) -> EntryType:
         """Returns the kind of directory entry type the path points to.
@@ -351,7 +351,7 @@ class Path:
         Returns:
             An EntryType enum value describing the filesystem entry.
         """
-        return self.filesystem.entry_type(self.__path)
+        return self.filesystem._entry_type(self.__path)
 
     def size(self) -> int:
         """Returns the size of the file.
@@ -359,7 +359,7 @@ class Path:
         Returns:
             An integer with the number of bytes in the file.
         """
-        return self.filesystem.size(self.__path)
+        return self.filesystem._size(self.__path)
 
     # Permissions
 
@@ -369,7 +369,7 @@ class Path:
         Returns:
             An integer with the id, or None if not supported.
         """
-        return self.filesystem.uid(self.__path)
+        return self.filesystem._uid(self.__path)
 
     def gid(self) -> Optional[int]:
         """Returns the group id associated with the object.
@@ -377,7 +377,7 @@ class Path:
         Returns:
             An integer with the id, or None of not supported.
         """
-        return self.filesystem.gid(self.__path)
+        return self.filesystem._gid(self.__path)
 
     def has_permission(self, permission: Permission) -> bool:
         """Checks permissions.
@@ -388,7 +388,7 @@ class Path:
         Returns:
             True iff the object exists and has the given permission.
         """
-        return self.filesystem.has_permission(self.__path, permission)
+        return self.filesystem._has_permission(self.__path, permission)
 
     def set_permission(self, permission: Permission,
                        value: bool = True) -> None:
@@ -398,7 +398,7 @@ class Path:
             permission: The permission to set.
             value: Whether to enable or disable the permission.
         """
-        self.filesystem.set_permission(self.__path, permission, value)
+        self.filesystem._set_permission(self.__path, permission, value)
 
     def chmod(self, mode: int) -> None:
         """Sets permissions.
@@ -408,7 +408,7 @@ class Path:
                   This uses standard POSIX mode definitions, see \
                   man chmod.
         """
-        self.filesystem.chmod(self.__path, mode)
+        self.filesystem._chmod(self.__path, mode)
 
     # Symlinks
 
@@ -423,7 +423,7 @@ class Path:
         """
         if self.filesystem != target.filesystem:
             raise RuntimeError('Cannot symlink across filesystems')
-        self.filesystem.symlink_to(self.__path, target.__path)
+        self.filesystem._symlink_to(self.__path, target.__path)
 
     def readlink(self, recursive: bool = False) -> 'Path':
         """Reads the target of a symbolic link.
@@ -446,4 +446,4 @@ class Path:
             RunTimeError: The recursion depth was reached, probably as a \
                     result of a link loop.
         """
-        return self.filesystem.readlink(self.__path, recursive)
+        return self.filesystem._readlink(self.__path, recursive)

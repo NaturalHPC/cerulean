@@ -14,7 +14,7 @@ class LocalFileSystem(FileSystemImpl):
         path = pathlib.Path(absseg)
         return Path(self, path)
 
-    def exists(self, path: AbstractPath) -> bool:
+    def _exists(self, path: AbstractPath) -> bool:
         lpath = cast(pathlib.Path, path)
         try:
             return lpath.exists()
@@ -23,7 +23,7 @@ class LocalFileSystem(FileSystemImpl):
                 return False
             raise
 
-    def mkdir(self,
+    def _mkdir(self,
               path: AbstractPath,
               mode: int = 0o777,
               parents: bool = False,
@@ -31,12 +31,12 @@ class LocalFileSystem(FileSystemImpl):
         lpath = cast(pathlib.Path, path)
         lpath.mkdir(mode, parents, exists_ok)
 
-    def iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
+    def _iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
         lpath = cast(pathlib.Path, path)
         for entry in lpath.iterdir():
             yield entry
 
-    def rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
+    def _rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
         lpath = cast(pathlib.Path, path)
         if not lpath.is_dir():
             raise RuntimeError('Path must refer to a directory')
@@ -46,17 +46,17 @@ class LocalFileSystem(FileSystemImpl):
                 if entry.is_symlink():
                     entry.unlink()
                 elif entry.is_dir():
-                    self.rmdir(entry, True)
+                    self._rmdir(entry, True)
                 else:
                     entry.unlink()
 
         lpath.rmdir()
 
-    def touch(self, path: AbstractPath) -> None:
+    def _touch(self, path: AbstractPath) -> None:
         lpath = cast(pathlib.Path, path)
         lpath.touch()
 
-    def streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+    def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
         lpath = cast(pathlib.Path, path)
         with lpath.open('rb') as f:
             data = f.read(1024 * 1024)
@@ -64,34 +64,34 @@ class LocalFileSystem(FileSystemImpl):
                 yield data
                 data = f.read(1024 * 1024)
 
-    def streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+    def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         lpath = cast(pathlib.Path, path)
         with lpath.open('wb') as f:
             for chunk in data:
                 f.write(chunk)
 
-    def rename(self, path: AbstractPath, target: AbstractPath) -> None:
+    def _rename(self, path: AbstractPath, target: AbstractPath) -> None:
         lpath = cast(pathlib.Path, path)
         ltarget = cast(pathlib.Path, target)
         lpath.replace(pathlib.Path(ltarget))
 
-    def unlink(self, path: AbstractPath) -> None:
+    def _unlink(self, path: AbstractPath) -> None:
         lpath = cast(pathlib.Path, path)
         lpath.unlink()
 
-    def is_dir(self, path: AbstractPath) -> bool:
+    def _is_dir(self, path: AbstractPath) -> bool:
         lpath = cast(pathlib.Path, path)
         return lpath.is_dir()
 
-    def is_file(self, path: AbstractPath) -> bool:
+    def _is_file(self, path: AbstractPath) -> bool:
         lpath = cast(pathlib.Path, path)
         return lpath.is_file()
 
-    def is_symlink(self, path: AbstractPath) -> bool:
+    def _is_symlink(self, path: AbstractPath) -> bool:
         lpath = cast(pathlib.Path, path)
         return lpath.is_symlink()
 
-    def entry_type(self, path: AbstractPath) -> EntryType:
+    def _entry_type(self, path: AbstractPath) -> EntryType:
         lpath = cast(pathlib.Path, path)
         # Note: symlink goes first, because is_dir() and is_file() will
         # dereference and return true, while we want to say it's a
@@ -113,23 +113,23 @@ class LocalFileSystem(FileSystemImpl):
         raise RuntimeError('Object is of unknown type, please report a'
                            'Cerulean bug')
 
-    def size(self, path: AbstractPath) -> int:
+    def _size(self, path: AbstractPath) -> int:
         lpath = cast(pathlib.Path, path)
         return lpath.stat().st_size
 
-    def uid(self, path: AbstractPath) -> int:
+    def _uid(self, path: AbstractPath) -> int:
         lpath = cast(pathlib.Path, path)
         return lpath.stat().st_uid
 
-    def gid(self, path: AbstractPath) -> int:
+    def _gid(self, path: AbstractPath) -> int:
         lpath = cast(pathlib.Path, path)
         return lpath.stat().st_gid
 
-    def has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+    def _has_permission(self, path: AbstractPath, permission: Permission) -> bool:
         lpath = cast(pathlib.Path, path)
         return bool(lpath.stat().st_mode & permission.value)
 
-    def set_permission(self, path: AbstractPath, permission: Permission,
+    def _set_permission(self, path: AbstractPath, permission: Permission,
                        value: bool = True) -> None:
         lpath = cast(pathlib.Path, path)
         mode = lpath.stat().st_mode
@@ -138,18 +138,18 @@ class LocalFileSystem(FileSystemImpl):
         else:
             mode = mode & ~permission.value
 
-        self.chmod(lpath, mode)
+        self._chmod(lpath, mode)
 
-    def chmod(self, path: AbstractPath, mode: int) -> None:
+    def _chmod(self, path: AbstractPath, mode: int) -> None:
         lpath = cast(pathlib.Path, path)
         lpath.chmod(mode)
 
-    def symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
+    def _symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
         lpath = cast(pathlib.Path, path)
         ltarget = cast(pathlib.Path, target)
         lpath.symlink_to(ltarget)
 
-    def readlink(self, path: AbstractPath, recursive: bool) -> Path:
+    def _readlink(self, path: AbstractPath, recursive: bool) -> Path:
         lpath = cast(pathlib.Path, path)
         if recursive:
             # pathlib.Path.resolve() raises if the link is broken

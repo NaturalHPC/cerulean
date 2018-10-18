@@ -22,11 +22,11 @@ class FileSystemImpl(FileSystem):
     # Existence and contents
 
     @abstractmethod
-    def exists(self, path: AbstractPath) -> bool:
+    def _exists(self, path: AbstractPath) -> bool:
         pass
 
     @abstractmethod
-    def mkdir(self,
+    def _mkdir(self,
               path: AbstractPath,
               mode: int = 0o777,
               parents: bool = False,
@@ -34,105 +34,105 @@ class FileSystemImpl(FileSystem):
         pass
 
     @abstractmethod
-    def iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
+    def _iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
         pass
 
     @abstractmethod
-    def rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
+    def _rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
         pass
 
     @abstractmethod
-    def touch(self, path: AbstractPath) -> None:
+    def _touch(self, path: AbstractPath) -> None:
         pass
 
     @abstractmethod
-    def streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+    def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
         pass
 
     @abstractmethod
-    def streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+    def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         pass
 
     # Convenience functions are implemented here, on top of the internal API
-    def read_bytes(self, path: AbstractPath) -> bytes:
+    def _read_bytes(self, path: AbstractPath) -> bytes:
         data = bytearray()
-        for chunk in self.streaming_read(path):
+        for chunk in self._streaming_read(path):
             data += chunk
         return bytes(data)
 
-    def read_text(self, path: AbstractPath, encoding: str = 'utf-8',
+    def _read_text(self, path: AbstractPath, encoding: str = 'utf-8',
                   errors: str = 'strict') -> str:
-        return self.read_bytes(path).decode(encoding, errors)
+        return self._read_bytes(path).decode(encoding, errors)
 
-    def write_bytes(self, path: AbstractPath, data: bytes) -> None:
-        self.streaming_write(path, [data])
+    def _write_bytes(self, path: AbstractPath, data: bytes) -> None:
+        self._streaming_write(path, [data])
 
-    def write_text(self,
+    def _write_text(self,
                    path: AbstractPath,
                    data: str,
                    encoding: str = 'utf-8',
                    errors: str = 'strict') -> None:
-        self.write_bytes(path, data.encode(encoding, errors))
+        self._write_bytes(path, data.encode(encoding, errors))
 
     @abstractmethod
-    def rename(self, path: AbstractPath, target: AbstractPath) -> None:
+    def _rename(self, path: AbstractPath, target: AbstractPath) -> None:
         pass
 
     @abstractmethod
-    def unlink(self, path: AbstractPath) -> None:
+    def _unlink(self, path: AbstractPath) -> None:
         pass
 
     # File type and size
 
     @abstractmethod
-    def is_dir(self, path: AbstractPath) -> bool:
+    def _is_dir(self, path: AbstractPath) -> bool:
         pass
 
     @abstractmethod
-    def is_file(self, path: AbstractPath) -> bool:
+    def _is_file(self, path: AbstractPath) -> bool:
         pass
 
     @abstractmethod
-    def is_symlink(self, path: AbstractPath) -> bool:
+    def _is_symlink(self, path: AbstractPath) -> bool:
         pass
 
     @abstractmethod
-    def entry_type(self, path: AbstractPath) -> EntryType:
+    def _entry_type(self, path: AbstractPath) -> EntryType:
         pass
 
     @abstractmethod
-    def size(self, path: AbstractPath) -> int:
+    def _size(self, path: AbstractPath) -> int:
         pass
 
     # Permissions
 
     @abstractmethod
-    def uid(self, path: AbstractPath) -> int:
+    def _uid(self, path: AbstractPath) -> int:
         pass
 
     @abstractmethod
-    def gid(self, path: AbstractPath) -> int:
+    def _gid(self, path: AbstractPath) -> int:
         pass
 
     @abstractmethod
-    def has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+    def _has_permission(self, path: AbstractPath, permission: Permission) -> bool:
         pass
 
     @abstractmethod
-    def set_permission(self,
+    def _set_permission(self,
                        path: AbstractPath,
                        permission: Permission,
                        value: bool = True) -> None:
         pass
 
     @abstractmethod
-    def chmod(self, path: AbstractPath, mode: int) -> None:
+    def _chmod(self, path: AbstractPath, mode: int) -> None:
         pass
 
     @abstractmethod
-    def symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
+    def _symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
         pass
 
     @abstractmethod
-    def readlink(self, path: AbstractPath, recursive: bool) -> Path:
+    def _readlink(self, path: AbstractPath, recursive: bool) -> Path:
         pass
