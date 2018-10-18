@@ -9,11 +9,8 @@ import tempfile
 @pytest.fixture
 def target_images():
     workdir = os.path.dirname(__file__)
-
-    # Build cerulean-test-base first, fixes dependency issue
-    sh.docker.build('-t', 'cerulean-test-base', 'container-base', _cwd=workdir, _out=sys.stdout)
-
-    sh.docker_compose.build(_cwd=workdir, _out=sys.stdout)
+    sh.docker_compose.pull('--ignore-pull-failures', _cwd=workdir, _out=sys.stdout)
+    sh.docker_compose.build('cerulean-test', _cwd=workdir, _out=sys.stdout)
 
 
 def test_cerulean(target_images):
