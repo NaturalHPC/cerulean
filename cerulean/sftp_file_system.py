@@ -31,9 +31,6 @@ class SftpFileSystem(FileSystemImpl):
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
-        self.close()
-
-    def close(self) -> None:
         self.__sftp.close()
         logger.info('Disconnected from SFTP server')
 
