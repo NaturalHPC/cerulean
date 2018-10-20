@@ -1,3 +1,4 @@
+import logging
 import stat
 from pathlib import PurePosixPath
 from types import TracebackType
@@ -10,9 +11,14 @@ from cerulean.ssh_terminal import SshTerminal
 from cerulean.util import BaseExceptionType
 
 
+logger = logging.getLogger(__name__)
+
+
 class SftpFileSystem(FileSystemImpl):
     def __init__(self, terminal: SshTerminal) -> None:
+        logger.info('Connecting to SFTP server')
         self.__sftp = terminal._get_sftp_client()
+        logger.info('Connected to SFTP server')
 
     def __enter__(self) -> 'SftpFileSystem':
         return self
@@ -24,6 +30,7 @@ class SftpFileSystem(FileSystemImpl):
 
     def close(self) -> None:
         self.__sftp.close()
+        logger.info('Disconnected from SFTP server')
 
     def __truediv__(self, segment: str) -> Path:
         return Path(self, PurePosixPath('/' + segment))

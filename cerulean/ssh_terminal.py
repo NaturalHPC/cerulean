@@ -1,3 +1,4 @@
+import logging
 import socket
 from types import TracebackType
 from typing import List, Optional, Tuple, Type, TYPE_CHECKING
@@ -9,18 +10,25 @@ from cerulean.terminal import Terminal
 from cerulean.util import BaseExceptionType
 
 
+logger = logging.getLogger(__name__)
+
+
 class SshTerminal(Terminal):
     def __init__(self, host: str, port: int, credential: Credential) -> None:
+        logger.info('Connecting to {} on port {}'.format(host, port))
         self.__transport = paramiko.Transport((host, port))
         if isinstance(credential, PasswordCredential):
+            logger.debug('Authenticating using a password')
             self.__transport.connect(
                 username=credential.username, password=credential.password)
         elif isinstance(credential, PubKeyCredential):
+            logger.debug('Authenticating using a public key')
             key = self.__get_key_from_file(credential.public_key,
                                            credential.passphrase)
             self.__transport.connect(username=credential.username, pkey=key)
         else:
             raise RuntimeError('Unknown kind of certificate')
+        logger.info('Connection established')
 
     def __enter__(self) -> 'SshTerminal':
         return self
@@ -54,6 +62,7 @@ class SshTerminal(Terminal):
         else:
             cmd_str = '{} {}'.format(command, ' '.join(args))
 
+        logger.debug('Executing {}'.format(cmd_str))
         session = self.__transport.open_session()
         session.exec_command(command=cmd_str)
         if stdin_data is not None:
@@ -65,12 +74,14 @@ class SshTerminal(Terminal):
         got_all_stderr, stderr_text = self.__get_data_from_channel(
             session, 'stderr', timeout)
         if not got_all_stdout or not got_all_stderr:
+            logger.debug('Command did not finish within timeout')
             return None, stdout_text, stderr_text
 
         session.settimeout(2.0)
         exit_status = session.recv_exit_status()
         session.close()
 
+        logger.debug('Command executed successfully')
         return exit_status, stdout_text, stderr_text
 
     def __get_data_from_channel(self, channel: paramiko.Channel,
@@ -98,27 +109,32 @@ class SshTerminal(Terminal):
     def __get_key_from_file(self, filename: str,
                             passphrase: Optional[str]) -> paramiko.pkey.PKey:
         key = None
+        messages = ''
         try:
             key = paramiko.ed25519key.Ed25519Key.from_private_key_file(
                 filename=filename, password=passphrase)
-        except paramiko.ssh_exception.SSHException:
+        except paramiko.ssh_exception.SSHException as e:
             key = None
+            messages += '{}; '.format(e)
 
         if key is None:
             try:
                 key = paramiko.ecdsakey.ECDSAKey.from_private_key_file(
                     filename=filename, password=passphrase)
-            except paramiko.ssh_exception.SSHException:
+            except paramiko.ssh_exception.SSHException as e:
                 key = None
+                messages += '{}; '.format(e)
 
         if key is None:
             try:
                 key = paramiko.rsakey.RSAKey.from_private_key_file(
                     filename=filename, password=passphrase)
-            except paramiko.ssh_exception.SSHException:
+            except paramiko.ssh_exception.SSHException as e:
                 key = None
+                messages += '{}; '.format(e)
 
         if key is None:
+            logger.debug('Invalid key: {}'.format(messages))
             raise RuntimeError(
                 'Invalid key specified, could not open as RSA, ECDSA or Ed25519 key'
             )

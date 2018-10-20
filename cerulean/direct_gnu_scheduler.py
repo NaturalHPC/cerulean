@@ -1,9 +1,13 @@
+import logging
 from typing import Optional
 
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.scheduler import Scheduler
 from cerulean.terminal import Terminal
+
+
+logger = logging.getLogger(__name__)
 
 
 class DirectGnuScheduler(Scheduler):
@@ -57,7 +61,7 @@ class DirectGnuScheduler(Scheduler):
         job_script += 'echo -n $! $exit_code_file\n'
         job_script += 'disown\n'
 
-        print('Job script: {}'.format(job_script))
+        logger.debug('Job script: {}'.format(job_script))
         exit_code, output, error = self.__terminal.run(10.0, 'bash', [],
                                                        job_script)
 
@@ -65,7 +69,12 @@ class DirectGnuScheduler(Scheduler):
 
     def get_status(self, job_id: str) -> JobStatus:
         pid = job_id.split(' ')[0]
+        logger.debug('Running ps -p {}'.format(pid))
         exit_code, output, error = self.__terminal.run(10.0, 'ps', ['-p', pid])
+
+        logger.debug('ps exit code: {}'.format(exit_code))
+        logger.debug('ps output: {}'.format(output))
+        logger.debug('ps error: {}'.format(error))
 
         if exit_code == 0:
             return JobStatus.RUNNING
@@ -74,8 +83,12 @@ class DirectGnuScheduler(Scheduler):
 
     def get_exit_code(self, job_id: str) -> Optional[int]:
         exit_code_file = job_id.split(' ', maxsplit=1)[1]
+        logger.debug('Running cat {}'.format(exit_code_file))
         exit_code, output, error = self.__terminal.run(10.0, 'cat',
                                                        [exit_code_file])
+        logger.debug('cat exit code: {}'.format(exit_code))
+        logger.debug('cat output: {}'.format(output))
+        logger.debug('cat error: {}'.format(error))
         # TODO: delete tempfile?
         try:
             return int(output)
@@ -84,7 +97,12 @@ class DirectGnuScheduler(Scheduler):
 
     def cancel(self, job_id: str) -> None:
         pid = job_id.split(' ')[0]
+        logger.debug('Running kill {}'.format(pid))
         exit_code, output, error = self.__terminal.run(10.0, 'kill', [pid])
+
+        logger.debug('kill exit code: {}'.format(exit_code))
+        logger.debug('kill output: {}'.format(output))
+        logger.debug('kill error: {}'.format(error))
         # TODO: Check exit code and return whether it was running?
         # TODO: Check if it's stopped, do a -9 if not?
         pass

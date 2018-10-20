@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Union
 
 from cerulean.job_description import JobDescription
@@ -6,41 +7,53 @@ from cerulean.scheduler import Scheduler
 from cerulean.terminal import Terminal
 
 
+logger = logging.getLogger(__name__)
+
+
 class SlurmScheduler(Scheduler):
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
+        exit_code, output, error = self.__terminal.run(10, 'sbatch',
+                                                       ['--version'])
+        logger.debug('sbatch --version exit code: {}'.format(exit_code))
+        logger.debug('sbatch --version output: {}'.format(output))
+        logger.debug('sbatch --version error: {}'.format(error))
 
     def submit_job(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
 
         job_script = _job_desc_to_job_script(job_description)
-        print('job script: {}'.format(job_script))
+        logger.debug('Submitting job script: {}'.format(job_script))
 
         exit_code, output, error = self.__terminal.run(10, 'sbatch', [],
                                                        job_script, None)
 
-        print('sbatch output ({}): {}'.format(exit_code, output))
-        print('sbatch error ({}): {}'.format(exit_code, error))
+        logger.debug('sbatch exit code: {}'.format(exit_code))
+        logger.debug('sbatch output: {}'.format(output))
+        logger.debug('sbatch error: {}'.format(error))
 
         job_id = output.strip().split(' ')[-1]
         return job_id
 
     def get_status(self, job_id: str) -> JobStatus:
+        logger.debug('Calling squeue j {} -h -o %T'.format(job_id))
         exit_code, output, error = self.__terminal.run(
             10, 'squeue', ['-j', job_id, '-h', '-o', '%T'], None, None)
-        print('squeue output ({}): {}'.format(exit_code, output))
-        print('squeue error ({}): {}'.format(exit_code, error))
+        logger.debug('squeue exit code: {}'.format(exit_code))
+        logger.debug('squeue output: {}'.format(output))
+        logger.debug('squeue error: {}'.format(error))
 
         status = output.strip()
         if status == '':
             # Seems like SLURM sometimes does not show the job, possibly
             # because it's transitioning to COMPLETING. So
             # if we don't find it, try again to be a bit more robust.
+            logger.debug('No answer from Slurm, trying again...')
             exit_code, output, error = self.__terminal.run(
                 10, 'squeue', ['-j', job_id, '-h', '-o', '%T'])
             status = output.strip()
-            print('squeue output 2: {}'.format(status))
+            logger.debug('squeue output 2: {}'.format(status))
 
         status_map = {
             'PENDING': JobStatus.WAITING,
@@ -63,7 +76,7 @@ class SlurmScheduler(Scheduler):
         except KeyError:
             job_status = JobStatus.DONE
 
-        print('get_status returning {}'.format(job_status.name))
+        logger.debug('get_status returning {}'.format(job_status.name))
 
         return job_status
 
@@ -71,14 +84,19 @@ class SlurmScheduler(Scheduler):
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
+        logger.debug('get_exit_code() running sacct -j {} --noheader'
+                     ' --format=ExitCode'.format(job_id))
         err, output, error = self.__terminal.run(
             10, 'sacct', ['-j', job_id, '--noheader', '--format=ExitCode'])
-        print('sacct output ({}): {} {}'.format(err, output, error))
+        logger.debug('sacct exit code: {}'.format(err))
+        logger.debug('sacct output: {}'.format(output))
+        logger.debug('sacct error: {}'.format(error))
 
         exit_code = int(output.lstrip().split(':')[0])
         return exit_code
 
     def cancel(self, job_id: str) -> None:
+        logger.debug('Running scancel {}'.format(job_id))
         self.__terminal.run(10, 'scancel', [job_id])
 
 

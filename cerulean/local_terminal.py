@@ -1,7 +1,11 @@
+import logging
 from subprocess import PIPE, Popen
 from typing import List, Optional, Tuple
 
 from cerulean.terminal import Terminal
+
+
+logger = logging.getLogger(__name__)
 
 
 class LocalTerminal(Terminal):
@@ -16,7 +20,7 @@ class LocalTerminal(Terminal):
         all_args = [command] + args
         if workdir is not None:
             workdir = str(workdir)
-        print('LocalTerminal running {}'.format(all_args))
+        logger.debug('LocalTerminal running {}'.format(all_args))
         with Popen(
                 all_args,
                 stdin=PIPE,
@@ -26,8 +30,8 @@ class LocalTerminal(Terminal):
             stdout_text, stderr_text = process.communicate(
                 stdin_data, timeout=timeout)
 
-        print('LocalTerminal output {}'.format(stdout_text))
-        print('LocalTerminal error {}'.format(stderr_text))
+        logger.debug('LocalTerminal output {}'.format(stdout_text))
+        logger.debug('LocalTerminal error {}'.format(stderr_text))
         if stderr_text is None:
             stderr_text = ''
         return process.returncode, stdout_text, stderr_text

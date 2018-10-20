@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from cerulean.job_description import JobDescription
@@ -7,20 +8,31 @@ from cerulean.terminal import Terminal
 from defusedxml import ElementTree
 
 
+logger = logging.getLogger(__name__)
+
+
 class TorqueScheduler(Scheduler):
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
+        logger.debug('Running qsub --version')
+        exit_code, output, error = self.__terminal.run(10, 'qsub',
+                                                       ['--version'])
+        logger.debug('qsub --version exit_code: {}'.format(exit_code))
+        logger.debug('qsub --version std output: {}'.format(output))
+        logger.debug('qsub --version std error: {}'.format(error))
 
     def submit_job(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
 
         job_script = _job_desc_to_job_script(job_description)
+        logger.debug('Running qsub with job script:\n{}'.format(job_script))
         exit_code, output, error = self.__terminal.run(10, 'qsub', ['-'],
                                                        job_script)
 
-        print('qsub output ({}): {}'.format(exit_code, output))
-        print('qsub error ({}): {}'.format(exit_code, error))
+        logger.debug('qsub exit code: {}'.format(exit_code))
+        logger.debug('qsub std output: {}'.format(output))
+        logger.debug('qsub std error: {}'.format(error))
 
         if exit_code != 0:
             raise RuntimeError('Torque qsub error: {}'.format(error))
@@ -29,17 +41,19 @@ class TorqueScheduler(Scheduler):
         return job_id
 
     def get_status(self, job_id: str) -> JobStatus:
+        logger.debug('Running qstat with job id {}'.format(job_id))
         exit_code, output, error = self.__terminal.run(10, 'qstat',
                                                        ['-x', job_id])
-        print('qstat output ({}): {}'.format(exit_code, output))
-        print('qstat error ({}): {}'.format(exit_code, error))
+        logger.debug('qstat exit code: {}'.format(exit_code))
+        logger.debug('qstat output: {}'.format(output))
+        logger.debug('qstat error: {}'.format(error))
 
         xml_data = ElementTree.fromstring(output)
         if len(xml_data) == 0:
             return JobStatus.DONE
 
         status = _get_field_from_qstat_xml(xml_data, 'job_state')
-        print('qstat status: {}'.format(status))
+        logger.debug('qstat status: {}'.format(status))
 
         status_map = {
             'W': JobStatus.WAITING,  # waiting for start time
@@ -58,24 +72,30 @@ class TorqueScheduler(Scheduler):
                 'Received an unexpected job status {} from qstat'.format(
                     status))
 
-        print('get_status returning {}'.format(job_status.name))
+        logger.debug('get_status returning {}'.format(job_status.name))
         return job_status
 
     def get_exit_code(self, job_id: str) -> Optional[int]:
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
+        logger.debug('get_exit_code() running qstat -x {}'.format(job_id))
         exit_code, output, error = self.__terminal.run(10, 'qstat',
                                                        ['-x', job_id])
-        print('qstat output ({}): {}'.format(exit_code, output))
-        print('qstat error ({}): {}'.format(exit_code, error))
+        logger.debug('qstat exit code: {}'.format(exit_code))
+        logger.debug('qstat output: {}'.format(output))
+        logger.debug('qstat error: {}'.format(error))
 
         xml_data = ElementTree.fromstring(output)
         job_exit_code = int(_get_field_from_qstat_xml(xml_data, 'exit_status'))
         return job_exit_code
 
     def cancel(self, job_id: str) -> None:
-        self.__terminal.run(10, 'qdel', [job_id])
+        logger.debug('cancel() running qdel {}'.format(job_id))
+        exit_code, output, error = self.__terminal.run(10, 'qdel', [job_id])
+        logger.debug('qdel exit code: {}'.format(exit_code))
+        logger.debug('qdel output: {}'.format(output))
+        logger.debug('qdel error: {}'.format(error))
 
 
 def _job_desc_to_job_script(job_description: JobDescription) -> str:
@@ -117,15 +137,12 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
     if job_description.stderr_file is not None:
         job_script += ' 2>{}'.format(job_description.stderr_file)
 
-    print('job script: {}'.format(job_script))
     return job_script
 
 
 def _get_field_from_qstat_xml(xml_data: ElementTree, field_name: str) -> str:
     for job in xml_data:
-        print('job: {}'.format(job.tag))
         for field in job:
-            print('qstat xml field: {} {}'.format(field.tag, field.text))
             if field.tag == field_name:
                 return field.text
     raise RuntimeError(
@@ -133,7 +150,7 @@ def _get_field_from_qstat_xml(xml_data: ElementTree, field_name: str) -> str:
 
 
 def _seconds_to_time(seconds: int) -> str:
-    """Converts seconds to a SLURM allocation duration.
+    """Converts seconds to a Torque allocation duration.
 
     Args:
         seconds: The number of seconds to reserve.
