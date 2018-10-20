@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class LocalTerminal(Terminal):
+    """A Terminal for running commands on the local machine.
 
+    To create one, just do ``term = LocalTerminal()``.
+    """
     def run(self,
             timeout: float,
             command: str,

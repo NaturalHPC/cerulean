@@ -14,7 +14,19 @@ logger = logging.getLogger(__name__)
 
 
 class SshTerminal(Terminal):
+    """A terminal that runs commands over SSH.
+
+    This terminal connects to a host using SSH, then lets you run \
+    commands there.
+    """
     def __init__(self, host: str, port: int, credential: Credential) -> None:
+        """Create an SshTerminal.
+
+        Arguments:
+            host: The hostname to connect to.
+            port: The port to connect on.
+            credential: The credential to authenticate with.
+        """
         logger.info('Connecting to {} on port {}'.format(host, port))
         self.__transport = paramiko.Transport((host, port))
         if isinstance(credential, PasswordCredential):
@@ -75,6 +87,7 @@ class SshTerminal(Terminal):
             session, 'stderr', timeout)
         if not got_all_stdout or not got_all_stderr:
             logger.debug('Command did not finish within timeout')
+            session.close()
             return None, stdout_text, stderr_text
 
         session.settimeout(2.0)
