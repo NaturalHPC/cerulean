@@ -32,6 +32,13 @@ def ssh_terminal(password_credential: PasswordCredential
 
 
 @pytest.fixture(scope='module')
+def flaky_ssh_terminal(password_credential: PasswordCredential
+        ) -> Generator[SshTerminal, None, None]:
+    with SshTerminal('cerulean-test-flaky', 22, password_credential) as term:
+        yield term
+
+
+@pytest.fixture(scope='module')
 def local_filesystem() -> Generator[LocalFileSystem, None, None]:
     yield LocalFileSystem()
 
@@ -88,12 +95,15 @@ def lpaths(paths: Dict[str, Path]) -> Dict[str, AbstractPath]:
     return lpaths
 
 
-@pytest.fixture(scope='module', params=['local', 'ssh'])
-def terminal(request: Any, ssh_terminal: SshTerminal) -> Generator[Terminal, None, None]:
+@pytest.fixture(scope='module', params=['local', 'ssh', 'flakyssh'])
+def terminal(request: Any, ssh_terminal: SshTerminal,
+             flaky_ssh_terminal: SshTerminal) -> Generator[Terminal, None, None]:
     if request.param == 'local':
         yield LocalTerminal()
     elif request.param == 'ssh':
         yield ssh_terminal
+    elif request.param == 'flakyssh':
+        yield flaky_ssh_terminal
 
 
 @pytest.fixture(scope='module', params=[
@@ -104,7 +114,9 @@ def terminal(request: Any, ssh_terminal: SshTerminal) -> Generator[Terminal, Non
     'ssh_slurm-15-08',
     'ssh_slurm-16-05',
     'ssh_slurm-17-02',
-    'ssh_slurm-17-11'])
+    'ssh_slurm-17-11',
+    'flakyssh_direct',
+    'flakyssh_slurm-17-11'])
 def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
                      password_credential: PasswordCredential
                      ) -> Generator[Tuple[Scheduler, FileSystem], None, None]:
@@ -135,6 +147,14 @@ def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
             yield SlurmScheduler(term), fs
     elif request.param == 'ssh_slurm-17-11':
         term = SshTerminal('cerulean-test-slurm-17-11', 22, password_credential)
+        with SftpFileSystem(term) as fs:
+            yield SlurmScheduler(term), fs
+    elif request.param == 'flakyssh_direct':
+        term = SshTerminal('cerulean-test-flaky', 22, password_credential)
+        with SftpFileSystem(term) as fs:
+            yield DirectGnuScheduler(term), fs
+    elif request.param == 'flakyssh_slurm-17-11':
+        term = SshTerminal('cerulean-test-flaky', 22, password_credential)
         with SftpFileSystem(term) as fs:
             yield SlurmScheduler(term), fs
 

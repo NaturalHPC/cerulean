@@ -15,10 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 class SftpFileSystem(FileSystemImpl):
+    """A FileSystem implementation that connects to an SFTP server."""
     def __init__(self, terminal: SshTerminal) -> None:
-        logger.info('Connecting to SFTP server')
-        self.__sftp = terminal._get_sftp_client()
-        logger.info('Connected to SFTP server')
+        """Create an SftpFileSystem.
+
+        Args:
+            terminal: The terminal to connect through.
+        """
+        self.__terminal = terminal
+        self.__ensure_sftp(True)
 
     def __enter__(self) -> 'SftpFileSystem':
         return self
@@ -36,6 +41,7 @@ class SftpFileSystem(FileSystemImpl):
         return Path(self, PurePosixPath('/' + segment))
 
     def _exists(self, path: AbstractPath) -> bool:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
             self.__sftp.stat(str(lpath))
@@ -48,6 +54,7 @@ class SftpFileSystem(FileSystemImpl):
               mode: int = 0o777,
               parents: bool = False,
               exists_ok: bool = False) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         if parents:
             for parent in reversed(lpath.parents):
@@ -67,6 +74,7 @@ class SftpFileSystem(FileSystemImpl):
         self.__sftp.chmod(str(lpath), mode)
 
     def _iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         # Note: we're not using listdir_iter here, because it hangs:
         # https://github.com/paramiko/paramiko/issues/1171
@@ -74,6 +82,7 @@ class SftpFileSystem(FileSystemImpl):
             yield lpath / entry
 
     def _rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         if not self._exists(lpath):
             return
@@ -94,11 +103,13 @@ class SftpFileSystem(FileSystemImpl):
         self.__sftp.rmdir(str(lpath))
 
     def _touch(self, path: AbstractPath) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         with self.__sftp.file(str(lpath), 'a'):
             pass
 
     def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         with self.__sftp.file(str(lpath), 'rb') as f:
             data = f.read(1024 * 1024)
@@ -107,21 +118,25 @@ class SftpFileSystem(FileSystemImpl):
                 data = f.read(1024 * 1024)
 
     def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         with self.__sftp.file(str(lpath), 'wb') as f:
             for chunk in data:
                 f.write(chunk)
 
     def _rename(self, path: AbstractPath, target: AbstractPath) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         ltarget = cast(PurePosixPath, target)
         self.__sftp.posix_rename(str(lpath), str(ltarget))
 
     def _unlink(self, path: AbstractPath) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         self.__sftp.unlink(str(lpath))
 
     def _is_dir(self, path: AbstractPath) -> bool:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
             return bool(stat.S_ISDIR(self.__stat(lpath).st_mode))
@@ -129,6 +144,7 @@ class SftpFileSystem(FileSystemImpl):
             return False
 
     def _is_file(self, path: AbstractPath) -> bool:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
             mode = self.__stat(lpath).st_mode
@@ -137,6 +153,7 @@ class SftpFileSystem(FileSystemImpl):
             return False
 
     def _is_symlink(self, path: AbstractPath) -> bool:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
             return bool(stat.S_ISLNK(self.__lstat(lpath).st_mode))
@@ -144,6 +161,7 @@ class SftpFileSystem(FileSystemImpl):
             return False
 
     def _entry_type(self, path: AbstractPath) -> EntryType:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         mode_to_type = [(stat.S_ISDIR, EntryType.DIRECTORY), (stat.S_ISREG,
                                                               EntryType.FILE),
@@ -162,18 +180,22 @@ class SftpFileSystem(FileSystemImpl):
                            'Cerulean bug')
 
     def _size(self, path: AbstractPath) -> int:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         return self.__stat(lpath).st_size
 
     def _uid(self, path: AbstractPath) -> int:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         return self.__stat(lpath).st_uid
 
     def _gid(self, path: AbstractPath) -> int:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         return self.__stat(lpath).st_gid
 
     def _has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         return bool(self.__stat(lpath).st_mode & permission.value)
 
@@ -181,6 +203,7 @@ class SftpFileSystem(FileSystemImpl):
                        path: AbstractPath,
                        permission: Permission,
                        value: bool = True) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         mode = self.__stat(lpath).st_mode
         if value:
@@ -190,15 +213,18 @@ class SftpFileSystem(FileSystemImpl):
         self._chmod(lpath, mode)
 
     def _chmod(self, path: AbstractPath, mode: int) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         self.__sftp.chmod(str(lpath), mode)
 
     def _symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         ltarget = cast(PurePosixPath, target)
         self.__sftp.symlink(str(ltarget), str(lpath))
 
     def _readlink(self, path: AbstractPath, recursive: bool) -> Path:
+        self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         if recursive:
             # SFTP's normalize() raises if there's a link loop or a \
@@ -230,3 +256,13 @@ class SftpFileSystem(FileSystemImpl):
 
     def __stat(self, path: PurePosixPath) -> paramiko.SFTPAttributes:
         return self.__sftp.stat(str(path))
+
+    def __ensure_sftp(self, first: bool = False) -> None:
+        if first:
+            logger.info('Connecting to SFTP server')
+            self.__sftp = self.__terminal._get_sftp_client()
+            logger.info('Connected to SFTP server')
+        elif not self.__sftp.get_channel().get_transport().is_active():
+            logger.info('Reconnecting to SFTP server')
+            self.__sftp = self.__terminal._get_sftp_client()
+            logger.info('Connected to SFTP server')

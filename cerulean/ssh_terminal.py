@@ -1,5 +1,6 @@
 import logging
 import socket
+from time import perf_counter
 from types import TracebackType
 from typing import List, Optional, Tuple, Type, TYPE_CHECKING
 
@@ -27,20 +28,12 @@ class SshTerminal(Terminal):
             port: The port to connect on.
             credential: The credential to authenticate with.
         """
-        logger.info('Connecting to {} on port {}'.format(host, port))
+        self.__host = host
+        self.__port = port
+        self.__credential = credential
+
         self.__transport = paramiko.Transport((host, port))
-        if isinstance(credential, PasswordCredential):
-            logger.debug('Authenticating using a password')
-            self.__transport.connect(
-                username=credential.username, password=credential.password)
-        elif isinstance(credential, PubKeyCredential):
-            logger.debug('Authenticating using a public key')
-            key = self.__get_key_from_file(credential.public_key,
-                                           credential.passphrase)
-            self.__transport.connect(username=credential.username, pkey=key)
-        else:
-            raise RuntimeError('Unknown kind of certificate')
-        logger.info('Connection established')
+        self.__ensure_connection()
 
     def __enter__(self) -> 'SshTerminal':
         return self
@@ -60,6 +53,7 @@ class SshTerminal(Terminal):
         Returns:
             An SFTP client object using this terminal's connection.
         """
+        self.__ensure_connection()
         return paramiko.SFTPClient.from_transport(self.__transport)
 
     def run(self,
@@ -75,27 +69,38 @@ class SshTerminal(Terminal):
             cmd_str = '{} {}'.format(command, ' '.join(args))
 
         logger.debug('Executing {}'.format(cmd_str))
-        session = self.__transport.open_session()
-        session.exec_command(command=cmd_str)
-        if stdin_data is not None:
-            session.sendall(bytes(stdin_data, 'utf-8'))
-            session.shutdown_write()
+        last_exception = None  # type: Optional[BaseException]
+        start_time = perf_counter()
+        while perf_counter() < start_time + timeout:
+            self.__ensure_connection()
+            try:
+                session = self.__transport.open_session()
+                session.exec_command(command=cmd_str)
+                if stdin_data is not None:
+                    session.sendall(bytes(stdin_data, 'utf-8'))
+                    session.shutdown_write()
 
-        got_all_stdout, stdout_text = self.__get_data_from_channel(
-            session, 'stdout', timeout)
-        got_all_stderr, stderr_text = self.__get_data_from_channel(
-            session, 'stderr', timeout)
-        if not got_all_stdout or not got_all_stderr:
-            logger.debug('Command did not finish within timeout')
-            session.close()
-            return None, stdout_text, stderr_text
+                got_all_stdout, stdout_text = self.__get_data_from_channel(
+                    session, 'stdout', timeout)
+                got_all_stderr, stderr_text = self.__get_data_from_channel(
+                    session, 'stderr', timeout)
+                if not got_all_stdout or not got_all_stderr:
+                    logger.debug('Command did not finish within timeout')
+                    session.close()
+                    return None, stdout_text, stderr_text
 
-        session.settimeout(2.0)
-        exit_status = session.recv_exit_status()
-        session.close()
+                session.settimeout(2.0)
+                exit_status = session.recv_exit_status()
+                session.close()
 
-        logger.debug('Command executed successfully')
-        return exit_status, stdout_text, stderr_text
+                logger.debug('Command executed successfully')
+                return exit_status, stdout_text, stderr_text
+            except paramiko.SSHException as e:
+                last_exception = e
+            except EOFError as e:
+                last_exception = e
+
+        raise ConnectionError(str(last_exception))
 
     def __get_data_from_channel(self, channel: paramiko.Channel,
                                 stream_name: str,
@@ -153,3 +158,25 @@ class SshTerminal(Terminal):
             )
 
         return key
+
+    def __ensure_connection(self) -> None:
+        if not self.__transport.is_active():
+            self.__transport.close()
+            self.__transport = paramiko.Transport((self.__host, self.__port))
+            logger.info('Connecting to {} on port {}'.format(self.__host, self.__port))
+            try:
+                if isinstance(self.__credential, PasswordCredential):
+                    logger.debug('Authenticating using a password')
+                    self.__transport.connect(
+                        username=self.__credential.username,
+                        password=self.__credential.password)
+                elif isinstance(self.__credential, PubKeyCredential):
+                    logger.debug('Authenticating using a public key')
+                    key = self.__get_key_from_file(self.__credential.public_key,
+                                                   self.__credential.passphrase)
+                    self.__transport.connect(username=self.__credential.username, pkey=key)
+                else:
+                    raise RuntimeError('Unknown kind of credential')
+                logger.info('Connection (re)established')
+            except paramiko.SSHException:
+                raise ConnectionError('Cerulean was disconnected and could not reconnect')

@@ -5,3 +5,7 @@ if TYPE_CHECKING:
     BaseExceptionType = Type[BaseException]
 else:
     BaseExceptionType = None
+
+
+class ConnectionError(IOError):
+    pass
