@@ -37,7 +37,7 @@ class SlurmScheduler(Scheduler):
         return job_id
 
     def get_status(self, job_id: str) -> JobStatus:
-        logger.debug('Calling squeue j {} -h -o %T'.format(job_id))
+        logger.debug('Calling squeue -j {} -h -o %T'.format(job_id))
         exit_code, output, error = self.__terminal.run(
             10, 'squeue', ['-j', job_id, '-h', '-o', '%T'], None, None)
         logger.debug('squeue exit code: {}'.format(exit_code))
