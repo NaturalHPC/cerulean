@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Optional, Union
 
 from cerulean.job_description import JobDescription
@@ -49,6 +50,7 @@ class SlurmScheduler(Scheduler):
             # Seems like SLURM sometimes does not show the job, possibly
             # because it's transitioning to COMPLETING. So
             # if we don't find it, try again to be a bit more robust.
+            time.sleep(2.0)
             logger.debug('No answer from Slurm, trying again...')
             exit_code, output, error = self.__terminal.run(
                 10, 'squeue', ['-j', job_id, '-h', '-o', '%T'])
@@ -92,6 +94,8 @@ class SlurmScheduler(Scheduler):
         logger.debug('sacct output: {}'.format(output))
         logger.debug('sacct error: {}'.format(error))
 
+        if output.lstrip() == '':
+            return None
         exit_code = int(output.lstrip().split(':')[0])
         return exit_code
 

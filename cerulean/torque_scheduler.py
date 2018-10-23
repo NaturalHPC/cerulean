@@ -48,6 +48,9 @@ class TorqueScheduler(Scheduler):
         logger.debug('qstat output: {}'.format(output))
         logger.debug('qstat error: {}'.format(error))
 
+        if output == '':
+            raise RuntimeError(
+                    'No output from qstat, could not determine job status.')
         xml_data = ElementTree.fromstring(output)
         if len(xml_data) == 0:
             return JobStatus.DONE
