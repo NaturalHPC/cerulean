@@ -27,7 +27,6 @@ from cerulean.slurm_scheduler import SlurmScheduler
 from cerulean.ssh_terminal import SshTerminal
 from cerulean.terminal import Terminal
 from cerulean.torque_scheduler import TorqueScheduler
-from cerulean.util import ConnectionError
 
 import logging
 
@@ -47,8 +46,8 @@ or for even more::
     cerulean.logger.setLevel(logging.DEBUG)
 """
 
-__all__ = ['logger', 'ConnectionError', 'copy', 'Credential',
-           'PasswordCredential', 'PubKeyCredential', 'DirectGnuScheduler',
-           'FileSystem', 'JobDescription', 'JobStatus', 'LocalFileSystem',
-           'LocalTerminal', 'Path', 'Scheduler', 'SftpFileSystem',
-           'SlurmScheduler', 'SshTerminal', 'Terminal', 'TorqueScheduler']
+__all__ = ['logger', 'copy', 'Credential', 'PasswordCredential',
+           'PubKeyCredential', 'DirectGnuScheduler', 'FileSystem',
+           'JobDescription', 'JobStatus', 'LocalFileSystem', 'LocalTerminal',
+           'Path', 'Scheduler', 'SftpFileSystem', 'SlurmScheduler',
+           'SshTerminal', 'Terminal', 'TorqueScheduler']

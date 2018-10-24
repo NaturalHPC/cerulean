@@ -15,13 +15,21 @@ logger = logging.getLogger(__name__)
 
 
 class SftpFileSystem(FileSystemImpl):
-    """A FileSystem implementation that connects to an SFTP server."""
-    def __init__(self, terminal: SshTerminal) -> None:
-        """Create an SftpFileSystem.
+    """A FileSystem implementation that connects to an SFTP server.
 
-        Args:
-            terminal: The terminal to connect through.
-        """
+    SftpFileSystem support a single operation:
+
+    .. code-block:: python
+
+      fs / 'path'
+
+    which produces a :class:`Path`, through which you can do things \
+    with the remote files.
+
+    Args:
+        terminal: The terminal to connect through.
+    """
+    def __init__(self, terminal: SshTerminal) -> None:
         self.__terminal = terminal
         self.__ensure_sftp(True)
         self.__max_tries = 3
@@ -117,12 +125,13 @@ class SftpFileSystem(FileSystemImpl):
                     while len(data) > 0:
                         yield data
                         data = f.read(1024 * 1024)
-                tries = self.__max_tries
+                return
             except paramiko.SSHException as e:
                 if 'Server connection dropped' in str(e):
                     tries += 1
                 else:
                     raise e
+        raise ConnectionError('Too many connection errors.')
 
     def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         self.__ensure_sftp()
@@ -133,12 +142,13 @@ class SftpFileSystem(FileSystemImpl):
                 with self.__sftp.file(str(lpath), 'wb') as f:
                     for chunk in data:
                         f.write(chunk)
-                tries = self.__max_tries
+                return
             except paramiko.SSHException as e:
                 if 'Server connection dropped' in str(e):
                     tries += 1
                 else:
                     raise e
+        raise ConnectionError('Too many connection errors.')
 
 
     def _rename(self, path: AbstractPath, target: AbstractPath) -> None:

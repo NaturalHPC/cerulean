@@ -25,7 +25,8 @@ def copy(source_path: Path,
     target directory. If an entry with the same name already exists \
     within the target directory, then the overwrite parameter decides \
     what happens. If copy_into is False, the source will \
-    be copied on top of it, subject to the setting for overwrite.
+    be copied on top of the directory, subject to the setting for \
+    overwrite.
 
     Args:
         source_path: The path to the source file.

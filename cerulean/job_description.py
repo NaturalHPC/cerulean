@@ -7,16 +7,16 @@ class JobDescription:
     """Describes a job to submit to a scheduler.
 
     Attributes:
-        working_directory: The working directory to execute in.
-        command: The command to execute.
-        arguments: A list of arguments to pass. If needed, you need to \
-                add quotes yourself, the arguments will not be escaped \
-                by cerulean.
-        stdout_file: File to direct standard output to.
-        stderr_file: File to direct standard error to.
-        time_reserved: Time to reserve, in seconds.
-        queue_name: Name of the queue to submit to.
-        mpi_processes_per_node: Number of MPI processes to start per \
+        working_directory (str): The working directory to execute in.
+        command (str): The command to execute.
+        arguments (list of str): A list of arguments to pass. If needed, \
+                you need to add quotes yourself, the arguments will not \
+                be escaped by cerulean.
+        stdout_file (str): File to direct standard output to.
+        stderr_file (str): File to direct standard error to.
+        time_reserved (int): Time to reserve, in seconds.
+        queue_name (str): Name of the queue to submit to.
+        mpi_processes_per_node (int): Number of MPI processes to start per \
                 node.
     """
 

@@ -15,7 +15,7 @@ class Terminal(ABC):
         """Run a shell command.
 
         Args:
-            timeout: How long to wait for the result (s)
+            timeout: How long to wait for the result(s)
             command: The command to run.
             args: A list of arguments to pass
             stdin_data: Data to pass to standard input

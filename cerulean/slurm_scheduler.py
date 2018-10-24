@@ -12,6 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class SlurmScheduler(Scheduler):
+    """Represents a Slurm scheduler.
+
+    This class represents a Slurm scheduler, to which it talks through \
+    a :class:`Terminal`.
+
+    Arguments:
+        terminal: The terminal to use to talk to the scheduler.
+    """
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
         exit_code, output, error = self.__terminal.run(10, 'sbatch',

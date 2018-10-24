@@ -40,7 +40,7 @@ class PubKeyCredential(Credential):
     Attributes:
         username: The name of the user to connect as
         public_key: The (local) path to a key file
-        passphrase The passphrase to decrypt the key with; optional.
+        passphrase: The passphrase to decrypt the key with; optional.
     """
 
     def __init__(self, username: str, public_key: str,

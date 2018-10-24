@@ -8,6 +8,19 @@ from cerulean.path import AbstractPath, EntryType, Path, Permission
 
 
 class LocalFileSystem(FileSystemImpl):
+    """Represents the local file system.
+
+    To create an instance, just call `LocalFileSystem()`.
+
+    LocalFileSystem support a single operation:
+
+    .. code-block:: python
+
+      fs / 'path'
+
+    which produces a :class:`Path`, through which you can do things \
+    with local files.
+    """
     def __truediv__(self, segment: str) -> Path:
         # TODO: segment: Union[str, pathlib.Path]?
         absseg = '/' + segment

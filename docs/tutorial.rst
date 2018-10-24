@@ -43,7 +43,7 @@ And then you can make a path on the file system using:
   fs = cerulean.LocalFileSystem()
   my_home_dir = fs / 'home' / 'username'
 
-In this example, ``my_home_dir`` will be a :class:``cerulean.Path`` object,
+In this example, ``my_home_dir`` will be a :class:`cerulean.Path` object,
 which is very similar to a normal Python ``pathlib.PosixPath``. For example, you
 can read the contents of a file through it:
 
@@ -57,13 +57,13 @@ can read the contents of a file through it:
   users = passwd_file.read_text()
   print(users)
 
-Note that ``cerulean.Path`` does not support ``open()``. Cerulean can copy files
-and stream data from and to them, but it does not offer random access, as not
-all remote file access protocols support this.
+Note that :class:`cerulean.Path` does not support ``open()``. Cerulean can copy
+files and stream data from and to them, but it does not offer random access, as
+not all remote file access protocols support this.
 
 You can use the ``/`` operator to build paths from components as with
 ``pathlib``, and there's a wide variety of supported operations. See the API
-documentation for :class:``cerulean.Path`` for details.
+documentation for :class:`cerulean.Path` for details.
 
 Remote filesystems
 ------------------
@@ -77,53 +77,65 @@ SFTP goes like this:
   import cerulean
 
   credential = cerulean.PasswordCredential('username', 'password')
-  term = cerulean.SshTerminal('remotehost.example.com', 22, credential)
-  fs = SftpFileSystem(term)
-
-  my_home_dir = fs / 'home' / 'username'
-  test_txt = (my_home_dir / 'test.txt').read_text()
-  print(test_txt)
-
-  # But see the safer example below
-  fs.close()
-  term.close()
-
-Since we are going to connect to a remote system, we need a credential.
-Cerulean has two types of credentials, :class:``PasswordCredential`` and
-:class:``PubKeyCredential``. They are what you expect, one holds a username and
-a password, the other a username, a local path to a public key file, and
-optionally a passphrase for the key.
-
-Once we have a credential, we can open a terminal. Like a terminal window on
-your desktop, a :class:``Terminal`` object lets you run commands. Cerulean
-supports local terminals and remote terminals through SSH. Since the SFTP
-protocol is an extension to the SSH protocol, we need an SSH terminal connection
-first, so we make one, connecting to a host, on a port, with our credential.
-
-Once we have the terminal, we can make an :class:``SftpFileSystem`` object, and
-from there it works just like a local file system. There is one exception
-though: the remote connection needs to be closed when we are done. This can be
-done by calling ``close()`` on the file system and then on the terminal.
-However, both :class:``SshTerminal`` and :class:``SftpFileSystem`` are context
-managers, and that's the safer and more Pythonic way to deal with this:
-
-.. code-block:: python
-
-  import cerulean
-
-  credential = cerulean.PasswordCredential('username', 'password')
   with cerulean.SshTerminal('remotehost.example.com', 22, credential) as term
       with SftpFileSystem(term) as fs:
           my_home_dir = fs / 'home' / 'username'
           test_txt = (my_home_dir / 'test.txt').read_text()
           print(test_txt)
 
+Since we are going to connect to a remote system, we need a credential.
+Cerulean has two types of credentials, :class:`PasswordCredential` and
+:class:`PubKeyCredential`. They are what you expect, one holds a username and
+a password, the other a username, a local path to a public key file, and
+optionally a passphrase for the key.
+
+Once we have a credential, we can open a terminal. Like a terminal window on
+your desktop, a :class:`Terminal` object lets you run commands. Cerulean
+supports local terminals and remote terminals through SSH. Since the SFTP
+protocol is an extension to the SSH protocol, we need an SSH terminal connection
+first, so we make one, connecting to a host, on a port, with our credential.
+This terminal holds an SSH connection, which needs to be closed when we are done
+with it. :class:`SshTerminal` is therefore a context manager and needs to be
+used in a ``with`` statement. Note that :class:`LocalTerminal` is not a context
+manager, as it does not hold any resources.
+
+Once we have the terminal, we can make an :class:`SftpFileSystem` object, and
+from there it works just like a local file system. Just like
+:class:`SshTerminal`, :class:`SftpFileSystem` is a context manager, so we need
+another ``with``-statement.
+
+Copying files
+-------------
+
+When running jobs on HPC machines, you often start with copying the input files
+from the local system to the HPC machine, and finish with copying the results
+back. Cerulean's :meth:`copy` function takes care of this for you, and works as
+you would expect:
+
+.. code-block:: python
+
+  import cerulean
+
+
+  local_fs = cerulean.LocalFileSystem()
+
+  credential = cerulean.PasswordCredential('username', 'password')
+  with cerulean.SshTerminal('remotehost.example.com', 22, credential) as term
+      with SftpFileSystem(term) as remote_fs:
+          input_file = localfs / 'home' / 'username' / 'input.txt'
+          job_dir = remote_fs / 'home' / 'username' / 'my_job'
+          cerulean.copy(input_file, job_dir)
+
+          # run job and wait for it to finish
+
+          output_file = local_fs / 'home' / 'username' / 'output.txt'
+          cerulean.copy(job_dir / 'output.txt', output_file)
 
 Running commands
 ================
 
 If you have read the above, then the secret is already out: running commands
-using Cerulean is done using a :class:``Terminal``. For example, you can run a
+using Cerulean is done using a :class:`Terminal`. For example, you can run a
 command locally using:
 
 .. code-block:: python
@@ -135,7 +147,7 @@ command locally using:
   exit_code, stdout_text, stderr_text = term.run(
           10.0, 'ls', ['-l'], None, '/home/username')
 
-The first argument to :meth:``Terminal.run`` is a timeout value in seconds,
+The first argument to :meth:`Terminal.run` is a timeout value in seconds,
 which determines how long Cerulean will wait for the command to finish. The
 second argument is the command to run, followed by a list of arguments. Next is
 an optional string that, if you specify it, will be fed into the standard input
@@ -148,7 +160,7 @@ printed to standard output, and a string containing text printed to standard
 error by the command you ran.
 
 Running commands remotely through SSH of course works in exactly the same way,
-except you use an :class:``SshTerminal``, as above:
+except you use an :class:`SshTerminal`, as above:
 
 .. code-block:: python
 
@@ -167,8 +179,10 @@ On High-Performance Computing machines, you don't run commands directly.
 Instead, you submit batch jobs to a scheduler, which will place them in a queue,
 and run them when everyone else in line before you is done. The most popular
 scheduler at the moment seems to be Slurm, but Cerulean also supports
-Torque/PBS. To use a scheduler by hand, you open a terminal on the HPC machine
-using SSH, and then run commands that submit jobs and check on their status.
+Torque/PBS.
+
+The usual way of working with a scheduler is to use ``ssh`` to connect to the
+cluster, where you run commands that submit jobs and check on their status.
 Cerulean works in the same way:
 
 .. code-block:: python
@@ -195,9 +209,9 @@ Cerulean works in the same way:
           print('Job exited with code {}'.format(exit_code))
 
 Of course, if you intend to run your submission script on the head node, then
-the scheduler is local, and you want to use a :class:``LocalTerminal`` with your
-:class:``SlurmScheduler``. If your HPC machine runs Torque/PBS, use a
-:class:``TorqueScheduler`` instead.
+the scheduler is local, and you want to use a :class:`LocalTerminal` with your
+:class:`SlurmScheduler`. If your HPC machine runs Torque/PBS, use a
+:class:`TorqueScheduler` instead.
 
 
 More information

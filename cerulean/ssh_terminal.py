@@ -19,15 +19,13 @@ class SshTerminal(Terminal):
 
     This terminal connects to a host using SSH, then lets you run \
     commands there.
+
+    Arguments:
+        host: The hostname to connect to.
+        port: The port to connect on.
+        credential: The credential to authenticate with.
     """
     def __init__(self, host: str, port: int, credential: Credential) -> None:
-        """Create an SshTerminal.
-
-        Arguments:
-            host: The hostname to connect to.
-            port: The port to connect on.
-            credential: The credential to authenticate with.
-        """
         self.__host = host
         self.__port = port
         self.__credential = credential

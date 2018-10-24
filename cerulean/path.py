@@ -106,22 +106,27 @@ class Path:
 
     @property
     def parts(self) -> Tuple[str, ...]:
+        """A tuple containing the path's components."""
         return self.__path.parts
 
     @property
     def drive(self) -> str:
+        """The drive letter (including the colon), if any."""
         return self.__path.drive
 
     @property
     def root(self) -> str:
+        """A string representing the root of the filesystem."""
         return self.__path.root
 
     @property
     def anchor(self) -> str:
+        """The concatenation of the drive and the root."""
         return self.__path.anchor
 
     @property
     def parents(self) -> List['Path']:
+        """A sequence containing the logical ancestors of the path."""
         def make_path(path: AbstractPath) -> 'Path':
             return Path(self.filesystem, path)
 
@@ -129,37 +134,61 @@ class Path:
 
     @property
     def parent(self) -> 'Path':
+        """The logical parent of the path."""
         return Path(self.filesystem, self.__path.parent)
 
     @property
     def name(self) -> str:
+        """The name of the file or directory, excluding parents but \
+        including the suffix.
+        """
         return self.__path.name
 
     @property
     def suffix(self) -> str:
+        """The file extension of the file or directory, if any."""
         return self.__path.suffix
 
     @property
     def suffixes(self) -> List[str]:
+        """A list of all the extensions in the file name."""
         return self.__path.suffixes
 
     @property
     def stem(self) -> str:
+        """The name of the file or directory, excluding parents and \
+        excluding the suffix.
+        """
         return self.__path.stem
 
     def as_posix(self) -> str:
+        """Returns the path as a string with forward slashes."""
         return self.__path.as_posix()
 
     def as_uri(self) -> str:
+        """Returns a URI representing the path.
+
+        This is not yet implemented, please file an issue if you need it.
+        """
         raise NotImplementedError('Not yet implemented, please file an issue')
 
     def is_absolute(self) -> bool:
+        """Returns whether the path is absolute."""
         return self.__path.is_absolute()
 
     def is_reserved(self) -> bool:
+        """Return whether the path is reserved.
+
+        This can only happen on Windows on a LocalFileSystem.
+        """
         return self.__path.is_reserved()
 
     def joinpath(self, *other: Union[str, 'Path']) -> 'Path':
+        """Joins another path or string onto the back of this one.
+
+        Args:
+            other: The other path to append to this one.
+        """
         def get_path(segment: Union[str, 'Path']) -> str:
             if isinstance(segment, str):
                 return segment
@@ -172,6 +201,13 @@ class Path:
     # TODO: match
 
     def relative_to(self, *other: Union[str, 'Path']) -> 'Path':
+        """Returns a version of this path relative to another path.
+
+        Both paths must be on the same file system.
+
+        Args:
+            other: The path to use as a reference.
+        """
         def get_path(segment: Union[str, 'Path']) -> str:
             if isinstance(segment, str):
                 return segment
@@ -182,9 +218,19 @@ class Path:
         return Path(self.filesystem, self.__path.relative_to(*native_others))
 
     def with_name(self, name: str) -> 'Path':
+        """Return a new path with the last component set to `name`.
+
+        Args:
+            name: The new name to use.
+        """
         return Path(self.filesystem, self.__path.with_name(name))
 
     def with_suffix(self, suffix: str) -> 'Path':
+        """Return a new path with the suffix set to `suffix`
+
+        Args:
+            suffix: The new suffix to use.
+        """
         return Path(self.filesystem, self.__path.with_suffix(suffix))
 
     # Existence and contents
@@ -349,7 +395,8 @@ class Path:
         """Returns the kind of directory entry type the path points to.
 
         Returns:
-            An EntryType enum value describing the filesystem entry.
+            An :class:`EntryType` enum value describing the filesystem \
+            entry.
         """
         return self.filesystem._entry_type(self.__path)
 

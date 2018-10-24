@@ -12,6 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 class TorqueScheduler(Scheduler):
+    """Represents a Torque scheduler.
+
+    This class represents a Torque scheduler, to which it talks through \
+    a :class:`Terminal`.
+
+    Arguments:
+        terminal: The terminal to use to talk to the scheduler.
+    """
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
         logger.debug('Running qsub --version')
