@@ -24,6 +24,7 @@ class SftpFileSystem(FileSystemImpl):
         """
         self.__terminal = terminal
         self.__ensure_sftp(True)
+        self.__max_tries = 3
 
     def __enter__(self) -> 'SftpFileSystem':
         return self
@@ -108,18 +109,37 @@ class SftpFileSystem(FileSystemImpl):
     def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        with self.__sftp.file(str(lpath), 'rb') as f:
-            data = f.read(1024 * 1024)
-            while len(data) > 0:
-                yield data
-                data = f.read(1024 * 1024)
+        tries = 0
+        while tries < self.__max_tries:
+            try:
+                with self.__sftp.file(str(lpath), 'rb') as f:
+                    data = f.read(1024 * 1024)
+                    while len(data) > 0:
+                        yield data
+                        data = f.read(1024 * 1024)
+                tries = self.__max_tries
+            except paramiko.SSHException as e:
+                if 'Server connection dropped' in str(e):
+                    tries += 1
+                else:
+                    raise e
 
     def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        with self.__sftp.file(str(lpath), 'wb') as f:
-            for chunk in data:
-                f.write(chunk)
+        tries = 0
+        while tries < self.__max_tries:
+            try:
+                with self.__sftp.file(str(lpath), 'wb') as f:
+                    for chunk in data:
+                        f.write(chunk)
+                tries = self.__max_tries
+            except paramiko.SSHException as e:
+                if 'Server connection dropped' in str(e):
+                    tries += 1
+                else:
+                    raise e
+
 
     def _rename(self, path: AbstractPath, target: AbstractPath) -> None:
         self.__ensure_sftp()

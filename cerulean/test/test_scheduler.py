@@ -44,7 +44,9 @@ def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     (fs / 'home/cerulean/test_scheduler.out').unlink()
 
 
-def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
+def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
+                          caplog: Any) -> None:
+    caplog.set_level(logging.DEBUG)
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -66,7 +68,9 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> Non
         assert t < 3.0
 
 
-def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
+def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
+                             caplog: Any) -> None:
+    caplog.set_level(logging.DEBUG)
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -115,7 +119,9 @@ def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) ->
         sched.submit_job(job_desc)
 
 
-def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
+def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
+                         caplog: Any) -> None:
+    caplog.set_level(logging.DEBUG)
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()

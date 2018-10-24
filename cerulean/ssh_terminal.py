@@ -75,15 +75,20 @@ class SshTerminal(Terminal):
             self.__ensure_connection()
             try:
                 session = self.__transport.open_session()
+                logger.debug('Opened session')
                 session.exec_command(command=cmd_str)
+                logger.debug('exec_command done')
                 if stdin_data is not None:
                     session.sendall(bytes(stdin_data, 'utf-8'))
                     session.shutdown_write()
+                logger.debug('stdin sent')
 
                 got_all_stdout, stdout_text = self.__get_data_from_channel(
                     session, 'stdout', timeout)
                 got_all_stderr, stderr_text = self.__get_data_from_channel(
                     session, 'stderr', timeout)
+                logger.debug('got output {} {} {} {}'.format(
+                        got_all_stdout, stdout_text, got_all_stderr, stderr_text))
                 if not got_all_stdout or not got_all_stderr:
                     logger.debug('Command did not finish within timeout')
                     session.close()
@@ -91,13 +96,20 @@ class SshTerminal(Terminal):
 
                 session.settimeout(2.0)
                 exit_status = session.recv_exit_status()
+                logger.debug('received exit status {}'.format(exit_status))
                 session.close()
+
+                if exit_status == -1:
+                    raise EOFError('Execution failed, connection'
+                                   ' or server issue?')
 
                 logger.debug('Command executed successfully')
                 return exit_status, stdout_text, stderr_text
             except paramiko.SSHException as e:
                 last_exception = e
             except EOFError as e:
+                last_exception = e
+            except ConnectionError as e:
                 last_exception = e
 
         raise ConnectionError(str(last_exception))
