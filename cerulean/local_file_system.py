@@ -70,12 +70,21 @@ class LocalFileSystem(FileSystemImpl):
         lpath.touch()
 
     def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+        # Buffer size vs. speed (MB/s) against localhost
+        #       up      down        local
+        # 8k    33      56          159
+        # 16k   52      56          145
+        # 24k   66      57          150
+        # 32k   24      57          149
+        # 2M    24      48
+        # scp   120     110
+        # cp                        172
         lpath = cast(pathlib.Path, path)
         with lpath.open('rb') as f:
-            data = f.read(1024 * 1024)
+            data = f.read(24576)
             while len(data) > 0:
                 yield data
-                data = f.read(1024 * 1024)
+                data = f.read(24576)
 
     def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         lpath = cast(pathlib.Path, path)

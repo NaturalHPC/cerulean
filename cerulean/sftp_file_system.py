@@ -115,16 +115,27 @@ class SftpFileSystem(FileSystemImpl):
             pass
 
     def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+        # Buffer size vs. speed (MB/s) against localhost
+        #       up      down        local
+        # 8k    33      56          159
+        # 16k   52      56          145
+        # 24k   66      57          150
+        # 32k   24      57          149
+        # 2M    24      48
+        # scp   120     110
+        # cp                        172
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         tries = 0
         while tries < self.__max_tries:
             try:
+                size = self._size(path)
                 with self.__sftp.file(str(lpath), 'rb') as f:
-                    data = f.read(1024 * 1024)
+                    f.prefetch(size)
+                    data = f.read(24576)
                     while len(data) > 0:
                         yield data
-                        data = f.read(1024 * 1024)
+                        data = f.read(24576)
                 return
             except paramiko.SSHException as e:
                 if 'Server connection dropped' in str(e):
@@ -140,6 +151,7 @@ class SftpFileSystem(FileSystemImpl):
         while tries < self.__max_tries:
             try:
                 with self.__sftp.file(str(lpath), 'wb') as f:
+                    f.set_pipelined(True)
                     for chunk in data:
                         f.write(chunk)
                 return
