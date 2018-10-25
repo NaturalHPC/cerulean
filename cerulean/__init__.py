@@ -15,6 +15,7 @@ __email__ = 'l.veen@esciencecenter.nl'
 from cerulean.copy_files import copy
 from cerulean.credential import Credential, PasswordCredential, PubKeyCredential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
+from cerulean.factory import make_file_system, make_terminal, make_scheduler
 from cerulean.file_system import FileSystem
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
@@ -46,7 +47,8 @@ or for even more::
     cerulean.logger.setLevel(logging.DEBUG)
 """
 
-__all__ = ['logger', 'copy', 'Credential', 'PasswordCredential',
+__all__ = ['copy', 'logger', 'make_file_system', 'make_terminal',
+           'make_scheduler', 'Credential', 'PasswordCredential',
            'PubKeyCredential', 'DirectGnuScheduler', 'FileSystem',
            'JobDescription', 'JobStatus', 'LocalFileSystem', 'LocalTerminal',
            'Path', 'Scheduler', 'SftpFileSystem', 'SlurmScheduler',

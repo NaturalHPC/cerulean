@@ -39,7 +39,16 @@ class SshTerminal(Terminal):
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        self.close()
+
+    def close(self) -> None:
+        """Close the terminal.
+
+        This closes any connections and frees resources associated \
+        with the terminal.
+        """
         self.__transport.close()
+        logger.debug('Disconnected from SSH server')
 
     def _get_sftp_client(self) -> paramiko.SFTPClient:
         """Get an SFTP client using this terminal.

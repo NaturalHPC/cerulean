@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class SftpFileSystem(FileSystemImpl):
     """A FileSystem implementation that connects to an SFTP server.
 
-    SftpFileSystem support a single operation:
+    SftpFileSystem supports the / operation:
 
     .. code-block:: python
 
@@ -26,11 +26,26 @@ class SftpFileSystem(FileSystemImpl):
     which produces a :class:`Path`, through which you can do things \
     with the remote files.
 
+    It is also a context manager, so that you can (and should!) use it \
+    with a ``with`` statement, which will ensure that the connection \
+    is closed when you are done with the it. Alternatively, you can \
+    call :meth:`close` to close the connection.
+
+    If `own_term` is True, this class assumes that it owns the terminal \
+    you gave it, and that it is responsible for closing it when it's \
+    done with it. If you share an SshTerminal between an SftpFileSystem \
+    and a scheduler, or use the terminal directly yourself, then you \
+    want to use False here, and close the terminal yourself when you \
+    don't need it any more.
+
     Args:
         terminal: The terminal to connect through.
+        own_term: Whether to close the terminal when the file system \
+                is closed.
     """
-    def __init__(self, terminal: SshTerminal) -> None:
+    def __init__(self, terminal: SshTerminal, own_term: bool = False) -> None:
         self.__terminal = terminal
+        self.__own_term = own_term
         self.__ensure_sftp(True)
         self.__max_tries = 3
 
@@ -40,6 +55,10 @@ class SftpFileSystem(FileSystemImpl):
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        if self.__own_term:
+            self.close()
+
+    def close(self) -> None:
         self.__sftp.close()
         logger.info('Disconnected from SFTP server')
 

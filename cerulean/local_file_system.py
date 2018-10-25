@@ -20,6 +20,12 @@ class LocalFileSystem(FileSystemImpl):
 
     which produces a :class:`Path`, through which you can do things \
     with local files.
+
+    LocalFileSystem is a context manager, so you can use it in a \
+    ``with`` statement, and it has a :meth:`close` method, but since \
+    it doesn't hold any resources, you do not need to use them. It may \
+    be good to do so anyway, to avoid leaks if you ever replace it with \
+    a different :class:`FileSystem` that does.
     """
     def __truediv__(self, segment: str) -> Path:
         # TODO: segment: Union[str, pathlib.Path]?
