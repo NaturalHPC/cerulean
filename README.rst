@@ -2,7 +2,7 @@
     :target: https://cerulean.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Build Status
 
-.. image:: https://api.travis-ci.org/MD-Studio/cerulean.svg?branch=develop
+.. image:: https://api.travis-ci.org/MD-Studio/cerulean.svg?branch=master
     :target: https://travis-ci.org/MD-Studio/cerulean
     :alt: Build Status
 
@@ -14,8 +14,8 @@
     :target: https://www.codacy.com/app/LourensVeen/cerulean
     :alt: Code Coverage
 
-.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
-    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=develop
+.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=master
+    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=master
     :alt: Requirements Status
 
 ################################################################################
