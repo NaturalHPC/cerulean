@@ -91,6 +91,15 @@ def test_job_script_processes_per_node() -> None:
     assert '#SBATCH --ntasks-per-node=4' in script
 
 
+def test_job_script_extra_options() -> None:
+    job_desc = JobDescription()
+    job_desc.extra_scheduler_options = '--gres=gpu:1'
+
+    script = _job_desc_to_job_script(job_desc)
+
+    assert '#SBATCH --gres=gpu:1' in script
+
+
 def test_seconds_to_time() -> None:
     time = (2 * 24 * 60 * 60) + (13 * 60 * 60) + (7 * 60) + 48
     time_str = _seconds_to_time(time)

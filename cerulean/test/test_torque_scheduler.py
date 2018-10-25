@@ -93,6 +93,15 @@ def test_job_script_processes_per_node() -> None:
     assert 'ppn=4' in script
 
 
+def test_job_script_extra_scheduler_options() -> None:
+    job_desc = JobDescription()
+    job_desc.extra_scheduler_options = '-p 10'
+
+    script = _job_desc_to_job_script(job_desc)
+
+    assert '#PBS -p 10' in script
+
+
 def test_seconds_to_time() -> None:
     time = (2 * 24 * 60 * 60) + (13 * 60 * 60) + (7 * 60) + 48
     time_str = _seconds_to_time(time)

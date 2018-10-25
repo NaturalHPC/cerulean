@@ -128,6 +128,10 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
     if job_description.mpi_processes_per_node is not None:
         job_script = _add_option(job_script, 'overcommit', '')
 
+    if job_description.extra_scheduler_options is not None:
+        job_script += '#SBATCH {}\n'.format(
+                job_description.extra_scheduler_options)
+
     for name, value in job_description.environment.items():
         job_script += "export {}='{}'\n".format(name, value)
 

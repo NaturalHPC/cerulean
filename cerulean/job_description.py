@@ -18,6 +18,9 @@ class JobDescription:
         queue_name (str): Name of the queue to submit to.
         mpi_processes_per_node (int): Number of MPI processes to start per \
                 node.
+        extra_scheduler_options (str): Additional options to add to the \
+                scheduler command line on job submission. Note that these \
+                are scheduler-specific!
     """
 
     def __init__(self) -> None:
@@ -32,3 +35,4 @@ class JobDescription:
         self.time_reserved = None   # type: Optional[int]
         self.num_nodes = None   # type: Optional[int]
         self.mpi_processes_per_node = None  # type: Optional[int]
+        self.extra_scheduler_options = None  # type: Optional[str]
