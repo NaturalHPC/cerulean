@@ -17,6 +17,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import re
 import sys
 
 here = os.path.dirname(__file__)
@@ -70,7 +71,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'apidocs/cerulean.*.rst']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -107,16 +108,19 @@ def run_apidoc(_):
         argv.insert(0, apidoc.__file__)
         apidoc.main(argv)
 
-# Ignore submodules, we want only the public API
-def skip_submodules(app, what, name, obj, skip, options):
-    if 'cerulean.' in name:
-        return True
-    return skip
+    index_file = os.path.join(out, 'cerulean.rst')
+    with open(index_file, 'r') as f:
+        lines = f.readlines()
+
+    with open(index_file, 'w') as f:
+        for line in lines:
+            if line.startswith('Submodules'):
+                break
+            f.write(line)
 
 
 def setup(app):
     app.connect('builder-inited', run_apidoc)
-    app.connect('autodoc-skip-member', skip_submodules)
 
 
 # -- Options for HTML output ----------------------------------------------
