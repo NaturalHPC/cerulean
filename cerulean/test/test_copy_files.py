@@ -43,6 +43,14 @@ def test_copy_into(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     newdir.rmdir(recursive=True)
 
 
+def test_copy_dir_onto_nonexistent(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    dir0 = paths['dir']
+    newdir = paths['new_dir']
+    copy(dir0, newdir, overwrite='always', copy_into=False)
+    assert newdir.is_dir()
+    newdir.rmdir(recursive=True)
+
+
 def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file1 = paths['file']
     new_file = paths['new_file']

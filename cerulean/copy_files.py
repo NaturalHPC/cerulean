@@ -89,7 +89,8 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
             pass
 
     elif source_path.is_dir():
-        if overwrite == 'always' and not target_path.is_dir():
+        if (overwrite == 'always' and target_path.exists()
+                and not target_path.is_dir()):
             target_path.unlink()
 
         if not target_path.exists():
