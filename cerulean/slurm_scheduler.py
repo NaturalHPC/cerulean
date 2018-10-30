@@ -28,7 +28,7 @@ class SlurmScheduler(Scheduler):
         logger.debug('sbatch --version output: {}'.format(output))
         logger.debug('sbatch --version error: {}'.format(error))
 
-    def submit_job(self, job_description: JobDescription) -> str:
+    def submit(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
 

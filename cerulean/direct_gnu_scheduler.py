@@ -23,7 +23,7 @@ class DirectGnuScheduler(Scheduler):
     def __init__(self, terminal: Terminal) -> None:
         self.__terminal = terminal
 
-    def submit_job(self, job_description: JobDescription) -> str:
+    def submit(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
 

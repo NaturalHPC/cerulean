@@ -22,7 +22,7 @@ def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     job_desc.command = 'ls'
     job_desc.arguments = ['-l']
     job_desc.stdout_file = '/home/cerulean/test_scheduler.out'
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
     while sched.get_status(job_id) != JobStatus.DONE:
@@ -53,7 +53,7 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = 'sleep'
     job_desc.arguments = ['5']
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
     while sched.get_status(job_id) != JobStatus.RUNNING:
@@ -77,7 +77,7 @@ def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = 'exit'
     job_desc.arguments = ['5']
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
 
     while sched.get_status(job_id) != JobStatus.DONE:
         time.sleep(10.0)
@@ -97,7 +97,7 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = '/usr/local/bin/endless-job.sh'
     job_desc.time_reserved = 2
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
 
     while sched.get_status(job_id) != JobStatus.RUNNING:
         time.sleep(0.1)
@@ -116,7 +116,7 @@ def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) ->
 
     job_desc = JobDescription()
     with pytest.raises(ValueError):
-        sched.submit_job(job_desc)
+        sched.submit(job_desc)
 
 
 def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
@@ -129,7 +129,7 @@ def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     job_desc.command = 'ls'
     job_desc.arguments = ['--non-existing-option']
     job_desc.stderr_file = '/home/cerulean/test_stderr_redirect.out'
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
     while sched.get_status(job_id) != JobStatus.DONE:
@@ -156,7 +156,7 @@ def test_queue_name(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     job_desc.arguments = ['$SLURM_JOB_PARTITION', '$PBS_QUEUE']
     job_desc.queue_name = 'batch'
     job_desc.stdout_file = '/home/cerulean/test_queue_name.out'
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
     while sched.get_status(job_id) != JobStatus.DONE:
@@ -191,7 +191,7 @@ def test_num_nodes(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
 
     job_desc.queue_name = 'batch'
     job_desc.stdout_file = '/home/cerulean/test_num_nodes.out'
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
 
     while sched.get_status(job_id) != JobStatus.DONE:
         time.sleep(10.0)
@@ -212,7 +212,7 @@ def test_environment(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     job_desc.arguments = ['$ENVIRONMENT_TEST1', '$ENVIRONMENT_TEST2']
     job_desc.stdout_file = '/home/cerulean/test_environment.out'
 
-    job_id = sched.submit_job(job_desc)
+    job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
     while sched.get_status(job_id) != JobStatus.DONE:

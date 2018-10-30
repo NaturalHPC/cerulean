@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from time import perf_counter, sleep
 from typing import Optional
 
 from cerulean.job_description import JobDescription
@@ -13,7 +14,7 @@ class Scheduler(ABC):
     """
 
     @abstractmethod
-    def submit_job(self, job_description: JobDescription) -> str:
+    def submit(self, job_description: JobDescription) -> str:
         """Submit a job for execution.
 
         Args:
@@ -32,7 +33,7 @@ class Scheduler(ABC):
         running, or done.
 
         Args:
-            job_id: A job id string obtained from :meth:`submit_job`.
+            job_id: A job id string obtained from :meth:`submit`.
 
         Returns:
             The status of the job as a :class:`JobStatus`
@@ -48,7 +49,7 @@ class Scheduler(ABC):
         there is no exit code, and None will be returned.
 
         Args:
-            job_id: A job id string obtained from :meth:`submit_job`.
+            job_id: A job id string obtained from :meth:`submit`.
 
         Returns:
             The exit code, or None if there is none.
