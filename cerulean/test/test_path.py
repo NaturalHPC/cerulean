@@ -28,3 +28,11 @@ def test_with_suffix(local_filesystem: LocalFileSystem) -> None:
 def test_read_bytes(paths: Dict[str, Path]) -> None:
     data = paths['file'].read_bytes()
     assert data.decode('utf-8') == 'Hello World\n'
+
+
+def test_write_text(paths: Dict[str, Path]) -> None:
+    text = 'Hello World\n'
+    paths['new_file'].write_text(text)
+    text2 = paths['new_file'].read_text()
+    paths['new_file'].unlink()
+    assert text2 == text

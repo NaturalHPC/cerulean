@@ -332,7 +332,6 @@ class Path:
         """
         return self.read_bytes().decode(encoding)
 
-    # TODO: write_text
     def write_bytes(self, data: bytes) -> None:
         """Writes bytes to the file.
 
@@ -342,6 +341,17 @@ class Path:
             data: The data to be written.
         """
         self.streaming_write([data])
+
+    def write_text(self, text: str, encoding: str = 'utf-8') -> None:
+        """Writes text to a file.
+
+        Overwrites the file if it exists.
+
+        Args:
+            text: The text to be written.
+            encoding: The encoding to use.
+        """
+        self.write_bytes(text.encode(encoding))
 
     def rename(self, target: 'Path') -> None:
         """Renames a file.
