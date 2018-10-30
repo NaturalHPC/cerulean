@@ -7,15 +7,21 @@ class JobDescription:
     """Describes a job to submit to a scheduler.
 
     Attributes:
+        name (str): The name of the job, with which it will show up in \
+                the scheduler's queue. Cerulean does not use the name, \
+                but it may be useful if you manually check the queue.
         working_directory (str): The working directory to execute in.
+        environment (Dict[str, str]): A dictionary of environment \
+                variables to define, and their values.
         command (str): The command to execute.
         arguments (list of str): A list of arguments to pass. If needed, \
                 you need to add quotes yourself, the arguments will not \
                 be escaped by cerulean.
         stdout_file (str): File to direct standard output to.
         stderr_file (str): File to direct standard error to.
-        time_reserved (int): Time to reserve, in seconds.
         queue_name (str): Name of the queue to submit to.
+        time_reserved (int): Time to reserve, in seconds.
+        num_nodes (int): The number of nodes to reserve.
         mpi_processes_per_node (int): Number of MPI processes to start per \
                 node.
         extra_scheduler_options (str): Additional options to add to the \
