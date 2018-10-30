@@ -14,6 +14,13 @@ def test_joinpath(paths: Dict[str, Path]) -> None:
     new_path = paths['root'].joinpath('links')
     assert paths['dir'] == new_path
 
+def test_divides(paths: Dict[str, Path]) -> None:
+    new_path = paths['dir'] / 'file0'
+    assert new_path == paths['file']
+
+    new_path = paths['dir']
+    new_path /= 'file0'
+    assert new_path == paths['file']
 
 def test_with_name(local_filesystem: LocalFileSystem) -> None:
     new_path = (local_filesystem / 'home').with_name('usr')
