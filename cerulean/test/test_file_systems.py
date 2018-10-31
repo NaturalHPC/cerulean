@@ -48,8 +48,8 @@ def test_mkdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
 
 def test_iterdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     for entry in filesystem._iterdir(lpaths['dir']):
-        assert entry.name in [
-                'file0', 'file1', 'link0', 'link1', 'link2', 'link3', 'link4']
+        assert entry.name in ['executable', 'file0', 'file1', 'link0', 'link1',
+                              'link2', 'link3', 'link4', 'private']
 
 
 def test_rmdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:

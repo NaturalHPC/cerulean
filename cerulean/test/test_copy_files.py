@@ -4,7 +4,7 @@ from typing import Dict
 import pytest
 from cerulean import copy
 from cerulean.file_system_impl import FileSystemImpl
-from cerulean import EntryType, Path
+from cerulean import EntryType, Path, Permission
 
 
 def assert_dir_copied_correctly(copied_dir: Path) -> None:
@@ -51,6 +51,16 @@ def test_copy_dir_onto_nonexistent(filesystem: FileSystemImpl, paths: Dict[str, 
     newdir.rmdir(recursive=True)
 
 
+def test_copy_file_onto_dir(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    file1 = paths['file']
+    newdir = paths['new_dir']
+
+    newdir.mkdir()
+    copy(file1, newdir, overwrite='always', copy_into=False)
+    assert newdir.is_file()
+    newdir.unlink()
+
+
 def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file1 = paths['file']
     new_file = paths['new_file']
@@ -80,6 +90,90 @@ def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path])
     assert other_file.size() == 12
     other_file.unlink()
     other_file.touch()
+
+
+def test_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    file1 = paths['executable']
+    file2 = paths['private']
+    new_file = paths['new_file']
+
+    assert file1.has_permission(Permission.OWNER_READ)
+    assert file1.has_permission(Permission.OWNER_WRITE)
+    assert file1.has_permission(Permission.OWNER_EXECUTE)
+    assert file1.has_permission(Permission.GROUP_READ)
+    assert not file1.has_permission(Permission.GROUP_WRITE)
+    assert not file1.has_permission(Permission.GROUP_EXECUTE)
+    assert file1.has_permission(Permission.OTHERS_READ)
+    assert not file1.has_permission(Permission.OTHERS_WRITE)
+    assert not file1.has_permission(Permission.OTHERS_EXECUTE)
+    copy(file1, new_file, copy_permissions=True)
+    assert new_file.has_permission(Permission.OWNER_READ)
+    assert new_file.has_permission(Permission.OWNER_WRITE)
+    assert new_file.has_permission(Permission.OWNER_EXECUTE)
+    assert new_file.has_permission(Permission.GROUP_READ)
+    assert not new_file.has_permission(Permission.GROUP_WRITE)
+    assert not new_file.has_permission(Permission.GROUP_EXECUTE)
+    assert new_file.has_permission(Permission.OTHERS_READ)
+    assert not new_file.has_permission(Permission.OTHERS_WRITE)
+    assert not new_file.has_permission(Permission.OTHERS_EXECUTE)
+
+    new_file.unlink()
+
+    for permission in Permission:
+        assert file2.has_permission(permission) == (
+                permission in [Permission.OWNER_READ, Permission.OWNER_WRITE])
+
+    copy(file2, new_file, copy_permissions=True)
+    for permission in Permission:
+        assert file2.has_permission(permission) == (
+                permission in [Permission.OWNER_READ, Permission.OWNER_WRITE])
+
+    copy(file1, new_file, overwrite='always', copy_permissions=True)
+    assert new_file.has_permission(Permission.OWNER_READ)
+    assert new_file.has_permission(Permission.OWNER_WRITE)
+    assert new_file.has_permission(Permission.OWNER_EXECUTE)
+    assert new_file.has_permission(Permission.GROUP_READ)
+    assert not new_file.has_permission(Permission.GROUP_WRITE)
+    assert not new_file.has_permission(Permission.GROUP_EXECUTE)
+    assert new_file.has_permission(Permission.OTHERS_READ)
+    assert not new_file.has_permission(Permission.OTHERS_WRITE)
+    assert not new_file.has_permission(Permission.OTHERS_EXECUTE)
+
+    new_file.chmod(0o644)
+
+    copy(file2, new_file, overwrite='always', copy_permissions=True)
+    for permission in Permission:
+        assert file2.has_permission(permission) == (
+                permission in [Permission.OWNER_READ, Permission.OWNER_WRITE])
+
+    new_file.unlink()
+
+
+def test_no_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    file1 = paths['executable']
+    file2 = paths['private']
+    new_file = paths['new_file']
+
+    copy(file1, new_file, copy_permissions=False)
+    assert not new_file.has_permission(Permission.OWNER_EXECUTE)
+
+    new_file.unlink()
+    new_file.touch()
+    new_file.chmod(0o660)
+    copy(file1, new_file, overwrite='always', copy_permissions=False)
+    assert new_file.has_permission(Permission.OWNER_READ)
+    assert new_file.has_permission(Permission.OWNER_WRITE)
+    assert not new_file.has_permission(Permission.OWNER_EXECUTE)
+    assert not new_file.has_permission(Permission.GROUP_WRITE)
+    assert new_file.has_permission(Permission.OTHERS_READ)
+
+    new_file.unlink()
+    copy(file2, new_file, overwrite='always', copy_permissions=False)
+    for permission in Permission:
+        assert file2.has_permission(permission) == (
+                permission in [Permission.OWNER_READ, Permission.OWNER_WRITE])
+
+    new_file.unlink()
 
 
 def test_copy_symlink_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
