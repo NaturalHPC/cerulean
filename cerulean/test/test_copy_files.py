@@ -43,6 +43,14 @@ def test_copy_into(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     newdir.rmdir(recursive=True)
 
 
+def test_copy_dir_onto_nonexistent(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    dir0 = paths['dir']
+    newdir = paths['new_dir']
+    copy(dir0, newdir, overwrite='always', copy_into=False)
+    assert newdir.is_dir()
+    newdir.rmdir(recursive=True)
+
+
 def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file1 = paths['file']
     new_file = paths['new_file']
@@ -96,6 +104,47 @@ def test_copy_dir_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) 
     copy(dir1, new_dir)
 
     assert_dir_copied_correctly(new_dir)
+
+    new_dir.rmdir(recursive=True)
+
+
+def test_copy_dir_single_fs2(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    dir1 = paths['dir']
+    new_dir = paths['new_dir']
+
+    assert not new_dir.exists()
+    copy(dir1, new_dir, overwrite='raise')
+    assert_dir_copied_correctly(new_dir)
+
+    with pytest.raises(FileExistsError):
+        copy(dir1, new_dir, overwrite='raise', copy_into=False)
+
+    new_dir.rmdir(recursive=True)
+
+
+def test_copy_dir_single_fs3(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    dir1 = paths['dir']
+    new_dir = paths['new_dir']
+
+    assert not new_dir.exists()
+    copy(dir1, new_dir)
+    assert_dir_copied_correctly(new_dir)
+
+    (new_dir / 'file0').unlink()
+
+    copy(dir1, new_dir, overwrite='always', copy_into=False)
+    assert (new_dir / 'file0').exists()
+
+    new_dir.rmdir(recursive=True)
+
+    copy(dir1, new_dir, overwrite='always', copy_into=False)
+    assert_dir_copied_correctly(new_dir)
+
+    new_dir.rmdir(recursive=True)
+
+    new_dir.mkdir()
+    copy(dir1, new_dir, overwrite='always', copy_into=True)
+    assert (new_dir / 'links' / 'file0').exists()
 
     new_dir.rmdir(recursive=True)
 

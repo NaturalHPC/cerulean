@@ -60,19 +60,30 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
         context: Root of the tree we are copying, or None.
     """
     logging.debug('Copying {} to {}'.format(source_path, target_path))
+    target_path_exists = target_path.exists() or target_path.is_symlink()
     if source_path.is_symlink():
-        if context is not None:
-            linked_path = source_path.readlink(recursive=False)
-            if context in linked_path.parents:
-                rel_path = linked_path.relative_to(context)
-                logging.debug('Making relative link from {} to {}'.format(
-                    target_path, rel_path))
-                target_fs = target_path.filesystem
-                target_path.symlink_to(target_fs / str(rel_path))
-                return
+        if not target_path_exists or overwrite == 'always':
+            if context is not None:
+                linked_path = source_path.readlink(recursive=False)
+                if context in linked_path.parents:
+                    rel_path = linked_path.relative_to(context)
+                    logging.debug('Making relative link from {} to {}'.format(
+                        target_path, rel_path))
+                    target_fs = target_path.filesystem
+                    if target_path.exists() or target_path.is_symlink():
+                        if target_path.is_dir():
+                            target_path.rmdir(recursive=True)
+                        else:
+                            target_path.unlink()
+                    target_path.symlink_to(target_fs / str(rel_path))
+                    return
+        elif overwrite == 'raise':
+            raise FileExistsError('Target path exists, not overwriting')
+        else:
+            return
 
     if source_path.is_file():
-        if not target_path.exists() or overwrite == 'always':
+        if not target_path_exists or overwrite == 'always':
             # TODO: permissions
             # touch with correct mode
             try:
@@ -89,7 +100,8 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
             pass
 
     elif source_path.is_dir():
-        if overwrite == 'always' and not target_path.is_dir():
+        if (overwrite == 'always' and target_path.exists()
+                and not target_path.is_dir()):
             target_path.unlink()
 
         if not target_path.exists():
