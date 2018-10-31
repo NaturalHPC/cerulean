@@ -1,5 +1,5 @@
-from cerulean.credential import PasswordCredential, PubKeyCredential
-from cerulean.ssh_terminal import SshTerminal
+from cerulean import PasswordCredential, PubKeyCredential
+from cerulean import SshTerminal
 
 
 def test_password() -> None:

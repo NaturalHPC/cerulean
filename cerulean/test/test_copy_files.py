@@ -2,9 +2,9 @@ import logging
 from typing import Dict
 
 import pytest
-from cerulean.copy_files import copy
+from cerulean import copy
 from cerulean.file_system_impl import FileSystemImpl
-from cerulean.path import EntryType, Path
+from cerulean import EntryType, Path
 
 
 def assert_dir_copied_correctly(copied_dir: Path) -> None:

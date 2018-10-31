@@ -1,6 +1,6 @@
 import pytest
 
-from cerulean.terminal import Terminal
+from cerulean import Terminal
 
 
 def test_terminal(terminal: Terminal) -> None:

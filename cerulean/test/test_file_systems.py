@@ -1,8 +1,8 @@
 from typing import Dict
 
 import pytest
-from cerulean.file_system_impl import FileSystemImpl
-from cerulean.path import AbstractPath, EntryType, Permission
+from cerulean import EntryType, Permission
+from cerulean.file_system_impl import AbstractPath, FileSystemImpl
 
 
 def test_exists(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:

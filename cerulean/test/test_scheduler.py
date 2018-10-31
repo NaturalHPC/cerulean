@@ -3,13 +3,8 @@ import time
 from typing import Any, Tuple
 
 import pytest
-from cerulean.direct_gnu_scheduler import DirectGnuScheduler
-from cerulean.file_system import FileSystem
-from cerulean.job_description import JobDescription
-from cerulean.job_status import JobStatus
-from cerulean.scheduler import Scheduler
-from cerulean.slurm_scheduler import SlurmScheduler
-from cerulean.torque_scheduler import TorqueScheduler
+from cerulean import (DirectGnuScheduler, FileSystem, JobDescription,
+                      JobStatus, Scheduler, SlurmScheduler, TorqueScheduler)
 
 
 def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],

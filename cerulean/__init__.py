@@ -21,7 +21,7 @@ from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.local_file_system import LocalFileSystem
 from cerulean.local_terminal import LocalTerminal
-from cerulean.path import Path
+from cerulean.path import EntryType, Permission, Path
 from cerulean.scheduler import Scheduler
 from cerulean.sftp_file_system import SftpFileSystem
 from cerulean.slurm_scheduler import SlurmScheduler
@@ -48,8 +48,8 @@ or for even more::
 """
 
 __all__ = ['copy', 'logger', 'make_file_system', 'make_terminal',
-           'make_scheduler', 'Credential', 'PasswordCredential',
-           'PubKeyCredential', 'DirectGnuScheduler', 'FileSystem',
+           'make_scheduler', 'Credential', 'EntryType', 'PasswordCredential',
+           'Permission', 'PubKeyCredential', 'DirectGnuScheduler', 'FileSystem',
            'JobDescription', 'JobStatus', 'LocalFileSystem', 'LocalTerminal',
            'Path', 'Scheduler', 'SftpFileSystem', 'SlurmScheduler',
            'SshTerminal', 'Terminal', 'TorqueScheduler']

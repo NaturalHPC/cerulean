@@ -1,7 +1,7 @@
 import cerulean
 import pytest
 
-from cerulean.factory import make_file_system, make_terminal, make_scheduler
+from cerulean import make_file_system, make_terminal, make_scheduler
 
 
 @pytest.mark.skip('not yet done')

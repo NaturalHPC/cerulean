@@ -1,8 +1,8 @@
 import pathlib
 from typing import Dict
 
-from cerulean.local_file_system import LocalFileSystem
-from cerulean.path import Path
+from cerulean import LocalFileSystem
+from cerulean import Path
 
 
 def test_create(local_filesystem: LocalFileSystem) -> None:
