@@ -117,7 +117,7 @@ def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = 'ls'
-    job_desc.time_reserved = 10
+    job_desc.time_reserved = 60
     job_id = sched.submit(job_desc)
 
     exit_code = sched.wait(job_id, 10.0)
