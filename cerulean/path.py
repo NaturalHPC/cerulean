@@ -477,6 +477,10 @@ class Path:
 
         Args:
             target: The path to symlink to.
+
+        Raises:
+            FileExistsError: if you try to overwrite an existing entry \
+                    with a symlink.
         """
         if self.filesystem != target.filesystem:
             raise RuntimeError('Cannot symlink across filesystems')
