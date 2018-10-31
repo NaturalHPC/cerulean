@@ -66,3 +66,35 @@ class Scheduler(ABC):
             job_id: Id of the job to be cancelled.
         """
         pass
+
+    def wait(self, job_id: str, time_out: float = -1.0) -> Optional[int]:
+        """Wait until the job is done.
+
+        Will wait approximately time_out seconds for the job to finish.
+        Returns the exit code if the job finished, otherwise None.
+        Resolution is 0.1s, or time_out / 20, whichever is larger.
+
+        Args:
+            job_id: The job to wait for.
+            time_out: Time to wait in seconds. If negative, wait \
+                    forever.
+
+        Returns:
+            The exit code of the job.
+        """
+        if time_out < 0.0:
+            time_end = None
+        else:
+            time_end = perf_counter() + time_out
+
+        sleep_time = max(0.1, time_out / 20.0)
+
+        status = self.get_status(job_id)
+        while status != JobStatus.DONE:
+            sleep(sleep_time)
+            status = self.get_status(job_id)
+
+            if time_end is not None and time_end < perf_counter():
+                break
+
+        return self.get_exit_code(job_id)

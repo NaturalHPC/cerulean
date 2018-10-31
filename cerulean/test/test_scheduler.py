@@ -111,6 +111,25 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
     # assert sched.get_exit_code(job_id) != 0
 
 
+def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
+    sched, fs = scheduler_and_fs
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home/cerulean'
+    job_desc.command = 'ls'
+    job_desc.time_reserved = 10
+    job_id = sched.submit(job_desc)
+
+    exit_code = sched.wait(job_id, 10.0)
+    assert exit_code == 0
+
+    job_desc.command = '/usr/local/bin/endless-job.sh'
+    job_id = sched.submit(job_desc)
+
+    exit_code = sched.wait(job_id, 3.0)
+    assert exit_code is None
+
+
 def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched = scheduler_and_fs[0]
 
