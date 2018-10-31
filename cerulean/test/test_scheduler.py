@@ -111,7 +111,8 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
     # assert sched.get_exit_code(job_id) != 0
 
 
-def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
+def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
+    caplog.set_level(logging.DEBUG)
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
