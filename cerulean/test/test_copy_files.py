@@ -1,5 +1,5 @@
-import logging
-from typing import Dict
+import time
+from typing import Any, Dict, Generator
 
 import pytest
 from cerulean import copy
@@ -174,6 +174,48 @@ def test_no_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, P
                 permission in [Permission.OWNER_READ, Permission.OWNER_WRITE])
 
     new_file.unlink()
+
+
+def test_copy_callback(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    def dummy_data() -> Generator[bytes, None, None]:
+        for i in range(20):
+            yield bytes(1024 * 1024)
+
+    newdir = paths['new_dir']
+    test_source = newdir / 'source'
+    test_target = newdir / 'target'
+
+    newdir.mkdir()
+    try:
+        test_source.streaming_write(dummy_data())
+
+        num_calls = 0
+        def callback(count: int, total: int) -> None:
+            nonlocal num_calls
+            num_calls += 1
+            #time.sleep(2)
+
+        copy(test_source, test_target, callback=callback)
+        assert num_calls >= 2
+    finally:
+        newdir.rmdir(recursive=True)
+
+
+def test_copy_callback_abort(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    test_source = paths['file']
+    test_target = paths['new_file']
+
+    try:
+        def callback(count: int, total: int) -> None:
+            raise RuntimeError()
+
+        with pytest.raises(RuntimeError):
+            copy(test_source, test_target, callback=callback)
+
+        assert not test_target.exists() or test_target.size() == 0
+    finally:
+        if test_target.exists():
+            test_target.unlink()
 
 
 def test_copy_symlink_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
