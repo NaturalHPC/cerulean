@@ -3,8 +3,8 @@ from abc import abstractmethod
 from enum import Enum
 import pathlib
 from pathlib import PurePosixPath, PureWindowsPath
-from typing import (Generator, Iterable, List, Optional, Tuple, TYPE_CHECKING,
-                    Union)
+from typing import (Callable, Generator, Iterable, List, Optional, Tuple,
+                    TYPE_CHECKING, Union)
 
 
 if TYPE_CHECKING:
@@ -272,6 +272,64 @@ class Path:
         """
         for entry in self.filesystem._iterdir(self.__path):
             yield Path(self.filesystem, entry)
+
+    def walk(self, topdown: bool = True,
+             onerror: Optional[Callable[[OSError], None]] = None,
+             followlinks: bool = False
+             ) -> Generator[Tuple['Path', List[str], List[str]], None, None]:
+        """Walks a directory hierarchy recursively.
+
+        This is a version of Python's ``os.walk()`` function adapted to \
+        be a little bit more ``pathlib``-like. It walks the directory \
+        and its subdirectories, yielding a tuple \
+        (dirpath, dirnames, filenames) for each directory. These are \
+        the path of the directory, as a :class:`Path`, a list of \
+        strings containing the names of the subdirectories inside this \
+        directory, and a list of strings containing the names of the \
+        non-directories in this directory respectively.
+
+        If ``topdown`` is True, the triple for a directory will be \
+        produced before the triples of its subdirectories; if it is \
+        False, it will be produced after (pre- and post-order traversal \
+        respectively).
+
+        If ``onerror`` is set, the function it is set to will be called \
+        if an error occurs, and passed an instance of OSError. The \
+        callback can handle the error in some way, or raise it to end \
+        the traversal. The OSError object will have an attribute \
+        ``filename`` containing the name of the file that triggered \
+        the problem as a string.
+
+        If ``followlinks`` is True, this function will recurse into \
+        symlinks that point to directories, if it is False, it will \
+        silently skip them.
+
+        Yields:
+            Tuples (dirpath, dirnames, filenames), as above.
+        """
+        print('Walking {}'.format(self))
+        dirnames = list()  # type: List[str]
+        filenames = list()  # type: List[str]
+        try:
+            for entry in self.iterdir():
+                if entry.is_dir():
+                    dirnames.append(str(entry.relative_to(self)))
+                else:
+                    filenames.append(str(entry.relative_to(self)))
+        except OSError as err:
+            if onerror is not None:
+                onerror(err)
+
+        if topdown:
+            yield self, dirnames, filenames
+
+        for dirname in dirnames:
+            subdir = self / dirname
+            if not subdir.is_symlink() or followlinks:
+                yield from subdir.walk(topdown, onerror, followlinks)
+
+        if not topdown:
+            yield self, dirnames, filenames
 
     def rmdir(self, recursive: bool = False) -> None:
         """Removes a directory.
