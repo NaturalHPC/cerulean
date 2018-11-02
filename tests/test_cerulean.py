@@ -9,10 +9,10 @@ import tempfile
 @pytest.fixture
 def target_images():
     workdir = os.path.dirname(__file__)
-    try:
-        sh.docker_compose.pull('--ignore-pull-failures', _cwd=workdir, _out=sys.stdout)
-    except Exception:
-        print('Could not pull test images, will use what we have')
+    #try:
+    #    sh.docker_compose.pull('--ignore-pull-failures', _cwd=workdir, _out=sys.stdout)
+    #except Exception:
+    #    print('Could not pull test images, will use what we have')
     sh.docker_compose.build('cerulean-test', _cwd=workdir, _out=sys.stdout)
 
 
