@@ -30,8 +30,8 @@ class SshTerminal(Terminal):
         self.__port = port
         self.__credential = credential
 
-        self.__transport = paramiko.Transport((host, port))
-        self.__ensure_connection()
+        self.__transport = self.__ensure_connection(None)
+        self.__transport2 = None
 
     def __enter__(self) -> 'SshTerminal':
         return self
@@ -60,8 +60,23 @@ class SshTerminal(Terminal):
         Returns:
             An SFTP client object using this terminal's connection.
         """
-        self.__ensure_connection()
+        self.__transport = self.__ensure_connection(self.__transport)
         return paramiko.SFTPClient.from_transport(self.__transport)
+
+    def _get_downstream_sftp_client(self) -> paramiko.SFTPClient:
+        """Gets a second SFTP client using this terminal.
+
+        This is a work-around for an issue in paramiko that keeps us \
+        from copying data upstream and downstream simultaneously \
+        through a single connection with reasonable performance. \
+        We solve it by opening a second connection for the downstream \
+        part.
+
+        Returns:
+            An SFTP client object using a second connection.
+        """
+        self.__transport2 = self.__ensure_connection(self.__transport2)
+        return paramiko.SFTPClient.from_transport(self.__transport2)
 
     def run(self,
             timeout: float,
@@ -79,7 +94,7 @@ class SshTerminal(Terminal):
         last_exception = None  # type: Optional[BaseException]
         start_time = perf_counter()
         while perf_counter() < start_time + timeout:
-            self.__ensure_connection()
+            self.__transport = self.__ensure_connection(self.__transport)
             try:
                 session = self.__transport.open_session()
                 logger.debug('Opened session')
@@ -178,24 +193,27 @@ class SshTerminal(Terminal):
 
         return key
 
-    def __ensure_connection(self) -> None:
-        if not self.__transport.is_active():
-            self.__transport.close()
-            self.__transport = paramiko.Transport((self.__host, self.__port))
+    def __ensure_connection(self, transport: paramiko.Transport
+                            ) -> paramiko.Transport:
+        if transport is None or not transport.is_active():
+            if transport is not None:
+                transport.close()
+            transport = paramiko.Transport((self.__host, self.__port))
             logger.info('Connecting to {} on port {}'.format(self.__host, self.__port))
             try:
                 if isinstance(self.__credential, PasswordCredential):
                     logger.debug('Authenticating using a password')
-                    self.__transport.connect(
+                    transport.connect(
                         username=self.__credential.username,
                         password=self.__credential.password)
                 elif isinstance(self.__credential, PubKeyCredential):
                     logger.debug('Authenticating using a public key')
                     key = self.__get_key_from_file(self.__credential.public_key,
                                                    self.__credential.passphrase)
-                    self.__transport.connect(username=self.__credential.username, pkey=key)
+                    transport.connect(username=self.__credential.username, pkey=key)
                 else:
                     raise RuntimeError('Unknown kind of credential')
                 logger.info('Connection (re)established')
             except paramiko.SSHException:
                 raise ConnectionError('Cerulean was disconnected and could not reconnect')
+        return transport

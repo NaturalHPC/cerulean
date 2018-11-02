@@ -47,6 +47,7 @@ class SftpFileSystem(FileSystemImpl):
         self.__terminal = terminal
         self.__own_term = own_term
         self.__ensure_sftp(True)
+        self.__sftp2 = None  # type: paramiko.SFTPClient
         self.__max_tries = 3
 
     def __enter__(self) -> 'SftpFileSystem':
@@ -103,8 +104,13 @@ class SftpFileSystem(FileSystemImpl):
         lpath = cast(PurePosixPath, path)
         # Note: we're not using listdir_iter here, because it hangs:
         # https://github.com/paramiko/paramiko/issues/1171
-        for entry in self.__sftp.listdir(str(lpath)):
-            yield lpath / entry
+        try:
+            for entry in self.__sftp.listdir(str(lpath)):
+                yield lpath / entry
+        except OSError as e:
+            # Paramiko omits the filename, which breaks Path.walk()
+            # so add it back in here.
+            raise OSError(e.errno, e.strerror, str(lpath))
 
     def _rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
         self.__ensure_sftp()
@@ -143,13 +149,19 @@ class SftpFileSystem(FileSystemImpl):
         # 2M    24      48
         # scp   120     110
         # cp                        172
-        self.__ensure_sftp()
+        def ensure_sftp2(self: 'SftpFileSystem') -> None:
+            if self.__sftp2 is None:
+                self.__sftp2 = self.__terminal._get_downstream_sftp_client()
+            elif not self.__sftp2.get_channel().get_transport().is_active():
+                self.__sftp2 = self.__terminal._get_downstream_sftp_client()
+
         lpath = cast(PurePosixPath, path)
         tries = 0
         while tries < self.__max_tries:
+            ensure_sftp2(self)
             try:
                 size = self._size(path)
-                with self.__sftp.file(str(lpath), 'rb') as f:
+                with self.__sftp2.file(str(lpath), 'rb') as f:
                     f.prefetch(size)
                     data = f.read(24576)
                     while len(data) > 0:
