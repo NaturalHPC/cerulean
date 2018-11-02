@@ -5,7 +5,13 @@ from typing import Callable, Generator, Iterable, Optional
 from cerulean.path import Path, Permission
 
 
-CopyCallback = Callable[[int, int], Optional[bool]]
+CopyCallback = Callable[[int, int], None]
+"""The type of a callback function for the copy() function.
+
+A callback function takes two arguments, the number of bytes copied \
+thus far, and the approximate total number of bytes to copy. To \
+interrupt the copy operation, raise an exception.
+"""
 
 
 def copy(source_path: Path,
