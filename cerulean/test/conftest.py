@@ -77,6 +77,8 @@ def paths(filesystem: FileSystem) -> Dict[str, Path]:
             'file': root / 'links' / 'file0',
             'other_file': root / 'links' / 'file1',
             'new_file': root / 'test.txt',
+            'executable': root / 'links' / 'executable',
+            'private': root / 'links' / 'private',
             'link': root / 'links' / 'link0',
             'multi_link': root / 'links' / 'link1',
             'broken_link': root / 'links' / 'link2',

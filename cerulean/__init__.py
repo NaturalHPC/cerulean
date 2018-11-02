@@ -12,7 +12,7 @@ __author__ = 'Lourens Veen'
 __email__ = 'l.veen@esciencecenter.nl'
 
 
-from cerulean.copy_files import copy
+from cerulean.copy_files import copy, CopyCallback
 from cerulean.credential import Credential, PasswordCredential, PubKeyCredential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
 from cerulean.factory import make_file_system, make_terminal, make_scheduler
@@ -21,7 +21,7 @@ from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.local_file_system import LocalFileSystem
 from cerulean.local_terminal import LocalTerminal
-from cerulean.path import Path
+from cerulean.path import EntryType, Permission, Path
 from cerulean.scheduler import Scheduler
 from cerulean.sftp_file_system import SftpFileSystem
 from cerulean.slurm_scheduler import SlurmScheduler
@@ -48,8 +48,9 @@ or for even more::
 """
 
 __all__ = ['copy', 'logger', 'make_file_system', 'make_terminal',
-           'make_scheduler', 'Credential', 'PasswordCredential',
-           'PubKeyCredential', 'DirectGnuScheduler', 'FileSystem',
-           'JobDescription', 'JobStatus', 'LocalFileSystem', 'LocalTerminal',
-           'Path', 'Scheduler', 'SftpFileSystem', 'SlurmScheduler',
-           'SshTerminal', 'Terminal', 'TorqueScheduler']
+           'make_scheduler', 'CopyCallback', 'Credential', 'EntryType',
+           'PasswordCredential', 'Permission', 'PubKeyCredential',
+           'DirectGnuScheduler', 'FileSystem', 'JobDescription', 'JobStatus',
+           'LocalFileSystem', 'LocalTerminal', 'Path', 'Scheduler',
+           'SftpFileSystem', 'SlurmScheduler', 'SshTerminal', 'Terminal',
+           'TorqueScheduler']

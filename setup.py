@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
 
 setup(
     name='cerulean',
-    version='0.2.0',
+    version='0.3.0',
     description="A Python 3 library for talking to HPC clusters and supercomputers",
     long_description=readme + '\n\n',
     author="Lourens Veen",

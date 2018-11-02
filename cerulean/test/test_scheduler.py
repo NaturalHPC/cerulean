@@ -3,13 +3,8 @@ import time
 from typing import Any, Tuple
 
 import pytest
-from cerulean.direct_gnu_scheduler import DirectGnuScheduler
-from cerulean.file_system import FileSystem
-from cerulean.job_description import JobDescription
-from cerulean.job_status import JobStatus
-from cerulean.scheduler import Scheduler
-from cerulean.slurm_scheduler import SlurmScheduler
-from cerulean.torque_scheduler import TorqueScheduler
+from cerulean import (DirectGnuScheduler, FileSystem, JobDescription,
+                      JobStatus, Scheduler, SlurmScheduler, TorqueScheduler)
 
 
 def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
@@ -111,13 +106,14 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
     # assert sched.get_exit_code(job_id) != 0
 
 
-def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
+def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
+    caplog.set_level(logging.DEBUG)
     sched, fs = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = 'ls'
-    job_desc.time_reserved = 10
+    job_desc.time_reserved = 60
     job_id = sched.submit(job_desc)
 
     exit_code = sched.wait(job_id, 10.0)
@@ -126,7 +122,7 @@ def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     job_desc.command = '/usr/local/bin/endless-job.sh'
     job_id = sched.submit(job_desc)
 
-    exit_code = sched.wait(job_id, 3.0)
+    exit_code = sched.wait(job_id, 1.0)
     assert exit_code is None
 
 

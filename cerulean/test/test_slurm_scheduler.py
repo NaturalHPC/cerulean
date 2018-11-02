@@ -1,4 +1,4 @@
-from cerulean.job_description import JobDescription
+from cerulean import JobDescription
 from cerulean.slurm_scheduler import _job_desc_to_job_script, _seconds_to_time
 
 

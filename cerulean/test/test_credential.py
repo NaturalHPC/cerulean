@@ -1,5 +1,5 @@
 import pytest
-from cerulean.credential import PasswordCredential, PubKeyCredential
+from cerulean import PasswordCredential, PubKeyCredential
 
 
 def test_password_credential() -> None:
