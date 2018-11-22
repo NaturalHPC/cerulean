@@ -307,7 +307,6 @@ class Path:
         Yields:
             Tuples (dirpath, dirnames, filenames), as above.
         """
-        print('Walking {}'.format(self))
         dirnames = list()  # type: List[str]
         filenames = list()  # type: List[str]
         try:
