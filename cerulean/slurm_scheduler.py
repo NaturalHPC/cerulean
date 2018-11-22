@@ -41,6 +41,8 @@ class SlurmScheduler(Scheduler):
         logger.debug('sbatch exit code: {}'.format(exit_code))
         logger.debug('sbatch output: {}'.format(output))
         logger.debug('sbatch error: {}'.format(error))
+        if exit_code != 0:
+            raise RuntimeError('Error running sbatch: {}'.format(error))
 
         job_id = output.strip().split(' ')[-1]
         return job_id
@@ -101,6 +103,8 @@ class SlurmScheduler(Scheduler):
         logger.debug('sacct exit code: {}'.format(err))
         logger.debug('sacct output: {}'.format(output))
         logger.debug('sacct error: {}'.format(error))
+        if err != 0:
+            raise RuntimeError('Error running sacct: {}'.format(error))
 
         if output.lstrip() == '':
             return None
