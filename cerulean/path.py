@@ -98,7 +98,7 @@ class Path:
         if isinstance(suffix, Path):
             path = self.__path / suffix.__path
         else:
-            path = self.__path / suffix
+            path = self.__path / suffix.strip('/')
         return Path(self.filesystem, path)
 
 
