@@ -29,7 +29,7 @@ class LocalFileSystem(FileSystemImpl):
     """
     def __truediv__(self, segment: str) -> Path:
         # TODO: segment: Union[str, pathlib.Path]?
-        absseg = '/' + segment
+        absseg = '/' + segment.strip('/')
         path = pathlib.Path(absseg)
         return Path(self, path)
 

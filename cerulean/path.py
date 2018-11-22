@@ -98,7 +98,7 @@ class Path:
         if isinstance(suffix, Path):
             path = self.__path / suffix.__path
         else:
-            path = self.__path / suffix
+            path = self.__path / suffix.strip('/')
         return Path(self.filesystem, path)
 
 
@@ -307,7 +307,6 @@ class Path:
         Yields:
             Tuples (dirpath, dirnames, filenames), as above.
         """
-        print('Walking {}'.format(self))
         dirnames = list()  # type: List[str]
         filenames = list()  # type: List[str]
         try:
