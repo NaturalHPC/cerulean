@@ -43,6 +43,11 @@ services:
         image: mdstudio/cerulean-test-flaky
         ports: ['22']
 
+    slurm-18-08:
+        container_name: cerulean-test-slurm-18-08
+        image: mdstudio/cerulean-test-slurm-18-08
+        ports: ['22']
+
     cerulean-test:
         container_name: cerulean-test
         depends_on:
@@ -53,6 +58,7 @@ services:
             - slurm-16-05
             - slurm-17-02
             - slurm-17-11
+            - slurm-18-08
             - slurm-17-11-flaky
         build:
             context: ../

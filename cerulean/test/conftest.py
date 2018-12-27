@@ -117,6 +117,7 @@ def terminal(request: Any, ssh_terminal: SshTerminal,
     'ssh_slurm-16-05',
     'ssh_slurm-17-02',
     'ssh_slurm-17-11',
+    'ssh_slurm-18-08',
     'flakyssh_direct',
     'flakyssh_slurm-17-11'])
 def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
@@ -149,6 +150,10 @@ def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
             yield SlurmScheduler(term), fs
     elif request.param == 'ssh_slurm-17-11':
         term = SshTerminal('cerulean-test-slurm-17-11', 22, password_credential)
+        with SftpFileSystem(term) as fs:
+            yield SlurmScheduler(term), fs
+    elif request.param == 'ssh_slurm-18-08':
+        term = SshTerminal('cerulean-test-slurm-18-08', 22, password_credential)
         with SftpFileSystem(term) as fs:
             yield SlurmScheduler(term), fs
     elif request.param == 'flakyssh_direct':
