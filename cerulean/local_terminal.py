@@ -20,15 +20,16 @@ class LocalTerminal(Terminal):
             stdin_data: str = None,
             workdir: str = None) -> Tuple[Optional[int], str, str]:
 
-        all_args = [command] + args
+        whole_command = '{} {}'.format(command, ' '.join(args))
         if workdir is not None:
             workdir = str(workdir)
-        logger.debug('LocalTerminal running {}'.format(all_args))
+        logger.debug('LocalTerminal running {}'.format(whole_command))
         with Popen(
-                all_args,
+                whole_command,
                 stdin=PIPE,
                 stdout=PIPE,
                 cwd=workdir,
+                shell=True,
                 universal_newlines=True) as process:
             stdout_text, stderr_text = process.communicate(
                 stdin_data, timeout=timeout)
