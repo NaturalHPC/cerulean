@@ -60,3 +60,8 @@ def test_make_scheduler() -> None:
     with make_terminal('ssh', 'cerulean-test-torque-6', cred) as term3:
         s4 = make_scheduler('torque', term3)
         assert isinstance(s4, cerulean.TorqueScheduler)
+
+    with make_terminal('ssh', 'cerulean-test-slurm-18-08', cred) as term4:
+        s5 = make_scheduler('slurm', term4, 'CERULEAN_TEST=3 ')
+        assert isinstance(s5, cerulean.SlurmScheduler)
+        assert s5._SlurmScheduler__prefix == 'CERULEAN_TEST=3 '  # type: ignore

@@ -93,7 +93,8 @@ def make_terminal(protocol: str, location: Optional[str] = None,
         raise ValueError('Unknown protocol, use either local or ssh')
 
 
-def make_scheduler(name: str, terminal: Terminal) -> Scheduler:
+def make_scheduler(name: str, terminal: Terminal, prefix: str = ''
+                   ) -> Scheduler:
     """Make a scheduler object.
 
     This is a factory function for Scheduler objects. It will \
@@ -104,16 +105,17 @@ def make_scheduler(name: str, terminal: Terminal) -> Scheduler:
         name: The name of the scheduler. One of ``directgnu``,
                 ``slurm``, or ``torque``.
         terminal: The terminal this Scheduler will communicate on.
+        prefix: A string to prefix any shell commands with.
 
     Returns:
         The Scheduler.
     """
     if name == 'directgnu':
-        return DirectGnuScheduler(terminal)
+        return DirectGnuScheduler(terminal, prefix)
     elif name == 'slurm':
-        return SlurmScheduler(terminal)
+        return SlurmScheduler(terminal, prefix)
     elif name == 'torque':
-        return TorqueScheduler(terminal)
+        return TorqueScheduler(terminal, prefix)
     else:
         raise ValueError('Unknown scheduler type {} specified, expected one of'
                          ' directgnu, slurm, or torque.'.format(name))

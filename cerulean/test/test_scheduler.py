@@ -10,7 +10,7 @@ from cerulean import (DirectGnuScheduler, FileSystem, JobDescription,
 def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
                    caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home'
@@ -42,7 +42,7 @@ def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
 def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
                           caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
@@ -66,7 +66,7 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
 def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
                              caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
@@ -86,7 +86,7 @@ def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
 
 
 def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
@@ -108,7 +108,7 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
 
 def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
@@ -137,7 +137,7 @@ def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) ->
 def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
                          caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home'
@@ -159,7 +159,7 @@ def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
 
 
 def test_queue_name(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     if isinstance(sched, DirectGnuScheduler):
         # this scheduler ignores queues
@@ -186,7 +186,7 @@ def test_queue_name(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
 
 
 def test_num_nodes(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     if isinstance(sched, DirectGnuScheduler):
         # this scheduler runs everything on the same node
@@ -218,7 +218,7 @@ def test_num_nodes(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
 
 
 def test_environment(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
-    sched, fs = scheduler_and_fs
+    sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.environment['ENVIRONMENT_TEST1'] = 'test_environment_value1'
@@ -240,3 +240,47 @@ def test_environment(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     assert 'test_environment_value1' in outfile.read_text()
     assert 'test_environment_value2' in outfile.read_text()
     outfile.unlink()
+
+
+def test_prefix(request: Any, scheduler_and_fs: Tuple[Scheduler, FileSystem]
+                ) -> None:
+    sched, fs, fixture_id = scheduler_and_fs
+
+    # We have tests running in parallel, so use a unique name
+    prefix_file = 'prefixtest_{}.txt'.format(fixture_id)
+    prefix_path = fs / 'home' / 'cerulean' / prefix_file
+    print(prefix_path)
+
+    setattr(sched, '_{}__prefix'.format(sched.__class__.__name__),
+            'echo prefixtest >>{} ;'.format(prefix_path))
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home'
+    job_desc.command = 'ls'
+    job_id = sched.submit(job_desc)
+    print('Job id: {}'.format(job_id))
+
+    output_lines = len(prefix_path.read_text().splitlines())
+    assert output_lines >= 1
+
+    print('getting status')
+    while sched.get_status(job_id) != JobStatus.DONE:
+        time.sleep(10.0)
+        print('getting status')
+
+    output_lines = len(prefix_path.read_text().splitlines()) - output_lines
+    assert output_lines >= 1
+
+    print('getting exit code')
+    retval = sched.get_exit_code(job_id)
+    assert retval == 0
+    output_lines = len(prefix_path.read_text().splitlines()) - output_lines
+    assert output_lines >= 1
+
+    print('cancelling')
+    sched.cancel(job_id)
+    output_lines = len(prefix_path.read_text().splitlines()) - output_lines
+    assert output_lines >= 1
+
+    prefix_path.unlink()
+    setattr(sched, '_{}__prefix'.format(sched.__class__.__name__), '')
