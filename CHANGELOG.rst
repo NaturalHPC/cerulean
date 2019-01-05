@@ -5,6 +5,21 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.3.2
+*****
+
+Fixed
+-----
+
+* Various small things
+
+Added
+-----
+
+* Support for Slurm 18.08 (worked already, now also part of the tests)
+* Add command prefix for schedulers
+* Add support for WebDAV
+
 0.3.1
 *****
 
