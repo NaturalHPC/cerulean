@@ -2,6 +2,7 @@ from typing import Dict
 
 import pytest
 from cerulean import EntryType, Permission
+from cerulean.file_system import UnsupportedOperationError
 from cerulean.file_system_impl import AbstractPath, FileSystemImpl
 
 
@@ -33,11 +34,16 @@ def test_mkdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
     filesystem._rmdir(lpaths['deep_new_dir'])
     filesystem._rmdir(lpaths['deep_new_dir'].parent)
 
-    filesystem._mkdir(lpaths['deep_new_dir'], mode=0o660, parents=True)
-    assert filesystem._is_dir(lpaths['deep_new_dir'].parent)
-    assert filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.OTHERS_READ)
-    assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.OTHERS_READ)
+    try:
+        filesystem._mkdir(lpaths['deep_new_dir'], mode=0o660, parents=True)
+        assert filesystem._is_dir(lpaths['deep_new_dir'].parent)
+        assert filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.OTHERS_READ)
+        assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.OTHERS_READ)
+        filesystem._rmdir(lpaths['deep_new_dir'])
+    except UnsupportedOperationError:
+        pass
 
+    filesystem._mkdir(lpaths['deep_new_dir'], parents=True)
     with pytest.raises(FileExistsError):
         filesystem._mkdir(lpaths['deep_new_dir'])
 
@@ -48,6 +54,7 @@ def test_mkdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
 
 def test_iterdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     for entry in filesystem._iterdir(lpaths['dir']):
+        assert str(entry).startswith('/home/cerulean/test_files/links')
         assert entry.name in ['executable', 'file0', 'file1', 'link0', 'link1',
                               'link2', 'link3', 'link4', 'private']
 
@@ -133,22 +140,28 @@ def test_entry_types(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
     assert not filesystem._is_file(lpaths['root'])
     assert not filesystem._is_file(lpaths['new_file'])
 
-    assert filesystem._is_symlink(lpaths['link'])
+    assert (filesystem._is_symlink(lpaths['link'])
+            or not filesystem._supports('symlinks'))
     assert filesystem._is_file(lpaths['link'])
     assert not filesystem._is_dir(lpaths['link'])
     assert not filesystem._is_symlink(lpaths['new_file'])
 
-    assert filesystem._is_symlink(lpaths['broken_link'])
+    assert (filesystem._is_symlink(lpaths['broken_link'])
+            or not filesystem._supports('symlinks'))
     assert not filesystem._is_file(lpaths['broken_link'])
 
     assert filesystem._entry_type(lpaths['root']) == EntryType.DIRECTORY
     assert filesystem._entry_type(lpaths['file']) == EntryType.FILE
-    assert filesystem._entry_type(lpaths['link']) == EntryType.SYMBOLIC_LINK
-    # disable for now, doesn't work in a docker
-    #assert filesystem._entry_type(lpaths['chardev']) == EntryType.CHARACTER_DEVICE
-    assert filesystem._entry_type(lpaths['blockdev']) == EntryType.BLOCK_DEVICE
-    assert filesystem._entry_type(lpaths['fifo']) == EntryType.FIFO
-    # TODO: socket?
+    if filesystem._supports('symlinks'):
+        assert filesystem._entry_type(lpaths['link']) == EntryType.SYMBOLIC_LINK
+        # disable for now, doesn't work in a docker
+        #assert filesystem._entry_type(lpaths['chardev']) == EntryType.CHARACTER_DEVICE
+        assert filesystem._entry_type(lpaths['blockdev']) == EntryType.BLOCK_DEVICE
+        assert filesystem._entry_type(lpaths['fifo']) == EntryType.FIFO
+        # TODO: socket?
+
+    with pytest.raises(FileNotFoundError):
+        filesystem._entry_type(lpaths['new_file'])
 
 
 def test_size(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
@@ -158,87 +171,93 @@ def test_size(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> No
 
 
 def test_owner(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
-    assert filesystem._uid(lpaths['root']) == 999
-    assert filesystem._gid(lpaths['root']) == 999
+    if filesystem._supports('permissions'):
+        assert filesystem._uid(lpaths['root']) == 999
+        assert filesystem._gid(lpaths['root']) == 999
 
 
 def test_has_permission(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
-    assert filesystem._has_permission(lpaths['root'], Permission.OWNER_READ)
-    assert filesystem._has_permission(lpaths['root'], Permission.OWNER_WRITE)
-    assert filesystem._has_permission(lpaths['root'], Permission.OWNER_EXECUTE)
-    assert filesystem._has_permission(lpaths['root'], Permission.GROUP_READ)
-    assert not filesystem._has_permission(lpaths['root'], Permission.GROUP_WRITE)
-    assert filesystem._has_permission(lpaths['root'], Permission.GROUP_EXECUTE)
-    assert filesystem._has_permission(lpaths['root'], Permission.OTHERS_READ)
-    assert not filesystem._has_permission(lpaths['root'], Permission.OTHERS_WRITE)
-    assert filesystem._has_permission(lpaths['root'], Permission.OTHERS_EXECUTE)
+    if filesystem._supports('permissions'):
+        assert filesystem._has_permission(lpaths['root'], Permission.OWNER_READ)
+        assert filesystem._has_permission(lpaths['root'], Permission.OWNER_WRITE)
+        assert filesystem._has_permission(lpaths['root'], Permission.OWNER_EXECUTE)
+        assert filesystem._has_permission(lpaths['root'], Permission.GROUP_READ)
+        assert not filesystem._has_permission(lpaths['root'], Permission.GROUP_WRITE)
+        assert filesystem._has_permission(lpaths['root'], Permission.GROUP_EXECUTE)
+        assert filesystem._has_permission(lpaths['root'], Permission.OTHERS_READ)
+        assert not filesystem._has_permission(lpaths['root'], Permission.OTHERS_WRITE)
+        assert filesystem._has_permission(lpaths['root'], Permission.OTHERS_EXECUTE)
 
-    assert not filesystem._has_permission(lpaths['file'], Permission.OTHERS_WRITE)
+        assert not filesystem._has_permission(lpaths['file'], Permission.OTHERS_WRITE)
 
 
 def test_set_permission(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
-    for permission in Permission:
-        filesystem._set_permission(lpaths['root'], permission, False)
+    if filesystem._supports('permissions'):
+        for permission in Permission:
+            filesystem._set_permission(lpaths['root'], permission, False)
 
-    for permission in Permission:
-        assert not filesystem._has_permission(lpaths['root'], permission)
+        for permission in Permission:
+            assert not filesystem._has_permission(lpaths['root'], permission)
 
-    for permission in Permission:
-        filesystem._set_permission(lpaths['root'], permission, True)
-        for p2 in Permission:
-            is_same = (permission == p2)
-            assert filesystem._has_permission(lpaths['root'], p2) == is_same
-        filesystem._set_permission(lpaths['root'], permission, False)
+        for permission in Permission:
+            filesystem._set_permission(lpaths['root'], permission, True)
+            for p2 in Permission:
+                is_same = (permission == p2)
+                assert filesystem._has_permission(lpaths['root'], p2) == is_same
+            filesystem._set_permission(lpaths['root'], permission, False)
 
-    filesystem._chmod(lpaths['root'], 0o0755)
+        filesystem._chmod(lpaths['root'], 0o0755)
 
 
 def test_chmod(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
-    filesystem._chmod(lpaths['root'], 0o0000)
-    for permission in Permission:
-        assert not filesystem._has_permission(lpaths['root'], permission)
-    filesystem._chmod(lpaths['root'], 0o0755)
-    granted_permissions = [
-            Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
-            Permission.GROUP_READ, Permission.GROUP_EXECUTE,
-            Permission.OTHERS_READ, Permission.OTHERS_EXECUTE]
-    for permission in Permission:
-        if permission in granted_permissions:
-            assert filesystem._has_permission(lpaths['root'], permission)
-        else:
+    if filesystem._supports('permissions'):
+        filesystem._chmod(lpaths['root'], 0o0000)
+        for permission in Permission:
             assert not filesystem._has_permission(lpaths['root'], permission)
+        filesystem._chmod(lpaths['root'], 0o0755)
+        granted_permissions = [
+                Permission.OWNER_READ, Permission.OWNER_WRITE, Permission.OWNER_EXECUTE,
+                Permission.GROUP_READ, Permission.GROUP_EXECUTE,
+                Permission.OTHERS_READ, Permission.OTHERS_EXECUTE]
+        for permission in Permission:
+            if permission in granted_permissions:
+                assert filesystem._has_permission(lpaths['root'], permission)
+            else:
+                assert not filesystem._has_permission(lpaths['root'], permission)
 
 
 def test_symlink_to(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
-    filesystem._symlink_to(lpaths['new_file'], lpaths['file'])
-    assert filesystem._is_symlink(lpaths['new_file'])
-    assert filesystem._is_file(lpaths['new_file'])
-    filesystem._unlink(lpaths['new_file'])
-    assert not filesystem._exists(lpaths['new_file'])
-    assert filesystem._exists(lpaths['file'])
+    if filesystem._supports('symlinks'):
+        filesystem._symlink_to(lpaths['new_file'], lpaths['file'])
+        assert filesystem._is_symlink(lpaths['new_file'])
+        assert filesystem._is_file(lpaths['new_file'])
+        filesystem._unlink(lpaths['new_file'])
+        assert not filesystem._exists(lpaths['new_file'])
+        assert filesystem._exists(lpaths['file'])
 
 
 def test_readlink(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
-    target = filesystem._readlink(lpaths['link'], False)
-    assert str(target) == '/home/cerulean/test_files/links/file0'
+    if filesystem._supports('symlinks'):
+        target = filesystem._readlink(lpaths['link'], False)
+        assert str(target) == '/home/cerulean/test_files/links/file0'
 
-    target = filesystem._readlink(lpaths['multi_link'], False)
-    assert str(target) == '/home/cerulean/test_files/links/link0'
+        target = filesystem._readlink(lpaths['multi_link'], False)
+        assert str(target) == '/home/cerulean/test_files/links/link0'
 
-    target = filesystem._readlink(lpaths['multi_link'], True)
-    assert str(target) == '/home/cerulean/test_files/links/file0'
+        target = filesystem._readlink(lpaths['multi_link'], True)
+        assert str(target) == '/home/cerulean/test_files/links/file0'
 
-    target = filesystem._readlink(lpaths['broken_link'], False)
-    assert str(target) == '/doesnotexist'
+        target = filesystem._readlink(lpaths['broken_link'], False)
+        assert str(target) == '/doesnotexist'
 
-    target = filesystem._readlink(lpaths['broken_link'], True)
-    assert str(target) == '/doesnotexist'
+        target = filesystem._readlink(lpaths['broken_link'], True)
+        assert str(target) == '/doesnotexist'
 
-    target = filesystem._readlink(lpaths['broken_link'], True)
-    assert str(target) == '/doesnotexist'
+        target = filesystem._readlink(lpaths['broken_link'], True)
+        assert str(target) == '/doesnotexist'
 
-    target = filesystem._readlink(lpaths['link_loop'], False)
-    assert str(target) == '/home/cerulean/test_files/links/link4'
+        target = filesystem._readlink(lpaths['link_loop'], False)
+        assert str(target) == '/home/cerulean/test_files/links/link4'
 
-    with pytest.raises(RuntimeError):
-        filesystem._readlink(lpaths['link_loop'], True)
+        with pytest.raises(RuntimeError):
+            filesystem._readlink(lpaths['link_loop'], True)

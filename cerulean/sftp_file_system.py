@@ -1,3 +1,4 @@
+import errno
 import logging
 import stat
 from pathlib import PurePosixPath
@@ -65,6 +66,11 @@ class SftpFileSystem(FileSystemImpl):
 
     def __truediv__(self, segment: str) -> Path:
         return Path(self, PurePosixPath('/' + segment.strip('/')))
+
+    def _supports(self, feature: str) -> bool:
+        if feature not in self._features:
+            raise ValueError('Invalid argument for "feature"')
+        return True
 
     def _exists(self, path: AbstractPath) -> bool:
         self.__ensure_sftp()
@@ -242,7 +248,12 @@ class SftpFileSystem(FileSystemImpl):
                         (stat.S_ISFIFO, EntryType.FIFO), (stat.S_ISSOCK,
                                                           EntryType.SOCKET)]
 
-        mode = self.__lstat(lpath).st_mode
+        try:
+            mode = self.__lstat(lpath).st_mode
+        except IOError:
+            raise OSError(errno.ENOENT, 'No such file or directory',
+                          str(lpath))
+
         for predicate, result in mode_to_type:
             if predicate(mode):
                 return result

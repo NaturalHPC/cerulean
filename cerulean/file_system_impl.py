@@ -19,6 +19,24 @@ class FileSystemImpl(FileSystem):
     or SftpFileSystem.
     """
 
+    # Feature support
+
+    _features = ['symlinks', 'permissions', 'devices']
+
+    @abstractmethod
+    def _supports(self, feature: str) -> bool:
+        """Whether the file system supports the given feature.
+
+        See _features for supported features.
+
+        Args:
+            feature: The feature to check.
+
+        Returns:
+            Whether it is supported.
+        """
+        pass
+
     # Existence and contents
 
     @abstractmethod

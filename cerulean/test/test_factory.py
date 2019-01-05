@@ -4,7 +4,6 @@ import pytest
 from cerulean import make_file_system, make_terminal, make_scheduler
 
 
-@pytest.mark.skip('not yet done')
 def test_make_file_system() -> None:
     with make_file_system('local') as fs1:
         assert isinstance(fs1, cerulean.LocalFileSystem)
@@ -15,6 +14,9 @@ def test_make_file_system() -> None:
 
     with make_file_system('sftp', 'cerulean-test-ssh:22', cred) as fs3:
         assert isinstance(fs3, cerulean.SftpFileSystem)
+
+    with make_file_system('webdav', 'http://cerulean-test-webdav/files') as fs4:
+        assert isinstance(fs4, cerulean.WebdavFileSystem)
 
     with pytest.raises(ValueError):
         fs4 = make_file_system('sftp')

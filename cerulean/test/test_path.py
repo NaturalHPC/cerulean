@@ -58,9 +58,9 @@ def _make_walk_dir(topdir: Path) -> None:
     (topdir / 'dir1' / 'dir_link').symlink_to(topdir / 'dir3')
 
 
-def test_walk_top_down(paths: Dict[str, Path]) -> None:
-    _make_walk_dir(paths['new_dir'])
-    newdir = paths['new_dir']
+def test_walk_top_down(paths_local: Dict[str, Path]) -> None:
+    _make_walk_dir(paths_local['new_dir'])
+    newdir = paths_local['new_dir']
 
     dirs = list()  # type: List[str]
     subdirs = list()  # type: List[str]
@@ -91,12 +91,12 @@ def test_walk_top_down(paths: Dict[str, Path]) -> None:
             str(newdir) + '/file3',
             str(newdir) + '/dir1/file1']
 
-    paths['new_dir'].rmdir(recursive=True)
+    paths_local['new_dir'].rmdir(recursive=True)
 
 
-def test_walk_bottom_up(paths: Dict[str, Path]) -> None:
-    _make_walk_dir(paths['new_dir'])
-    newdir = paths['new_dir']
+def test_walk_bottom_up(paths_local: Dict[str, Path]) -> None:
+    _make_walk_dir(paths_local['new_dir'])
+    newdir = paths_local['new_dir']
 
     dirs = list()  # type: List[str]
     subdirs = list()  # type: List[str]
@@ -133,12 +133,12 @@ def test_walk_bottom_up(paths: Dict[str, Path]) -> None:
             str(newdir) + '/file2',
             str(newdir) + '/file3']
 
-    paths['new_dir'].rmdir(recursive=True)
+    paths_local['new_dir'].rmdir(recursive=True)
 
 
-def test_walk_follow_dir_links(paths: Dict[str, Path]) -> None:
-    _make_walk_dir(paths['new_dir'])
-    dir1 = paths['new_dir'] / 'dir1'
+def test_walk_follow_dir_links(paths_local: Dict[str, Path]) -> None:
+    _make_walk_dir(paths_local['new_dir'])
+    dir1 = paths_local['new_dir'] / 'dir1'
 
     dirs = list()  # type: List[str]
     subdirs = list()  # type: List[str]
@@ -164,12 +164,12 @@ def test_walk_follow_dir_links(paths: Dict[str, Path]) -> None:
     assert files == [
             str(dir1) + '/file1']
 
-    paths['new_dir'].rmdir(recursive=True)
+    paths_local['new_dir'].rmdir(recursive=True)
 
 
-def test_walk_onerror(paths: Dict[str, Path]) -> None:
-    _make_walk_dir(paths['new_dir'])
-    newdir = paths['new_dir']
+def test_walk_onerror(paths_local: Dict[str, Path]) -> None:
+    _make_walk_dir(paths_local['new_dir'])
+    newdir = paths_local['new_dir']
 
     handler_called = 0
 

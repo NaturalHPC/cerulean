@@ -33,6 +33,11 @@ class LocalFileSystem(FileSystemImpl):
         path = pathlib.Path(absseg)
         return Path(self, path)
 
+    def _supports(self, feature: str) -> bool:
+        if feature not in self._features:
+            raise ValueError('Invalid argument for "feature"')
+        return True
+
     def _exists(self, path: AbstractPath) -> bool:
         lpath = cast(pathlib.Path, path)
         try:
@@ -124,17 +129,18 @@ class LocalFileSystem(FileSystemImpl):
         # Note: symlink goes first, because is_dir() and is_file() will
         # dereference and return true, while we want to say it's a
         # symlink and leave it at that.
-        pred_to_type = [(pathlib.Path.is_symlink,
-                         EntryType.SYMBOLIC_LINK), (pathlib.Path.is_dir,
-                                                    EntryType.DIRECTORY),
-                        (pathlib.Path.is_file,
-                         EntryType.FILE), (pathlib.Path.is_char_device,
-                                           EntryType.CHARACTER_DEVICE),
+        pred_to_type = [(pathlib.Path.is_symlink, EntryType.SYMBOLIC_LINK),
+                        (pathlib.Path.is_dir, EntryType.DIRECTORY),
+                        (pathlib.Path.is_file, EntryType.FILE),
+                        (pathlib.Path.is_char_device,
+                            EntryType.CHARACTER_DEVICE),
                         (pathlib.Path.is_block_device, EntryType.BLOCK_DEVICE),
-                        (pathlib.Path.is_fifo,
-                         EntryType.FIFO), (pathlib.Path.is_socket,
-                                           EntryType.SOCKET)]
+                        (pathlib.Path.is_fifo, EntryType.FIFO),
+                        (pathlib.Path.is_socket, EntryType.SOCKET)]
 
+        if not self._exists(lpath):
+            raise OSError(errno.ENOENT, 'No such file or directory',
+                          str(lpath))
         for pred, entry_type in pred_to_type:
             if pred(lpath):
                 return entry_type

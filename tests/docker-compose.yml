@@ -6,6 +6,11 @@ services:
         image: mdstudio/cerulean-test-base
         ports: ['22']
 
+    webdav:
+        container_name: cerulean-test-webdav
+        image: mdstudio/cerulean-test-webdav
+        ports: ['80', '443']
+
     torque-6:
         container_name: cerulean-test-torque-6
         image: mdstudio/cerulean-test-torque-6
@@ -52,6 +57,7 @@ services:
         container_name: cerulean-test
         depends_on:
             - ssh
+            - webdav
             - torque-6
             - slurm-14-11
             - slurm-15-08
