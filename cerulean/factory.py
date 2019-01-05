@@ -11,6 +11,7 @@ from cerulean.slurm_scheduler import SlurmScheduler
 from cerulean.ssh_terminal import SshTerminal
 from cerulean.terminal import Terminal
 from cerulean.torque_scheduler import TorqueScheduler
+from cerulean.webdav_file_system import WebdavFileSystem
 
 
 def make_file_system(protocol: str, location: Optional[str] = None,
@@ -28,10 +29,12 @@ def make_file_system(protocol: str, location: Optional[str] = None,
 
     Args:
         protocol: The protocol to use to connect to the file system. \
-                Can be `local` or `sftp`. For `local`, location and \
+                Can be `local`, `sftp` or `webdav`. For `local`, \
+                location and credential can be omitted. For `webdav`, \
                 credential can be omitted.
-        location: The location in the form `hostname` or \
-                `hostname:port` to connect to.
+        location: The location in the form `hostname`, \
+                `hostname:port` or `http(s)://hostname:port/base_path` \
+                to connect to.
         credential: The :class:`Credential` to use to connect with.
 
     Returns:
@@ -43,8 +46,12 @@ def make_file_system(protocol: str, location: Optional[str] = None,
     elif protocol == 'sftp':
         term = cast(SshTerminal, make_terminal('ssh', location, credential))
         return SftpFileSystem(term, True)
+    elif protocol == 'webdav':
+        if location is None:
+            raise ValueError('WebDAV requires a location to connect to')
+        return WebdavFileSystem(location, credential)
     else:
-        raise ValueError('Unknown protocol, use either local or sftp')
+        raise ValueError('Unknown protocol, use local, sftp or webdav')
 
 
 def make_terminal(protocol: str, location: Optional[str] = None,
@@ -93,7 +100,8 @@ def make_terminal(protocol: str, location: Optional[str] = None,
         raise ValueError('Unknown protocol, use either local or ssh')
 
 
-def make_scheduler(name: str, terminal: Terminal) -> Scheduler:
+def make_scheduler(name: str, terminal: Terminal, prefix: str = ''
+                   ) -> Scheduler:
     """Make a scheduler object.
 
     This is a factory function for Scheduler objects. It will \
@@ -104,16 +112,17 @@ def make_scheduler(name: str, terminal: Terminal) -> Scheduler:
         name: The name of the scheduler. One of ``directgnu``,
                 ``slurm``, or ``torque``.
         terminal: The terminal this Scheduler will communicate on.
+        prefix: A string to prefix any shell commands with.
 
     Returns:
         The Scheduler.
     """
     if name == 'directgnu':
-        return DirectGnuScheduler(terminal)
+        return DirectGnuScheduler(terminal, prefix)
     elif name == 'slurm':
-        return SlurmScheduler(terminal)
+        return SlurmScheduler(terminal, prefix)
     elif name == 'torque':
-        return TorqueScheduler(terminal)
+        return TorqueScheduler(terminal, prefix)
     else:
         raise ValueError('Unknown scheduler type {} specified, expected one of'
                          ' directgnu, slurm, or torque.'.format(name))

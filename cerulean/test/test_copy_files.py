@@ -7,11 +7,14 @@ from cerulean.file_system_impl import FileSystemImpl
 from cerulean import EntryType, Path, Permission
 
 
-def assert_dir_copied_correctly(copied_dir: Path) -> None:
+def assert_dir_files_copied_correctly(copied_dir: Path) -> None:
     assert copied_dir.exists()
     assert copied_dir.is_dir()
     assert (copied_dir / 'file0').is_file()
     assert (copied_dir / 'file1').is_file()
+
+
+def assert_dir_links_copied_correctly(copied_dir: Path) -> None:
     assert (copied_dir / 'link0').is_symlink()
     assert (copied_dir / 'link0').readlink().name == 'file0'
     assert (copied_dir / 'link1').is_symlink()
@@ -23,9 +26,26 @@ def assert_dir_copied_correctly(copied_dir: Path) -> None:
     assert (copied_dir / 'link4').is_symlink()
     assert (copied_dir / 'link4').readlink().name == 'link3'
 
+
+def assert_dir_links_stubbed_correctly(copied_dir: Path) -> None:
+    assert (copied_dir / 'link0').is_file()
+    assert (copied_dir / 'link1').is_file()
+    assert not (copied_dir / 'link2').exists()
+
+
+def assert_dir_devices_copied_correctly(copied_dir: Path) -> None:
     assert not (copied_dir / 'fifo').exists()
     assert not (copied_dir / 'chardev').exists()
     assert not (copied_dir / 'blockdev').exists()
+
+
+def assert_dir_copied_correctly(copied_dir: Path, filesystem: FileSystemImpl,
+                                filesystem2: FileSystemImpl) -> None:
+    assert_dir_files_copied_correctly(copied_dir)
+    if filesystem._supports('devices') and filesystem2._supports('devices'):
+        assert_dir_devices_copied_correctly(copied_dir)
+    if filesystem._supports('symlinks') and filesystem2._supports('symlinks'):
+        assert_dir_links_copied_correctly(copied_dir)
 
 
 def test_copy_file_args(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
@@ -93,6 +113,9 @@ def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path])
 
 
 def test_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    if not filesystem._supports('permissions'):
+        return
+
     file1 = paths['executable']
     file2 = paths['private']
     new_file = paths['new_file']
@@ -150,6 +173,9 @@ def test_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path
 
 
 def test_no_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+    if not filesystem._supports('permissions'):
+        return
+
     file1 = paths['executable']
     file2 = paths['private']
     new_file = paths['new_file']
@@ -219,17 +245,18 @@ def test_copy_callback_abort(filesystem: FileSystemImpl, paths: Dict[str, Path])
 
 
 def test_copy_symlink_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
-    link = paths['multi_link']
-    new_file = paths['new_file']
+    if filesystem._supports('symlinks'):
+        link = paths['multi_link']
+        new_file = paths['new_file']
 
-    assert not new_file.exists()
-    copy(link, new_file)
+        assert not new_file.exists()
+        copy(link, new_file)
 
-    assert new_file.exists()
-    assert new_file.is_file()
-    assert new_file.size() == 12
+        assert new_file.exists()
+        assert new_file.is_file()
+        assert new_file.size() == 12
 
-    new_file.unlink()
+        new_file.unlink()
 
 
 def test_copy_dir_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
@@ -239,7 +266,7 @@ def test_copy_dir_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) 
     assert not new_dir.exists()
     copy(dir1, new_dir)
 
-    assert_dir_copied_correctly(new_dir)
+    assert_dir_copied_correctly(new_dir, filesystem, filesystem)
 
     new_dir.rmdir(recursive=True)
 
@@ -250,7 +277,7 @@ def test_copy_dir_single_fs2(filesystem: FileSystemImpl, paths: Dict[str, Path])
 
     assert not new_dir.exists()
     copy(dir1, new_dir, overwrite='raise')
-    assert_dir_copied_correctly(new_dir)
+    assert_dir_copied_correctly(new_dir, filesystem, filesystem)
 
     with pytest.raises(FileExistsError):
         copy(dir1, new_dir, overwrite='raise', copy_into=False)
@@ -264,7 +291,7 @@ def test_copy_dir_single_fs3(filesystem: FileSystemImpl, paths: Dict[str, Path])
 
     assert not new_dir.exists()
     copy(dir1, new_dir)
-    assert_dir_copied_correctly(new_dir)
+    assert_dir_copied_correctly(new_dir, filesystem, filesystem)
 
     (new_dir / 'file0').unlink()
 
@@ -274,7 +301,7 @@ def test_copy_dir_single_fs3(filesystem: FileSystemImpl, paths: Dict[str, Path])
     new_dir.rmdir(recursive=True)
 
     copy(dir1, new_dir, overwrite='always', copy_into=False)
-    assert_dir_copied_correctly(new_dir)
+    assert_dir_copied_correctly(new_dir, filesystem, filesystem)
 
     new_dir.rmdir(recursive=True)
 
@@ -321,17 +348,18 @@ def test_copy_file_cross_fs(filesystem: FileSystemImpl,
 def test_copy_symlink_cross_fs(filesystem: FileSystemImpl,
                                filesystem2: FileSystemImpl,
                                paths: Dict[str, Path]) -> None:
-    link = paths['multi_link']
-    new_file = filesystem2 / str(paths['new_file'])
+    if filesystem._supports('symlinks') and filesystem2._supports('symlinks'):
+        link = paths['multi_link']
+        new_file = filesystem2 / str(paths['new_file'])
 
-    assert not new_file.exists()
-    copy(link, new_file)
+        assert not new_file.exists()
+        copy(link, new_file)
 
-    assert new_file.exists()
-    assert new_file.is_file()
-    assert new_file.size() == 12
+        assert new_file.exists()
+        assert new_file.is_file()
+        assert new_file.size() == 12
 
-    new_file.unlink()
+        new_file.unlink()
 
 
 def test_copy_dir_cross_fs(filesystem: FileSystemImpl,
@@ -343,6 +371,6 @@ def test_copy_dir_cross_fs(filesystem: FileSystemImpl,
     assert not new_dir.exists()
     copy(dir1, new_dir)
 
-    assert_dir_copied_correctly(new_dir)
+    assert_dir_copied_correctly(new_dir, filesystem, filesystem2)
 
     new_dir.rmdir(recursive=True)

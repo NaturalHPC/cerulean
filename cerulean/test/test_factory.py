@@ -4,7 +4,6 @@ import pytest
 from cerulean import make_file_system, make_terminal, make_scheduler
 
 
-@pytest.mark.skip('not yet done')
 def test_make_file_system() -> None:
     with make_file_system('local') as fs1:
         assert isinstance(fs1, cerulean.LocalFileSystem)
@@ -15,6 +14,9 @@ def test_make_file_system() -> None:
 
     with make_file_system('sftp', 'cerulean-test-ssh:22', cred) as fs3:
         assert isinstance(fs3, cerulean.SftpFileSystem)
+
+    with make_file_system('webdav', 'http://cerulean-test-webdav/files') as fs4:
+        assert isinstance(fs4, cerulean.WebdavFileSystem)
 
     with pytest.raises(ValueError):
         fs4 = make_file_system('sftp')
@@ -60,3 +62,8 @@ def test_make_scheduler() -> None:
     with make_terminal('ssh', 'cerulean-test-torque-6', cred) as term3:
         s4 = make_scheduler('torque', term3)
         assert isinstance(s4, cerulean.TorqueScheduler)
+
+    with make_terminal('ssh', 'cerulean-test-slurm-18-08', cred) as term4:
+        s5 = make_scheduler('slurm', term4, 'CERULEAN_TEST=3 ')
+        assert isinstance(s5, cerulean.SlurmScheduler)
+        assert s5._SlurmScheduler__prefix == 'CERULEAN_TEST=3 '  # type: ignore

@@ -3,6 +3,7 @@ from time import perf_counter
 from typing import Callable, Generator, Iterable, Optional
 
 from cerulean.path import Path, Permission
+from cerulean.file_system import UnsupportedOperationError
 
 
 CopyCallback = Callable[[int, int], None]
@@ -181,22 +182,29 @@ def _copy_file(source_path: Path, target_path: Path, overwrite: str,
         for permission in Permission:
             perms[permission] = target_path.has_permission(permission)
 
-        target_path.chmod(0o600)
+        try:
+            target_path.chmod(0o600)
+        except UnsupportedOperationError:
+            pass
+
         target_path.streaming_write(
                 _call_back(callback, perf_counter() + 1.0, already_written,
                            size, source_path.streaming_read()))
 
         already_written += source_path.size()
 
-        for permission in Permission:
-            if copy_permissions:
-                target_path.set_permission(
-                        permission, source_path.has_permission(permission))
-            else:
-                target_path.set_permission(
-                        permission,
-                        perms[permission]
-                        and source_path.has_permission(permission))
+        try:
+            for permission in Permission:
+                if copy_permissions:
+                    target_path.set_permission(
+                            permission, source_path.has_permission(permission))
+                else:
+                    target_path.set_permission(
+                            permission,
+                            perms[permission]
+                            and source_path.has_permission(permission))
+        except UnsupportedOperationError:
+            pass
 
     elif overwrite == 'raise':
         raise FileExistsError('Target path exists, not overwriting')
@@ -244,7 +252,10 @@ def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
     for permission in Permission:
         perms[permission] = target_path.has_permission(permission)
 
-    target_path.chmod(0o700)
+    try:
+        target_path.chmod(0o700)
+    except UnsupportedOperationError:
+        pass
 
     for entry in source_path.iterdir():
         logging.debug('Recursively copying entry {}'.format(entry))
@@ -252,15 +263,19 @@ def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
                                 copy_permissions, context, callback,
                                 already_written, size)
 
-    for permission in Permission:
-        if copy_permissions:
-            target_path.set_permission(
-                    permission, source_path.has_permission(permission))
-        else:
-            target_path.set_permission(
-                    permission,
-                    perms[permission]
-                    and source_path.has_permission(permission))
+    try:
+        for permission in Permission:
+            if copy_permissions:
+                target_path.set_permission(
+                        permission, source_path.has_permission(permission))
+            else:
+                target_path.set_permission(
+                        permission,
+                        perms[permission]
+                        and source_path.has_permission(permission))
+    except UnsupportedOperationError:
+        pass
+
     return already_written
 
 

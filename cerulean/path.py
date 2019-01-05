@@ -464,6 +464,9 @@ class Path:
         Returns:
             An :class:`EntryType` enum value describing the filesystem \
             entry.
+
+        Raises:
+            FileNotFoundError: If there is no file here.
         """
         return self.filesystem._entry_type(self.__path)
 

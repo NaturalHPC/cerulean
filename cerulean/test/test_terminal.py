@@ -31,3 +31,12 @@ def test_terminal_workdir(terminal: Terminal) -> None:
     assert exit_code == 0
     assert output == '/home/cerulean/test_files\n'
     assert error == ''
+
+
+def test_running_in_shell(terminal: Terminal) -> None:
+    exit_code, output, error = terminal.run(
+            10.0,
+            'export CERULEAN=cerulean ; echo $CERULEAN', [])
+    assert exit_code == 0
+    assert output == 'cerulean\n'
+    assert error == ''

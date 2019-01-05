@@ -17,12 +17,23 @@ class TorqueScheduler(Scheduler):
     This class represents a Torque scheduler, to which it talks through \
     a :class:`Terminal`.
 
+    On some machines, an additional command is needed to make Torque
+    available to the user, e.g. 'module load torque'. If you specify a
+    prefix, it will be prepended to any Torque command run by this
+    class. Note that this is a plain string concatenation, so you'll
+    probably need something like 'module load torque;', with a
+    semicolon to separate the commands.
+
     Arguments:
         terminal: The terminal to use to talk to the scheduler.
+        prefix: A string to prefix the Torque commands with.
     """
-    def __init__(self, terminal: Terminal) -> None:
+    def __init__(self, terminal: Terminal, prefix: str = '') -> None:
         self.__terminal = terminal
+        self.__prefix = prefix
         logger.debug('Running qsub --version')
+
+        command = self.__prefix + ' qsub'
         exit_code, output, error = self.__terminal.run(10, 'qsub',
                                                        ['--version'])
         logger.debug('qsub --version exit_code: {}'.format(exit_code))
@@ -35,7 +46,8 @@ class TorqueScheduler(Scheduler):
 
         job_script = _job_desc_to_job_script(job_description)
         logger.debug('Running qsub with job script:\n{}'.format(job_script))
-        exit_code, output, error = self.__terminal.run(10, 'qsub', ['-'],
+        command = self.__prefix + ' qsub'
+        exit_code, output, error = self.__terminal.run(10, command, ['-'],
                                                        job_script)
 
         logger.debug('qsub exit code: {}'.format(exit_code))
@@ -50,7 +62,8 @@ class TorqueScheduler(Scheduler):
 
     def get_status(self, job_id: str) -> JobStatus:
         logger.debug('Running qstat with job id {}'.format(job_id))
-        exit_code, output, error = self.__terminal.run(10, 'qstat',
+        command = self.__prefix + ' qstat'
+        exit_code, output, error = self.__terminal.run(10, command,
                                                        ['-x', job_id])
         logger.debug('qstat exit code: {}'.format(exit_code))
         logger.debug('qstat output: {}'.format(output))
@@ -91,7 +104,8 @@ class TorqueScheduler(Scheduler):
             return None
 
         logger.debug('get_exit_code() running qstat -x {}'.format(job_id))
-        exit_code, output, error = self.__terminal.run(10, 'qstat',
+        command = self.__prefix + ' qstat'
+        exit_code, output, error = self.__terminal.run(10, command,
                                                        ['-x', job_id])
         logger.debug('qstat exit code: {}'.format(exit_code))
         logger.debug('qstat output: {}'.format(output))
@@ -103,7 +117,8 @@ class TorqueScheduler(Scheduler):
 
     def cancel(self, job_id: str) -> None:
         logger.debug('cancel() running qdel {}'.format(job_id))
-        exit_code, output, error = self.__terminal.run(10, 'qdel', [job_id])
+        command = self.__prefix + ' qdel'
+        exit_code, output, error = self.__terminal.run(10, command, [job_id])
         logger.debug('qdel exit code: {}'.format(exit_code))
         logger.debug('qdel output: {}'.format(output))
         logger.debug('qdel error: {}'.format(error))

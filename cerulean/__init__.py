@@ -16,7 +16,7 @@ from cerulean.copy_files import copy, CopyCallback
 from cerulean.credential import Credential, PasswordCredential, PubKeyCredential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
 from cerulean.factory import make_file_system, make_terminal, make_scheduler
-from cerulean.file_system import FileSystem
+from cerulean.file_system import FileSystem, UnsupportedOperationError
 from cerulean.job_description import JobDescription
 from cerulean.job_status import JobStatus
 from cerulean.local_file_system import LocalFileSystem
@@ -28,6 +28,7 @@ from cerulean.slurm_scheduler import SlurmScheduler
 from cerulean.ssh_terminal import SshTerminal
 from cerulean.terminal import Terminal
 from cerulean.torque_scheduler import TorqueScheduler
+from cerulean.webdav_file_system import WebdavFileSystem
 
 import logging
 
@@ -53,4 +54,4 @@ __all__ = ['copy', 'logger', 'make_file_system', 'make_terminal',
            'DirectGnuScheduler', 'FileSystem', 'JobDescription', 'JobStatus',
            'LocalFileSystem', 'LocalTerminal', 'Path', 'Scheduler',
            'SftpFileSystem', 'SlurmScheduler', 'SshTerminal', 'Terminal',
-           'TorqueScheduler']
+           'TorqueScheduler', 'UnsupportedOperationError', 'WebdavFileSystem']

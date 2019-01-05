@@ -11,6 +11,14 @@ if TYPE_CHECKING:
     from cerulean.file_system_impl import FileSystemImpl
 
 
+class UnsupportedOperationError(RuntimeError):
+    """Raised when an unsupported method is called.
+
+    See :class:`WebdavFileSystem`.
+    """
+    pass
+
+
 class FileSystem(ABC):
     """Represents a file system.
 

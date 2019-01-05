@@ -48,6 +48,11 @@ class Terminal(ABC):
             workdir: str = None) -> Tuple[Optional[int], str, str]:
         """Run a shell command.
 
+        The command will be run in the default shell, and arguments are
+        **not** quoted automatically. If you have untrusted or unknown
+        input, be sure to quote it using `quote()` from the `shlex`
+        module of the Python standard library.
+
         Args:
             timeout: How long to wait for the result(s)
             command: The command to run.

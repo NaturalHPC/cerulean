@@ -10,11 +10,11 @@ COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
 RUN pip3 install -r /home/cerulean/test_requirements.txt
 
 COPY . /home/cerulean/cerulean
-RUN find /home/cerulean -path '*__pycache__*' -delete
-RUN chown -R cerulean:cerulean /home/cerulean
-RUN chmod +x /home/cerulean/cerulean/tests/container-test/run_tests.sh
-RUN mv /home/cerulean/cerulean/tests/container-test/pytest.ini \
-    /home/cerulean/cerulean/pytest.ini
+RUN find /home/cerulean -path '*__pycache__*' -delete && \
+    chown -R cerulean:cerulean /home/cerulean && \
+    chmod +x /home/cerulean/cerulean/tests/container-test/run_tests.sh && \
+    mv /home/cerulean/cerulean/tests/container-test/pytest.ini /home/cerulean/cerulean/pytest.ini && \
+    mv /home/cerulean/cerulean/tests/container-test/mypy.ini /home/cerulean/cerulean/mypy.ini
 
 USER cerulean
 WORKDIR /home/cerulean/cerulean

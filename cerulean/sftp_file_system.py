@@ -1,3 +1,4 @@
+import errno
 import logging
 import stat
 from pathlib import PurePosixPath
@@ -65,6 +66,11 @@ class SftpFileSystem(FileSystemImpl):
 
     def __truediv__(self, segment: str) -> Path:
         return Path(self, PurePosixPath('/' + segment.strip('/')))
+
+    def _supports(self, feature: str) -> bool:
+        if feature not in self._features:
+            raise ValueError('Invalid argument for "feature"')
+        return True
 
     def _exists(self, path: AbstractPath) -> bool:
         self.__ensure_sftp()
@@ -156,43 +162,34 @@ class SftpFileSystem(FileSystemImpl):
                 self.__sftp2 = self.__terminal._get_downstream_sftp_client()
 
         lpath = cast(PurePosixPath, path)
-        tries = 0
-        while tries < self.__max_tries:
-            ensure_sftp2(self)
-            try:
-                size = self._size(path)
-                with self.__sftp2.file(str(lpath), 'rb') as f:
-                    f.prefetch(size)
+        ensure_sftp2(self)
+        try:
+            size = self._size(path)
+            with self.__sftp2.file(str(lpath), 'rb') as f:
+                f.prefetch(size)
+                data = f.read(24576)
+                while len(data) > 0:
+                    yield data
                     data = f.read(24576)
-                    while len(data) > 0:
-                        yield data
-                        data = f.read(24576)
-                return
-            except paramiko.SSHException as e:
-                if 'Server connection dropped' in str(e):
-                    tries += 1
-                else:
-                    raise e
-        raise ConnectionError('Too many connection errors.')
+        except paramiko.SSHException as e:
+            if 'Server connection dropped' in str(e):
+                raise ConnectionError(e)
+            else:
+                raise e
 
     def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        tries = 0
-        while tries < self.__max_tries:
-            try:
-                with self.__sftp.file(str(lpath), 'wb') as f:
-                    f.set_pipelined(True)
-                    for chunk in data:
-                        f.write(chunk)
-                return
-            except paramiko.SSHException as e:
-                if 'Server connection dropped' in str(e):
-                    tries += 1
-                else:
-                    raise e
-        raise ConnectionError('Too many connection errors.')
-
+        try:
+            with self.__sftp.file(str(lpath), 'wb') as f:
+                f.set_pipelined(True)
+                for chunk in data:
+                    f.write(chunk)
+        except paramiko.SSHException as e:
+            if 'Server connection dropped' in str(e):
+                raise ConnectionError(e)
+            else:
+                raise e
 
     def _rename(self, path: AbstractPath, target: AbstractPath) -> None:
         self.__ensure_sftp()
@@ -242,7 +239,12 @@ class SftpFileSystem(FileSystemImpl):
                         (stat.S_ISFIFO, EntryType.FIFO), (stat.S_ISSOCK,
                                                           EntryType.SOCKET)]
 
-        mode = self.__lstat(lpath).st_mode
+        try:
+            mode = self.__lstat(lpath).st_mode
+        except IOError:
+            raise OSError(errno.ENOENT, 'No such file or directory',
+                          str(lpath))
+
         for predicate, result in mode_to_type:
             if predicate(mode):
                 return result
