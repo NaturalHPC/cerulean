@@ -31,7 +31,7 @@ def make_file_system(protocol: str, location: Optional[str] = None,
         protocol: The protocol to use to connect to the file system. \
                 Can be `local`, `sftp` or `webdav`. For `local`, \
                 location and credential can be omitted. For `webdav`, \
-                credenial can be omitted.
+                credential can be omitted.
         location: The location in the form `hostname`, \
                 `hostname:port` or `http(s)://hostname:port/base_path` \
                 to connect to.
