@@ -124,14 +124,26 @@ def test_write_text(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath])
     filesystem._unlink(lpaths['new_file'])
 
 
-def test_unlink(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_rename(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
+                ) -> None:
+    assert not filesystem._exists(lpaths['new_file'])
+    assert filesystem._exists(lpaths['file'])
+    filesystem._rename(lpaths['file'], lpaths['new_file'])
+    assert filesystem._exists(lpaths['new_file'])
+    assert not filesystem._exists(lpaths['file'])
+    filesystem._rename(lpaths['new_file'], lpaths['file'])
+
+
+def test_unlink(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
+                ) -> None:
     filesystem._touch(lpaths['new_file'])
     assert filesystem._exists(lpaths['new_file'])
     filesystem._unlink(lpaths['new_file'])
     assert not filesystem._exists(lpaths['new_file'])
 
 
-def test_entry_types(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_entry_types(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
+                     ) -> None:
     assert filesystem._is_dir(lpaths['root'])
     assert not filesystem._is_dir(lpaths['file'])
     assert not filesystem._is_dir(lpaths['new_dir'])
