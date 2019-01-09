@@ -47,7 +47,7 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = 'sleep'
-    job_desc.arguments = ['5']
+    job_desc.arguments = ['15']
     job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
@@ -60,7 +60,7 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     while sched.get_status(job_id) != JobStatus.DONE:
         time.sleep(1.0)
         t += 1.0
-        assert t < 3.0
+        assert t < 10.0
 
 
 def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
