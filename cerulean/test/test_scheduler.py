@@ -116,7 +116,7 @@ def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: 
     job_desc.time_reserved = 60
     job_id = sched.submit(job_desc)
 
-    exit_code = sched.wait(job_id, 10.0)
+    exit_code = sched.wait(job_id, 20.0)
     assert exit_code == 0
 
     job_desc.command = '/usr/local/bin/endless-job.sh'
