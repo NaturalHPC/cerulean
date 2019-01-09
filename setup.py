@@ -49,9 +49,10 @@ setup(
         'recommonmark'
     ],
     tests_require=[
+        'coverage<5.0',
         'docker',
         'docker-compose',
-        'pytest',
+        'pytest>=3.6.0',
         'pytest-cov',
         'pycodestyle',
         'sh',
