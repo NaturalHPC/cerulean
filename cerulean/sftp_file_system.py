@@ -64,6 +64,9 @@ class SftpFileSystem(FileSystemImpl):
         self.__sftp.close()
         logger.info('Disconnected from SFTP server')
 
+    def root(self) -> Path:
+        return Path(self, PurePosixPath('/'))
+
     def __truediv__(self, segment: str) -> Path:
         return Path(self, PurePosixPath('/' + segment.strip('/')))
 

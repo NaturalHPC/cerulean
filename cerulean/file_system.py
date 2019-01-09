@@ -59,5 +59,10 @@ class FileSystem(ABC):
         """
         pass
 
+    def root(self) -> Path:
+        """Returns a Path representing the root of the file system.
+        """
+        raise NotImplementedError()
+
     def __truediv__(self, segment: str) -> Path:
         raise NotImplementedError()

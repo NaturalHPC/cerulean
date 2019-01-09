@@ -27,6 +27,9 @@ class LocalFileSystem(FileSystemImpl):
     be good to do so anyway, to avoid leaks if you ever replace it with \
     a different :class:`FileSystem` that does.
     """
+    def root(self) -> Path:
+        return Path(self, pathlib.Path('/'))
+
     def __truediv__(self, segment: str) -> Path:
         # TODO: segment: Union[str, pathlib.Path]?
         absseg = '/' + segment.strip('/')

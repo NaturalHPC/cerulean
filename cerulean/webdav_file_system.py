@@ -87,6 +87,9 @@ class WebdavFileSystem(FileSystemImpl):
         self.__session.close()
         logger.info('Disconnected from WebDAV server')
 
+    def root(self) -> Path:
+        return Path(self, PurePosixPath('/'))
+
     def __truediv__(self, segment: str) -> Path:
         return Path(self, PurePosixPath('/' + segment.strip('/')))
 

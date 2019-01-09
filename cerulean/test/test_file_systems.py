@@ -6,6 +6,18 @@ from cerulean.file_system import UnsupportedOperationError
 from cerulean.file_system_impl import AbstractPath, FileSystemImpl
 
 
+def test_root(filesystem: FileSystemImpl) -> None:
+    root = filesystem.root()
+    root2 = filesystem / ''
+    root3 = filesystem / '/'
+    assert root == root2
+    assert root == root3
+
+    temp = filesystem / 'tmp'
+    temp2 = filesystem.root() / 'tmp'
+    assert temp == temp2
+
+
 def test_exists(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     assert filesystem._exists(lpaths['root'])
     assert filesystem._exists(lpaths['dir'])
