@@ -5,6 +5,20 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.3.3
+*****
+
+Fixed
+-----
+
+* Copy silently ignored missing file, now raises FileNotFoundError
+
+Added
+-----
+
+* FileSystem.root() to get a Path for the root
+* Path.__repr__() for better debugging output
+
 0.3.2
 *****
 
