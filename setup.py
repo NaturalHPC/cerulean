@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
 
 setup(
     name='cerulean',
-    version='0.3.2',
+    version='0.3.3',
     description="A Python 3 library for talking to HPC clusters and supercomputers",
     long_description=readme + '\n\n',
     author="Lourens Veen",
@@ -49,9 +49,10 @@ setup(
         'recommonmark'
     ],
     tests_require=[
+        'coverage<5.0',
         'docker',
         'docker-compose',
-        'pytest',
+        'pytest>=3.6.0',
         'pytest-cov',
         'pycodestyle',
         'sh',

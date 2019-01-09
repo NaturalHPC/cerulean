@@ -66,6 +66,9 @@ class Path:
     def __str__(self) -> str:
         return str(self.__path)
 
+    def __repr__(self) -> str:
+        return 'Path({}, {})'.format(self.filesystem, self)
+
     # PurePath operators
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Path):

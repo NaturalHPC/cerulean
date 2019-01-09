@@ -123,10 +123,13 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
         already_written = _copy_dir(source_path, target_path, overwrite,
                                     copy_permissions, context, callback,
                                     already_written, size)
-    else:
+    elif source_path.exists() or source_path.is_symlink():
         # We don't copy special entries or broken links
         logging.debug(
             'Skipping special entry or broken link {}'.format(source_path))
+    else:
+        raise FileNotFoundError(('Source path {} does not exist, cannot'
+                                 ' copy').format(source_path))
     return already_written
 
 
@@ -134,8 +137,9 @@ def _copy_symlink(source_path: Path, target_path: Path, overwrite: str,
                   context: Optional[Path]) -> bool:
     """Copy a symlink.
 
-    If overwrite is True, overwrites the target. Copies links within \
-    the context as links and returns True, otherwise returns False.
+    Copies links to an existing file within the context as links and
+    returns True, otherwise returns False. If overwrite is True,
+    overwrites the target.
     """
     target_path_exists = target_path.exists() or target_path.is_symlink()
     if not target_path_exists or overwrite == 'always':
@@ -156,7 +160,7 @@ def _copy_symlink(source_path: Path, target_path: Path, overwrite: str,
         return False  # fall through and copy as file or directory
     elif overwrite == 'raise':
         raise FileExistsError('Target path exists, not overwriting')
-    return True  # target path exists, fail silently
+    return True  # target path exists and overwrite is never, fail silently
 
 
 def _copy_file(source_path: Path, target_path: Path, overwrite: str,
