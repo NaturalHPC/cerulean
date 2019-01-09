@@ -111,6 +111,9 @@ def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path])
     other_file.unlink()
     other_file.touch()
 
+    with pytest.raises(FileNotFoundError):
+        copy(paths['root'] / 'doesnotexist', new_file)
+
 
 def test_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     if not filesystem._supports('permissions'):

@@ -164,7 +164,9 @@ class WebdavFileSystem(FileSystemImpl):
                                         ' the base URL is {}.').format(
                                             child_url, self.__base_url))
                 rel_child_path = child_abs_url[len(self.__base_url):]
-                yield PurePosixPath(rel_child_path)
+                rel_child = PurePosixPath(rel_child_path)
+                if self._exists(rel_child):
+                    yield rel_child
 
     def _rmdir(self, path: AbstractPath, recursive: bool = False) -> None:
         self.__ensure_http()
@@ -310,6 +312,9 @@ class WebdavFileSystem(FileSystemImpl):
         raise OSError(errno.EINVAL, 'Invalid argument', url)
 
     def __ensure_http(self, first: bool = False) -> None:
+        # Note: first can be removed, session will do all this stuff
+        # automatically if the connection was closed and we make another
+        # request on the session.
         if first:
             logger.info('Connecting to WebDAV server')
             self.__session = requests.Session()
