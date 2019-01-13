@@ -3,9 +3,10 @@ import logging
 import stat
 from pathlib import PurePosixPath
 from types import TracebackType
-from typing import cast, Generator, Iterable, Optional
+from typing import Any, cast, Generator, Iterable, Optional
 
 import paramiko
+from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
 from cerulean.ssh_terminal import SshTerminal
@@ -63,6 +64,14 @@ class SftpFileSystem(FileSystemImpl):
     def close(self) -> None:
         self.__sftp.close()
         logger.info('Disconnected from SFTP server')
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, FileSystem):
+            return NotImplemented
+        if isinstance(other, SftpFileSystem):
+            return self.__terminal == other.__terminal
+        else:
+            return False
 
     def root(self) -> Path:
         return Path(self, PurePosixPath('/'))

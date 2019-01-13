@@ -2,7 +2,7 @@ import logging
 import socket
 from time import perf_counter
 from types import TracebackType
-from typing import List, Optional, Tuple, Type, TYPE_CHECKING
+from typing import Any, List, Optional, Tuple, Type, TYPE_CHECKING
 
 import paramiko
 from cerulean.credential import (Credential, PasswordCredential,
@@ -49,6 +49,14 @@ class SshTerminal(Terminal):
         """
         self.__transport.close()
         logger.debug('Disconnected from SSH server')
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Terminal):
+            return NotImplemented
+        if isinstance(other, SshTerminal):
+            return self.__host == other.__host and self.__port == other.__port
+        else:
+            return False
 
     def _get_sftp_client(self) -> paramiko.SFTPClient:
         """Get an SFTP client using this terminal.

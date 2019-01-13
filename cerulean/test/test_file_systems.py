@@ -7,6 +7,15 @@ from cerulean.file_system import UnsupportedOperationError
 from cerulean.file_system_impl import AbstractPath, FileSystemImpl
 
 
+def test_equality(filesystem: FileSystemImpl, filesystem2: FileSystemImpl) -> None:
+    if type(filesystem) == type(filesystem2):
+        assert filesystem == filesystem2
+        assert not (filesystem != filesystem2)
+    else:
+        assert filesystem != filesystem2
+        assert not (filesystem == filesystem2)
+
+
 def test_root(filesystem: FileSystemImpl) -> None:
     root = filesystem.root()
     root2 = filesystem / ''

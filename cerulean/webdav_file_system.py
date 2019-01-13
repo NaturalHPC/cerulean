@@ -5,13 +5,13 @@ from pathlib import PurePosixPath
 import requests
 from urllib.parse import urljoin, urlparse
 from types import TracebackType
-from typing import cast, Dict, Generator, Iterable, List, Optional, Tuple
+from typing import Any, cast, Dict, Generator, Iterable, List, Optional, Tuple
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET     # type: ignore
 
 from cerulean.credential import Credential, PasswordCredential
-from cerulean.file_system import UnsupportedOperationError
+from cerulean.file_system import FileSystem, UnsupportedOperationError
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
 from cerulean.util import BaseExceptionType
@@ -86,6 +86,14 @@ class WebdavFileSystem(FileSystemImpl):
     def close(self) -> None:
         self.__session.close()
         logger.info('Disconnected from WebDAV server')
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, FileSystem):
+            return NotImplemented
+        if isinstance(other, WebdavFileSystem):
+           return self.__base_url == other.__base_url
+        else:
+            return False
 
     def root(self) -> Path:
         return Path(self, PurePosixPath('/'))

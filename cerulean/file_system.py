@@ -1,7 +1,7 @@
 from abc import ABC
 from pathlib import PurePath
 from types import TracebackType
-from typing import cast, TYPE_CHECKING, Optional, Union
+from typing import Any, cast, TYPE_CHECKING, Optional, Union
 
 from cerulean.path import Path
 from cerulean.util import BaseExceptionType
@@ -48,6 +48,9 @@ class FileSystem(ABC):
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
         pass
+
+    def __eq__(self, other: Any) -> bool:
+        return NotImplemented
 
     def close(self) -> None:
         """Close connections and free resources, if any.

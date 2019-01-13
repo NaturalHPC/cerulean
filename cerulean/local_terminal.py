@@ -1,6 +1,6 @@
 import logging
 from subprocess import PIPE, Popen
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from cerulean.terminal import Terminal
 
@@ -13,6 +13,11 @@ class LocalTerminal(Terminal):
 
     To create one, just do ``term = LocalTerminal()``.
     """
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Terminal):
+            return NotImplemented
+        return isinstance(other, LocalTerminal)
+
     def run(self,
             timeout: float,
             command: str,

@@ -3,6 +3,7 @@ import os
 import pathlib
 from typing import cast, Any, Generator, Iterable, Optional
 
+from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
 
@@ -27,6 +28,11 @@ class LocalFileSystem(FileSystemImpl):
     be good to do so anyway, to avoid leaks if you ever replace it with \
     a different :class:`FileSystem` that does.
     """
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, FileSystem):
+            return NotImplemented
+        return isinstance(other, LocalFileSystem)
+
     def root(self) -> Path:
         return Path(self, pathlib.Path('/'))
 
