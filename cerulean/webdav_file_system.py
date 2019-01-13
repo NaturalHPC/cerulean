@@ -106,7 +106,7 @@ class WebdavFileSystem(FileSystemImpl):
 
     def _mkdir(self,
               path: AbstractPath,
-              mode: int = 0o777,
+              mode: Optional[int] = None,
               parents: bool = False,
               exists_ok: bool = False) -> None:
 
@@ -131,7 +131,7 @@ class WebdavFileSystem(FileSystemImpl):
                                     ' dir {}, the server said {}').format(
                                         self.__url(path), response.reason))
 
-        if mode != 0o777 and self.__unsupported_methods_raise:
+        if mode is not None and self.__unsupported_methods_raise:
             raise UnsupportedOperationError('Tried to make a directory with a'
                                             ' permission mask, but WebDAV does'
                                             ' not support permissions.')

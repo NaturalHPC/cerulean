@@ -86,7 +86,7 @@ class SftpFileSystem(FileSystemImpl):
 
     def _mkdir(self,
               path: AbstractPath,
-              mode: int = 0o777,
+              mode: Optional[int] = None,
               parents: bool = False,
               exists_ok: bool = False) -> None:
         self.__ensure_sftp()
@@ -95,9 +95,6 @@ class SftpFileSystem(FileSystemImpl):
             for parent in reversed(lpath.parents):
                 if not self._exists(parent):
                     self.__sftp.mkdir(str(parent))
-                    # The 0o777 is intentional and matches pathlib and
-                    # POSIX mkdir
-                    self.__sftp.chmod(str(parent), 0o777)
         if self._exists(lpath):
             if not exists_ok:
                 raise FileExistsError(
@@ -105,8 +102,7 @@ class SftpFileSystem(FileSystemImpl):
             else:
                 return
 
-        self.__sftp.mkdir(str(lpath))
-        self.__sftp.chmod(str(lpath), mode)
+        self.__sftp.mkdir(str(lpath), mode)
 
     def _iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
         self.__ensure_sftp()

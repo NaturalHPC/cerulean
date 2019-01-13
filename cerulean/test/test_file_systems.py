@@ -1,3 +1,4 @@
+import os
 from typing import Dict
 
 import pytest
@@ -47,13 +48,24 @@ def test_mkdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
     filesystem._rmdir(lpaths['deep_new_dir'].parent)
 
     try:
+        old_umask = os.umask(0o022)
         filesystem._mkdir(lpaths['deep_new_dir'], mode=0o660, parents=True)
         assert filesystem._is_dir(lpaths['deep_new_dir'].parent)
         assert filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.OTHERS_READ)
+        assert not filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.GROUP_WRITE)
+        assert not filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.OTHERS_WRITE)
+
+        assert filesystem._is_dir(lpaths['deep_new_dir'])
         assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.OTHERS_READ)
+        assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.GROUP_EXECUTE)
+        assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.OWNER_EXECUTE)
+        assert filesystem._has_permission(lpaths['deep_new_dir'], Permission.OWNER_WRITE)
         filesystem._rmdir(lpaths['deep_new_dir'])
+        filesystem._rmdir(lpaths['deep_new_dir'].parent)
     except UnsupportedOperationError:
         pass
+    finally:
+        os.umask(old_umask)
 
     filesystem._mkdir(lpaths['deep_new_dir'], parents=True)
     with pytest.raises(FileExistsError):

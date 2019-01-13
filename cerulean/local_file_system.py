@@ -1,7 +1,7 @@
 import errno
 import os
 import pathlib
-from typing import cast, Any, Generator, Iterable
+from typing import cast, Any, Generator, Iterable, Optional
 
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
@@ -52,11 +52,14 @@ class LocalFileSystem(FileSystemImpl):
 
     def _mkdir(self,
               path: AbstractPath,
-              mode: int = 0o777,
+              mode: Optional[int] = None,
               parents: bool = False,
               exists_ok: bool = False) -> None:
         lpath = cast(pathlib.Path, path)
-        lpath.mkdir(mode, parents, exists_ok)
+        if mode is not None:
+            lpath.mkdir(mode, parents, exists_ok)
+        else:
+            lpath.mkdir(parents=parents, exist_ok=exists_ok)
 
     def _iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
         lpath = cast(pathlib.Path, path)
