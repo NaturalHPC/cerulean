@@ -5,6 +5,22 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+0.3.4
+*****
+
+Fixed
+-----
+
+* Directory permissions when using mkdir(). This is a security issue, and you
+  should upgrade as soon as possible.
+
+Added
+-----
+
+* Equality comparison of FileSystems and Terminals, which makes equality
+  comparison for Paths work better as well.
+* Add `interval` parameter to scheduler.wait(), and improve default behaviour.
+
 0.3.3
 *****
 

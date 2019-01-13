@@ -3,9 +3,10 @@ import logging
 import stat
 from pathlib import PurePosixPath
 from types import TracebackType
-from typing import cast, Generator, Iterable, Optional
+from typing import Any, cast, Generator, Iterable, Optional
 
 import paramiko
+from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
 from cerulean.ssh_terminal import SshTerminal
@@ -64,6 +65,14 @@ class SftpFileSystem(FileSystemImpl):
         self.__sftp.close()
         logger.info('Disconnected from SFTP server')
 
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, FileSystem):
+            return NotImplemented
+        if isinstance(other, SftpFileSystem):
+            return self.__terminal == other.__terminal
+        else:
+            return False
+
     def root(self) -> Path:
         return Path(self, PurePosixPath('/'))
 
@@ -86,7 +95,7 @@ class SftpFileSystem(FileSystemImpl):
 
     def _mkdir(self,
               path: AbstractPath,
-              mode: int = 0o777,
+              mode: Optional[int] = None,
               parents: bool = False,
               exists_ok: bool = False) -> None:
         self.__ensure_sftp()
@@ -95,9 +104,6 @@ class SftpFileSystem(FileSystemImpl):
             for parent in reversed(lpath.parents):
                 if not self._exists(parent):
                     self.__sftp.mkdir(str(parent))
-                    # The 0o777 is intentional and matches pathlib and
-                    # POSIX mkdir
-                    self.__sftp.chmod(str(parent), 0o777)
         if self._exists(lpath):
             if not exists_ok:
                 raise FileExistsError(
@@ -105,8 +111,7 @@ class SftpFileSystem(FileSystemImpl):
             else:
                 return
 
-        self.__sftp.mkdir(str(lpath))
-        self.__sftp.chmod(str(lpath), mode)
+        self.__sftp.mkdir(str(lpath), mode)
 
     def _iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
         self.__ensure_sftp()

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from cerulean.util import BaseExceptionType
 
@@ -38,6 +38,9 @@ class Terminal(ABC):
         a local terminal to a remote one.
         """
         pass
+
+    def __eq__(self, other: Any) -> bool:
+        return NotImplemented
 
     @abstractmethod
     def run(self,

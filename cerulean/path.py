@@ -54,10 +54,18 @@ class Path:
     on it, e.g. fs / 'home' / 'user'. Do not construct objects of this \
     class directly.
 
+    Paths can be compared for (non-)equality using == and !=. Paths \
+    that compare unequal could still refer to the same file, if it is \
+    accessible in multiple ways. For instance, a local path /tmp would \
+    compare unequal to a path /tmp on an SftpFileSystem, even if the \
+    SftpFileSystem is connected to localhost, and the paths do in fact \
+    refer to the same directory.
+
     Attributes:
         filesystem: The file system that this path is on.
     """
-    def __init__(self, filesystem: 'FileSystemImpl', path: AbstractPath) -> None:
+    def __init__(self, filesystem: 'FileSystemImpl', path: AbstractPath
+                 ) -> None:
         if isinstance(path, Path):
             raise RuntimeError('AAAAAAARGH!')
         self.__path = path
@@ -251,14 +259,15 @@ class Path:
         return self.filesystem._exists(self.__path)
 
     def mkdir(self,
-              mode: int = 0o777,
+              mode: Optional[int] = None,
               parents: bool = False,
               exists_ok: bool = False) -> None:
         """Makes a directory with the given access rights.
 
-        If parents is True, makes parent directories as needed. If \
-        exists_ok is True, silently ignores if the directory already \
-        exists.
+        If mode is not set or None, assigns permissions according to \
+        the current umask. If parents is True, makes parent directories \
+        as needed. If exists_ok is True, silently ignores if the \
+        directory already exists.
 
         Args:
             mode: A numerical Posix access permissions mode.

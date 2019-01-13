@@ -47,7 +47,7 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
     job_desc.command = 'sleep'
-    job_desc.arguments = ['5']
+    job_desc.arguments = ['15']
     job_id = sched.submit(job_desc)
     print('Job id: {}'.format(job_id))
 
@@ -60,7 +60,7 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     while sched.get_status(job_id) != JobStatus.DONE:
         time.sleep(1.0)
         t += 1.0
-        assert t < 3.0
+        assert t < 10.0
 
 
 def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
@@ -106,7 +106,8 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
     # assert sched.get_exit_code(job_id) != 0
 
 
-def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
+def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem],
+                        caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
     sched, fs, _ = scheduler_and_fs
 
@@ -116,7 +117,7 @@ def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: 
     job_desc.time_reserved = 60
     job_id = sched.submit(job_desc)
 
-    exit_code = sched.wait(job_id, 20.0)
+    exit_code = sched.wait(job_id)
     assert exit_code == 0
 
     job_desc.command = '/usr/local/bin/endless-job.sh'
@@ -124,6 +125,29 @@ def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: 
 
     exit_code = sched.wait(job_id, 1.0)
     assert exit_code is None
+    sched.cancel(job_id)
+
+
+def test_scheduler_wait_interval(
+        scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
+    caplog.set_level(logging.DEBUG)
+    sched, fs, _ = scheduler_and_fs
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home/cerulean'
+    job_desc.command = 'ls'
+    job_desc.time_reserved = 60
+    job_id = sched.submit(job_desc)
+
+    exit_code = sched.wait(job_id, 20.0, 0.1)
+    assert exit_code == 0
+
+    job_desc.command = '/usr/local/bin/endless-job.sh'
+    job_id = sched.submit(job_desc)
+
+    exit_code = sched.wait(job_id, 2.0, 1.0)
+    assert exit_code is None
+    sched.cancel(job_id)
 
 
 def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:

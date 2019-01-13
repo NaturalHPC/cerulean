@@ -2,7 +2,7 @@ import stat
 import traceback
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Generator, Iterable
+from typing import Any, Generator, Iterable, Optional
 
 from cerulean.file_system import FileSystem
 from cerulean.path import AbstractPath, EntryType, Path, Permission
@@ -46,7 +46,7 @@ class FileSystemImpl(FileSystem):
     @abstractmethod
     def _mkdir(self,
               path: AbstractPath,
-              mode: int = 0o777,
+              mode: Optional[int] = None,
               parents: bool = False,
               exists_ok: bool = False) -> None:
         pass
