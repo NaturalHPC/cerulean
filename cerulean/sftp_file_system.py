@@ -166,8 +166,17 @@ class SftpFileSystem(FileSystemImpl):
         def ensure_sftp2(self: 'SftpFileSystem') -> None:
             if self.__sftp2 is None:
                 self.__sftp2 = self.__terminal._get_downstream_sftp_client()
-            elif not self.__sftp2.get_channel().get_transport().is_active():
-                self.__sftp2 = self.__terminal._get_downstream_sftp_client()
+            else:
+                try:
+                    self.__sftp2.lstat('/')
+                except OSError as e:
+                    if 'Socket is closed' in str(e):
+                        self.__sftp2 = self.__terminal._get_downstream_sftp_client()
+                    else:
+                        raise
+
+                if not self.__sftp2.get_channel().get_transport().is_active():
+                    self.__sftp2 = self.__terminal._get_downstream_sftp_client()
 
         lpath = cast(PurePosixPath, path)
         ensure_sftp2(self)
@@ -342,7 +351,18 @@ class SftpFileSystem(FileSystemImpl):
             logger.info('Connecting to SFTP server')
             self.__sftp = self.__terminal._get_sftp_client()
             logger.info('Connected to SFTP server')
-        elif not self.__sftp.get_channel().get_transport().is_active():
-            logger.info('Reconnecting to SFTP server')
-            self.__sftp = self.__terminal._get_sftp_client()
-            logger.info('Connected to SFTP server')
+        else:
+            try:
+                self.__sftp.lstat('/')
+            except OSError as e:
+                if 'Socket is closed' in str(e):
+                    logger.info('Reconnecting to SFTP server')
+                    self.__sftp = self.__terminal._get_sftp_client()
+                    logger.info('Connected to SFTP server')
+                else:
+                    raise
+
+            if not self.__sftp.get_channel().get_transport().is_active():
+                logger.info('Reconnecting to SFTP server')
+                self.__sftp = self.__terminal._get_sftp_client()
+                logger.info('Connected to SFTP server')

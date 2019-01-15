@@ -141,6 +141,10 @@ class SshTerminal(Terminal):
                 last_exception = e
             except ConnectionError as e:
                 last_exception = e
+            except OSError as e:
+                if 'Socket' in str(e):
+                    self.__ensure_connection(self.__transport, True)
+                last_exception = e
 
         raise ConnectionError(str(last_exception))
 
@@ -201,9 +205,9 @@ class SshTerminal(Terminal):
 
         return key
 
-    def __ensure_connection(self, transport: paramiko.Transport
-                            ) -> paramiko.Transport:
-        if transport is None or not transport.is_active():
+    def __ensure_connection(self, transport: paramiko.Transport,
+                            force: bool=False) -> paramiko.Transport:
+        if transport is None or not transport.is_active() or force:
             if transport is not None:
                 transport.close()
             transport = paramiko.Transport((self.__host, self.__port))
