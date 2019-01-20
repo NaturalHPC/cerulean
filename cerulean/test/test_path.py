@@ -47,6 +47,28 @@ def test_write_text(paths: Dict[str, Path]) -> None:
     assert text2 == text
 
 
+def test_remove(paths: Dict[str, Path]) -> None:
+    paths['new_file'].write_text('Hello, world')
+    paths['new_file'].remove()
+    assert not paths['new_file'].exists()
+
+    paths['new_dir'].mkdir()
+    paths['new_dir'].remove()
+    assert not paths['new_dir'].exists()
+
+    paths['new_dir'].mkdir()
+    (paths['new_dir'] / 'test').mkdir()
+    (paths['new_dir'] / 'test' / 'test.txt').write_text('testing')
+    paths['new_dir'].remove()
+    assert not paths['new_dir'].exists()
+
+    if paths['new_file'].filesystem._supports('symlinks'):
+        paths['new_file'].symlink_to(paths['file'])
+        paths['new_file'].remove()
+        assert not paths['new_file'].exists()
+        assert paths['file'].exists()
+
+
 def _make_walk_dir(topdir: Path) -> None:
     topdir.mkdir()
     (topdir / 'dir1').mkdir()
