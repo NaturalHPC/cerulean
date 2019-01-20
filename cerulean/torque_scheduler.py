@@ -146,6 +146,12 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
     if job_description.queue_name is not None:
         job_script += '#PBS -q {}\n'.format(job_description.queue_name)
 
+    if job_description.system_out_file is not None:
+        job_script += '#PBS -o {}\n'.format(job_description.system_out_file)
+
+    if job_description.system_err_file is not None:
+        job_script += '#PBS -e {}\n'.format(job_description.system_err_file)
+
     if job_description.extra_scheduler_options is not None:
         job_script += '#PBS {}\n'.format(
                 job_description.extra_scheduler_options)
