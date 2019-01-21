@@ -49,7 +49,6 @@ class DirectGnuScheduler(Scheduler):
         if job_description.working_directory is not None:
             job_script += 'cd {}\n'.format(job_description.working_directory)
         job_script += 'exit_code_file=$(mktemp)\n'
-        # TODO: use ulimit to set a timeout
         job_script += "(\n"
         if job_description.time_reserved is not None:
             job_script += "ulimit -t {}\n".format(
@@ -66,7 +65,17 @@ class DirectGnuScheduler(Scheduler):
             job_script += ' 2>{}'.format(job_description.stderr_file)
         job_script += "' ; "
         job_script += 'echo $? >$exit_code_file'
-        job_script += ') >/dev/null 2>/dev/null &\n'
+        job_script += ')'
+        if job_description.system_out_file is not None:
+            job_script += ' >{}'.format(job_description.system_out_file)
+        else:
+            job_script += ' >/dev/null'
+
+        if job_description.system_err_file is not None:
+            job_script += ' 2>{}'.format(job_description.system_err_file)
+        else:
+            job_script += ' 2>/dev/null'
+        job_script += ' &\n'
         job_script += 'echo -n $! $exit_code_file\n'
         job_script += 'disown\n'
 

@@ -442,6 +442,23 @@ class Path:
         """
         self.filesystem._unlink(self.__path)
 
+    def remove(self) -> None:
+        """Removes a file, link, device or directory.
+
+        Directories are removed recursively, links, devices and files
+        are deleted. Link targets are left in place. Returns without
+        error if there is nothing there already.
+
+        Use this method to ensure that there is no entry at this path.
+        """
+        if self.exists() or self.is_symlink():
+            if self.is_symlink():
+                self.unlink()
+            elif self.is_dir():
+                self.rmdir(recursive=True)
+            else:
+                self.unlink()
+
     # File type and size
 
     def is_dir(self) -> bool:

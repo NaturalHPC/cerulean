@@ -158,9 +158,8 @@ def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) ->
         sched.submit(job_desc)
 
 
-def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
-                         caplog: Any) -> None:
-    caplog.set_level(logging.DEBUG)
+def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
+                         ) -> None:
     sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -180,6 +179,91 @@ def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem],
     outfile = fs / 'home/cerulean/test_stderr_redirect.out'
     assert 'unrecognized option' in outfile.read_text()
     outfile.unlink()
+
+
+def test_system_out_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
+                             ) -> None:
+    sched, fs, _ = scheduler_and_fs
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home/cerulean'
+    job_desc.command = 'ls'
+    job_desc.time_reserved = 1
+    job_desc.stdout_file = '/dev/null'
+    job_desc.system_out_file = '/home/cerulean/test_sys_redirect.out'
+
+    job_id = sched.submit(job_desc)
+    sched.wait(job_id)
+
+    sysout = (fs / 'home/cerulean/test_sys_redirect.out').read_text()
+
+    retval = sched.get_exit_code(job_id)
+    assert retval == 0
+    assert sysout == ''
+
+
+def test_system_out_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
+                             ) -> None:
+    sched, fs, _ = scheduler_and_fs
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home'
+    job_desc.command = 'ls'
+    job_desc.time_reserved = 1
+    job_desc.system_out_file = '/home/cerulean/test_sys_redirect.out'
+
+    job_id = sched.submit(job_desc)
+    sched.wait(job_id)
+
+    sysout = (fs / 'home/cerulean/test_sys_redirect.out').read_text()
+
+    retval = sched.get_exit_code(job_id)
+    assert retval == 0
+    assert 'cerulean' in sysout
+
+
+def test_system_err_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
+                             ) -> None:
+    sched, fs, _ = scheduler_and_fs
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home/cerulean'
+    job_desc.command = 'bash'
+    job_desc.arguments = ['-c',
+                          'for i in x ; do something invalid']
+    job_desc.time_reserved = 1
+    job_desc.stderr_file = '/dev/null'
+    job_desc.system_err_file = '/home/cerulean/test_sys_redirect.err'
+
+    job_id = sched.submit(job_desc)
+    sched.wait(job_id)
+
+    syserr = (fs / 'home/cerulean/test_sys_redirect.err').read_text()
+
+    retval = sched.get_exit_code(job_id)
+    assert retval != 0
+    assert 'syntax error' in syserr
+
+
+def test_system_err_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
+                              ) -> None:
+    sched, fs, _ = scheduler_and_fs
+
+    job_desc = JobDescription()
+    job_desc.working_directory = '/home/cerulean'
+    job_desc.command = 'while [ a = a ] ; do echo bla >/dev/null; done'
+    job_desc.time_reserved = 1
+    job_desc.stderr_file = '/dev/null'
+    job_desc.system_err_file = '/home/cerulean/test_sys_redirect.err'
+
+    job_id = sched.submit(job_desc)
+    sched.wait(job_id)
+
+    syserr = (fs / 'home/cerulean/test_sys_redirect.err').read_text()
+
+    print('Sys err: {}'.format(syserr))
+
+    assert 'CANCELLED' in syserr or 'killed' in syserr or 'Killed' in syserr
 
 
 def test_queue_name(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:

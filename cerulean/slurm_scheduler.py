@@ -147,6 +147,14 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
     if job_description.mpi_processes_per_node is not None:
         job_script = _add_option(job_script, 'overcommit', '')
 
+    if job_description.system_out_file is not None:
+        job_script += '#SBATCH -o {}\n'.format(
+                job_description.system_out_file)
+
+    if job_description.system_err_file is not None:
+        job_script += '#SBATCH -e {}\n'.format(
+                job_description.system_err_file)
+
     if job_description.extra_scheduler_options is not None:
         job_script += '#SBATCH {}\n'.format(
                 job_description.extra_scheduler_options)
