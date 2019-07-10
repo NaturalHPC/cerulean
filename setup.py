@@ -50,8 +50,8 @@ setup(
     ],
     tests_require=[
         'coverage<5.0',
-        'docker',
-        'docker-compose',
+        'docker-compose==1.24',
+        'docker[ssh]>=3.7.0,<4.0',
         'pytest>=3.6.0',
         'pytest-cov',
         'pycodestyle',
