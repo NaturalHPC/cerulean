@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pytest --timeout=10 -k 'not test_scheduler' --mypy --cov=cerulean --cov-report term-missing
+pytest --timeout=20 -k 'not test_scheduler' --mypy --cov=cerulean --cov-report term-missing
 result="$?"
 echo "$result" >/home/cerulean/pytest_exit_codes
 if [ "$result" != "0" ] ; then

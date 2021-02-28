@@ -31,7 +31,7 @@ class SshTerminal(Terminal):
         self.__credential = credential
 
         self.__transport = self.__ensure_connection(None)
-        self.__transport2 = None
+        self.__transport2 = None    # type: Optional[paramiko.Transport]
 
     def __enter__(self) -> 'SshTerminal':
         return self
@@ -69,7 +69,10 @@ class SshTerminal(Terminal):
             An SFTP client object using this terminal's connection.
         """
         self.__transport = self.__ensure_connection(self.__transport)
-        return paramiko.SFTPClient.from_transport(self.__transport)
+        client = paramiko.SFTPClient.from_transport(self.__transport)
+        if client is None:
+            raise RuntimeError('Could not open a channel for SFTP')
+        return client
 
     def _get_downstream_sftp_client(self) -> paramiko.SFTPClient:
         """Gets a second SFTP client using this terminal.
@@ -84,7 +87,10 @@ class SshTerminal(Terminal):
             An SFTP client object using a second connection.
         """
         self.__transport2 = self.__ensure_connection(self.__transport2)
-        return paramiko.SFTPClient.from_transport(self.__transport2)
+        client = paramiko.SFTPClient.from_transport(self.__transport2)
+        if client is None:
+            raise RuntimeError('Could not open a channel for SFTP')
+        return client
 
     def run(self,
             timeout: float,
@@ -205,7 +211,7 @@ class SshTerminal(Terminal):
 
         return key
 
-    def __ensure_connection(self, transport: paramiko.Transport,
+    def __ensure_connection(self, transport: Optional[paramiko.Transport],
                             force: bool=False) -> paramiko.Transport:
         if transport is None or not transport.is_active() or force:
             if transport is not None:
