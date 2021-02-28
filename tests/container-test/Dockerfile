@@ -3,7 +3,7 @@ FROM mdstudio/cerulean-test-base:latest
 USER root
 RUN apt-get update && apt-get install -y python3 python3-dev \
     build-essential python3-pip openssl python-openssl libffi-dev \
-    libssl-dev openssh-client
+    libssl-dev openssh-client && pip3 install --upgrade pip
 
 COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
 
