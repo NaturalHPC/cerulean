@@ -35,8 +35,9 @@ def assert_dir_links_stubbed_correctly(copied_dir: Path) -> None:
 
 def assert_dir_devices_copied_correctly(copied_dir: Path) -> None:
     assert not (copied_dir / 'fifo').exists()
-    assert not (copied_dir / 'chardev').exists()
     assert not (copied_dir / 'blockdev').exists()
+    # We don't test chardevs, because putting them into a Docker container is
+    # tricky these days.
 
 
 def assert_dir_copied_correctly(copied_dir: Path, filesystem: FileSystemImpl,

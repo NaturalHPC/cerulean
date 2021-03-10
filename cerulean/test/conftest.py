@@ -101,7 +101,6 @@ def make_paths(filesystem: FileSystem) -> Dict[str, Path]:
             'broken_link': root / 'links' / 'link2',
             'link_loop': root / 'links' / 'link3',
             'fifo': root / 'fifo',
-            'chardev': root / 'chardev',
             'blockdev': root / 'blockdev',
         }
 
