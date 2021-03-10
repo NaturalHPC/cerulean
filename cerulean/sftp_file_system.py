@@ -245,7 +245,7 @@ class SftpFileSystem(FileSystemImpl):
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
-            mode = self.__stat(lpath).st_mode
+            mode = self.__lstat(lpath).st_mode
             return mode is not None and bool(stat.S_ISLNK(mode))
         except FileNotFoundError:
             return False
