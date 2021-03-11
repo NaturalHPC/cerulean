@@ -122,7 +122,7 @@ you would expect:
   credential = cerulean.PasswordCredential('username', 'password')
   with cerulean.SshTerminal('remotehost.example.com', 22, credential) as term
       with SftpFileSystem(term) as remote_fs:
-          input_file = localfs / 'home' / 'username' / 'input.txt'
+          input_file = local_fs / 'home' / 'username' / 'input.txt'
           job_dir = remote_fs / 'home' / 'username' / 'my_job'
           cerulean.copy(input_file, job_dir)
 
@@ -175,7 +175,7 @@ except you use an :class:`SshTerminal`, as above:
 Submitting jobs
 ===============
 
-On High-Performance Computing machines, you don't run commands directly.
+On High Performance Computing machines, you don't run commands directly.
 Instead, you submit batch jobs to a scheduler, which will place them in a queue,
 and run them when everyone else in line before you is done. The most popular
 scheduler at the moment seems to be Slurm, but Cerulean also supports
