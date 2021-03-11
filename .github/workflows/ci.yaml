@@ -1,0 +1,24 @@
+# Run tests on push and pull request
+name: continuous_integration
+on:
+  - push
+  - pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+
+      - name: Run tests and upload coverage
+        run: |
+          cd $GITHUB_WORKSPACE
+          pip install -r requirements.txt
+          pip install 'requests<2.20' codacy-coverage 'pytest>=3.6.0'
+          python setup.py test
+          python-codacy-coverage -r coverage.xml
