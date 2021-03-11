@@ -8,5 +8,5 @@ if [ "$result" != "0" ] ; then
     exit $result
 fi
 
-pytest --timeout=120 -k 'test_scheduler' -v -n 2 --max-worker-restart=0 --cov=cerulean --cov-append --cov-report term-missing --cov-report xml
+pytest --timeout=120 -k 'test_scheduler' -v -n 4 --max-worker-restart=0 --cov=cerulean --cov-append --cov-report term-missing --cov-report xml
 echo "$?" >>/home/cerulean/pytest_exit_codes

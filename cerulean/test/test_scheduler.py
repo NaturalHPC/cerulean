@@ -210,12 +210,12 @@ def test_system_out_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     job_desc.working_directory = '/home'
     job_desc.command = 'ls'
     job_desc.time_reserved = 1
-    job_desc.system_out_file = '/home/cerulean/test_sys_redirect.out'
+    job_desc.system_out_file = '/home/cerulean/test_sys_redirect2.out'
 
     job_id = sched.submit(job_desc)
     sched.wait(job_id)
 
-    sysout = (fs / 'home/cerulean/test_sys_redirect.out').read_text()
+    sysout = (fs / 'home/cerulean/test_sys_redirect2.out').read_text()
 
     retval = sched.get_exit_code(job_id)
     assert retval == 0
