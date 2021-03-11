@@ -70,3 +70,5 @@ services:
             context: ../
             dockerfile: tests/container-test/Dockerfile
         image: cerulean-test-container
+        environment:
+          - CI
