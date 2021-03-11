@@ -161,18 +161,19 @@ def terminal(request: Any, ssh_terminal: SshTerminal,
     'local_direct',
     'ssh_direct',
     'ssh_torque-6',
-    'ssh_slurm-14-11',
-    'ssh_slurm-15-08',
     'ssh_slurm-16-05',
     'ssh_slurm-17-02',
     'ssh_slurm-17-11',
     'ssh_slurm-18-08',
+    'ssh_slurm-19-05',
+    'ssh_slurm-20-02',
     'flakyssh_direct',
     'flakyssh_slurm-17-11'])
 def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
                      password_credential: PasswordCredential
                      ) -> Generator[
                              Tuple[Scheduler, FileSystem, str], None, None]:
+    term = None
     if request.param == 'local_direct':
         yield DirectGnuScheduler(LocalTerminal()), LocalFileSystem(), request.param
     elif request.param == 'ssh_direct':
@@ -182,30 +183,6 @@ def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
         term = SshTerminal('cerulean-test-torque-6', 22, password_credential)
         with SftpFileSystem(term) as fs:
             yield TorqueScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-14-11':
-        term = SshTerminal('cerulean-test-slurm-14-11', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-15-08':
-        term = SshTerminal('cerulean-test-slurm-15-08', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-16-05':
-        term = SshTerminal('cerulean-test-slurm-16-05', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-17-02':
-        term = SshTerminal('cerulean-test-slurm-17-02', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-17-11':
-        term = SshTerminal('cerulean-test-slurm-17-11', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-18-08':
-        term = SshTerminal('cerulean-test-slurm-18-08', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
     elif request.param == 'flakyssh_direct':
         term = SshTerminal('cerulean-test-flaky', 22, password_credential)
         with SftpFileSystem(term) as fs:
@@ -214,6 +191,14 @@ def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
         term = SshTerminal('cerulean-test-flaky', 22, password_credential)
         with SftpFileSystem(term) as fs:
             yield SlurmScheduler(term), fs, request.param
+    else:
+        host = 'cerulean-test-slurm-{}'.format(request.param[-5:])
+        term = SshTerminal(host, 22, password_credential)
+        with SftpFileSystem(term) as fs:
+            yield SlurmScheduler(term), fs, request.param
+
+    if term:
+        term.close()
 
 
 @pytest.fixture(scope='module', params=[1, 2])
