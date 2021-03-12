@@ -11,6 +11,8 @@ jobs:
       - name: Check out
         uses: actions/checkout@v2
       - name: Run tests and upload coverage
+        env:
+          CODACY_PROJECT_TOKEN: ${{secrets.CODACY_PROJECT_TOKEN}}
         run: |
           cd $GITHUB_WORKSPACE
           python3 -c 'import platform ; print(platform.platform())'
