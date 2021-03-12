@@ -2,8 +2,8 @@
     :target: https://cerulean.readthedocs.io/en/latest/?badge=develop
     :alt: Documentation Build Status
 
-.. image:: https://api.travis-ci.org/MD-Studio/cerulean.svg?branch=develop
-    :target: https://travis-ci.org/MD-Studio/cerulean
+.. image:: https://github.com/MD-Studio/cerulean/actions/workflows/ci.yaml/badge.svg?branch=develop
+    :target: https://github.com/MD-Studio/cerulean/actions
     :alt: Build Status
 
 .. image:: https://app.codacy.com/project/badge/Grade/4909f6a7c0d94cc3a4b3c83230a20248
