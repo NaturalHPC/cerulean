@@ -49,7 +49,7 @@ setup(
         'recommonmark'
     ],
     tests_require=[
-        'coverage<5.0',
+        'coverage',
         'docker-compose==1.24',
         'docker[ssh]>=3.7.0,<4.0',
         'pytest>=3.6.0',
