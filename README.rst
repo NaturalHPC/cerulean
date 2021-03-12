@@ -6,12 +6,12 @@
     :target: https://travis-ci.org/MD-Studio/cerulean
     :alt: Build Status
 
-.. image:: https://api.codacy.com/project/badge/Grade/d4e477891b6d452589c94e2164cf6d7e
-    :target: https://www.codacy.com/app/LourensVeen/cerulean
+.. image:: https://app.codacy.com/project/badge/Grade/4909f6a7c0d94cc3a4b3c83230a20248
+    :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
     :alt: Codacy Grade
 
-.. image:: https://api.codacy.com/project/badge/Coverage/d4e477891b6d452589c94e2164cf6d7e
-    :target: https://www.codacy.com/app/LourensVeen/cerulean
+.. image:: https://app.codacy.com/project/badge/Coverage/4909f6a7c0d94cc3a4b3c83230a20248
+    :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
     :alt: Code Coverage
 
 .. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
