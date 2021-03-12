@@ -4,7 +4,7 @@ from typing import Any, Dict, Generator
 import pytest
 from cerulean import copy
 from cerulean.file_system_impl import FileSystemImpl
-from cerulean import EntryType, Path, Permission
+from cerulean import Path, Permission
 
 
 def assert_dir_files_copied_correctly(copied_dir: Path) -> None:
@@ -208,7 +208,7 @@ def test_no_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, P
 
 def test_copy_callback(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     def dummy_data() -> Generator[bytes, None, None]:
-        for i in range(20):
+        for _ in range(20):
             yield bytes(1024 * 1024)
 
     newdir = paths['new_dir']
@@ -223,7 +223,7 @@ def test_copy_callback(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> No
         def callback(count: int, total: int) -> None:
             nonlocal num_calls
             num_calls += 1
-            #time.sleep(2)
+            # time.sleep(2)
 
         copy(test_source, test_target, callback=callback)
         assert num_calls >= 2

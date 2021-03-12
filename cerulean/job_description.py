@@ -1,7 +1,5 @@
 from typing import Dict, List, Optional
 
-from pathlib import PurePath
-
 
 class JobDescription:
     """Describes a job to submit to a scheduler.
@@ -46,14 +44,14 @@ class JobDescription:
         self.name = 'cerulean'
         self.working_directory = None  # type: Optional[str]
         self.environment = dict()   # type: Dict[str, str]
-        self.command = None # type: Optional[str]
-        self.arguments = [] # type: List[str]
-        self.stdout_file = None # type: Optional[str]
-        self.stderr_file = None # type: Optional[str]
+        self.command = None     # type: Optional[str]
+        self.arguments = []     # type: List[str]
+        self.stdout_file = None     # type: Optional[str]
+        self.stderr_file = None     # type: Optional[str]
         self.queue_name = None  # type: Optional[str]
         self.time_reserved = None   # type: Optional[int]
         self.num_nodes = None   # type: Optional[int]
         self.mpi_processes_per_node = None  # type: Optional[int]
-        self.system_out_file = None # type: Optional[str]
-        self.system_err_file = None # type: Optional[str]
+        self.system_out_file = None     # type: Optional[str]
+        self.system_err_file = None     # type: Optional[str]
         self.extra_scheduler_options = None  # type: Optional[str]

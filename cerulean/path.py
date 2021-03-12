@@ -1,5 +1,4 @@
 import stat
-from abc import abstractmethod
 from enum import Enum
 import pathlib
 from pathlib import PurePosixPath, PureWindowsPath
@@ -111,7 +110,6 @@ class Path:
         else:
             path = self.__path / suffix.strip('/')
         return Path(self.filesystem, path)
-
 
     # PurePath attributes and functions
 

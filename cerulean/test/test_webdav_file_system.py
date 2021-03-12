@@ -1,9 +1,10 @@
-from typing import Dict, Generator
+from typing import Dict
 
 import pytest
 
-from cerulean import (EntryType, FileSystem, PasswordCredential, Path,
-                      Permission, UnsupportedOperationError, WebdavFileSystem)
+from cerulean import (
+        EntryType, PasswordCredential, Path, Permission,
+        UnsupportedOperationError, WebdavFileSystem)
 from cerulean.path import AbstractPath
 
 
@@ -159,8 +160,9 @@ def test_has_permission2(webdav_filesystem_quiet: WebdavFileSystem,
         assert filesystem._has_permission(lpaths['file'], permission)
 
 
-def test_set_permission2(webdav_filesystem_quiet: WebdavFileSystem,
-                        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_set_permission2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
 

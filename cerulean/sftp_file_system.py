@@ -70,8 +70,7 @@ class SftpFileSystem(FileSystemImpl):
             return NotImplemented
         if isinstance(other, SftpFileSystem):
             return self.__terminal == other.__terminal
-        else:
-            return False
+        return False
 
     def root(self) -> Path:
         return Path(self, PurePosixPath('/'))
@@ -93,11 +92,9 @@ class SftpFileSystem(FileSystemImpl):
         except IOError:
             return False
 
-    def _mkdir(self,
-              path: AbstractPath,
-              mode: Optional[int] = None,
-              parents: bool = False,
-              exists_ok: bool = False) -> None:
+    def _mkdir(
+            self, path: AbstractPath, mode: Optional[int] = None,
+            parents: bool = False, exists_ok: bool = False) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         if parents:
@@ -116,7 +113,8 @@ class SftpFileSystem(FileSystemImpl):
         else:
             self.__sftp.mkdir(str(lpath))
 
-    def _iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
+    def _iterdir(
+            self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         # Note: we're not using listdir_iter here, because it hangs:
@@ -156,7 +154,8 @@ class SftpFileSystem(FileSystemImpl):
         with self.__sftp.file(str(lpath), 'a'):
             pass
 
-    def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+    def _streaming_read(
+            self, path: AbstractPath) -> Generator[bytes, None, None]:
         # Buffer size vs. speed (MB/s) against localhost
         #       up      down        local
         # 8k    33      56          159
@@ -198,7 +197,8 @@ class SftpFileSystem(FileSystemImpl):
             else:
                 raise e
 
-    def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+    def _streaming_write(
+            self, path: AbstractPath, data: Iterable[bytes]) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
@@ -297,7 +297,8 @@ class SftpFileSystem(FileSystemImpl):
             raise RuntimeError('Server did not return a GID')
         return gid
 
-    def _has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+    def _has_permission(
+            self, path: AbstractPath, permission: Permission) -> bool:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         mode = self.__stat(lpath).st_mode
@@ -305,10 +306,9 @@ class SftpFileSystem(FileSystemImpl):
             raise RuntimeError('Server did not return file mode')
         return bool(mode & permission.value)
 
-    def _set_permission(self,
-                       path: AbstractPath,
-                       permission: Permission,
-                       value: bool = True) -> None:
+    def _set_permission(
+            self, path: AbstractPath, permission: Permission,
+            value: bool = True) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         mode = self.__stat(lpath).st_mode

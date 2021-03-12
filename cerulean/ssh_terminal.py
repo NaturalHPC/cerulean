@@ -212,7 +212,7 @@ class SshTerminal(Terminal):
         return key
 
     def __ensure_connection(self, transport: Optional[paramiko.Transport],
-                            force: bool=False) -> paramiko.Transport:
+                            force: bool = False) -> paramiko.Transport:
         if transport is None or not transport.is_active() or force:
             if transport is not None:
                 transport.close()

@@ -1,5 +1,4 @@
 from abc import ABC
-from pathlib import PurePath
 from types import TracebackType
 from typing import Any, cast, TYPE_CHECKING, Optional, Union
 

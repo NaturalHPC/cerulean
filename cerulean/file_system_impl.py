@@ -1,8 +1,6 @@
 import stat
-import traceback
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any, Generator, Iterable, Optional
+from typing import Generator, Iterable, Optional
 
 from cerulean.file_system import FileSystem
 from cerulean.path import AbstractPath, EntryType, Path, Permission
@@ -44,15 +42,14 @@ class FileSystemImpl(FileSystem):
         pass
 
     @abstractmethod
-    def _mkdir(self,
-              path: AbstractPath,
-              mode: Optional[int] = None,
-              parents: bool = False,
-              exists_ok: bool = False) -> None:
+    def _mkdir(
+            self, path: AbstractPath, mode: Optional[int] = None,
+            parents: bool = False, exists_ok: bool = False) -> None:
         pass
 
     @abstractmethod
-    def _iterdir(self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
+    def _iterdir(
+            self, path: AbstractPath) -> Generator[AbstractPath, None, None]:
         pass
 
     @abstractmethod
@@ -64,11 +61,13 @@ class FileSystemImpl(FileSystem):
         pass
 
     @abstractmethod
-    def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+    def _streaming_read(
+            self, path: AbstractPath) -> Generator[bytes, None, None]:
         pass
 
     @abstractmethod
-    def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+    def _streaming_write(
+            self, path: AbstractPath, data: Iterable[bytes]) -> None:
         pass
 
     # Convenience functions are implemented here, on top of the internal API
@@ -133,14 +132,14 @@ class FileSystemImpl(FileSystem):
         pass
 
     @abstractmethod
-    def _has_permission(self, path: AbstractPath, permission: Permission) -> bool:
+    def _has_permission(
+            self, path: AbstractPath, permission: Permission) -> bool:
         pass
 
     @abstractmethod
-    def _set_permission(self,
-                       path: AbstractPath,
-                       permission: Permission,
-                       value: bool = True) -> None:
+    def _set_permission(
+            self, path: AbstractPath, permission: Permission,
+            value: bool = True) -> None:
         pass
 
     @abstractmethod

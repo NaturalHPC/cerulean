@@ -19,10 +19,10 @@ def test_make_file_system() -> None:
         assert isinstance(fs4, cerulean.WebdavFileSystem)
 
     with pytest.raises(ValueError):
-        fs4 = make_file_system('sftp')
+        make_file_system('sftp')
 
     with pytest.raises(ValueError):
-        fs5 = make_file_system('non-existent-protocol')
+        make_file_system('non-existent-protocol')
 
 
 def test_make_terminal() -> None:

@@ -132,28 +132,27 @@ def test_walk_bottom_up(paths_local: Dict[str, Path]) -> None:
         for filename in filenames:
             files.append(str(dirpath / filename))
 
-    print('dirs: {}'.format(dirs))
     assert (dirs == [
-                     str(newdir) + '/dir1/dir2',
-                     str(newdir) + '/dir1',
-                     str(newdir) + '/dir3',
-                     str(newdir)]
-            or dirs == [
-                        str(newdir) + '/dir3',
-                        str(newdir) + '/dir1/dir2',
-                        str(newdir) + '/dir1',
-                        str(newdir)])
+            str(newdir) + '/dir1/dir2',
+            str(newdir) + '/dir1',
+            str(newdir) + '/dir3',
+            str(newdir)]
+        or dirs == [
+            str(newdir) + '/dir3',
+            str(newdir) + '/dir1/dir2',
+            str(newdir) + '/dir1',
+            str(newdir)])
 
     assert subdirs == [
-            str(newdir) + '/dir1/dir2',
-            str(newdir) + '/dir1/dir_link',
-            str(newdir) + '/dir1',
-            str(newdir) + '/dir3']
+        str(newdir) + '/dir1/dir2',
+        str(newdir) + '/dir1/dir_link',
+        str(newdir) + '/dir1',
+        str(newdir) + '/dir3']
 
     assert files == [
-            str(newdir) + '/dir1/file1',
-            str(newdir) + '/file2',
-            str(newdir) + '/file3']
+        str(newdir) + '/dir1/file1',
+        str(newdir) + '/file2',
+        str(newdir) + '/file3']
 
     paths_local['new_dir'].rmdir(recursive=True)
 
@@ -202,7 +201,7 @@ def test_walk_onerror(paths_local: Dict[str, Path]) -> None:
         handler_called += 1
 
     (newdir / 'dir1').chmod(0o000)
-    for dirpath, dirnames, filenames in newdir.walk(onerror=handler):
+    for _ in newdir.walk(onerror=handler):
         pass
 
     assert handler_called == 1

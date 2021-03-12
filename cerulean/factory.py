@@ -1,4 +1,4 @@
-from typing import cast, Generator, Optional
+from typing import cast, Optional
 
 from cerulean.credential import Credential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
@@ -84,10 +84,10 @@ def make_terminal(protocol: str, location: Optional[str] = None,
     elif protocol == 'ssh':
         if location is None:
             raise ValueError(
-                    'The ssh protocol requires a location to connect to')
+                'The ssh protocol requires a location to connect to')
         if credential is None:
             raise ValueError(
-                    'The ssh protocol requires a credential to connect with')
+                'The ssh protocol requires a credential to connect with')
 
         if ':' in location:
             host = location.split(':')[0]
