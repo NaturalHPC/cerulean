@@ -3,8 +3,8 @@ from typing import Dict
 import pytest
 
 from cerulean import (
-        EntryType, PasswordCredential, Path, Permission,
-        UnsupportedOperationError, WebdavFileSystem)
+        EntryType, PasswordCredential, Permission, UnsupportedOperationError,
+        WebdavFileSystem)
 from cerulean.path import AbstractPath
 
 

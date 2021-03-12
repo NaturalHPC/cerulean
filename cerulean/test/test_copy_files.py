@@ -1,5 +1,4 @@
-import time
-from typing import Any, Dict, Generator
+from typing import Dict, Generator
 
 import pytest
 from cerulean import copy
@@ -223,7 +222,6 @@ def test_copy_callback(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> No
         def callback(count: int, total: int) -> None:
             nonlocal num_calls
             num_calls += 1
-            # time.sleep(2)
 
         copy(test_source, test_target, callback=callback)
         assert num_calls >= 2

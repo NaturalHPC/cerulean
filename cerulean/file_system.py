@@ -1,13 +1,9 @@
 from abc import ABC
 from types import TracebackType
-from typing import Any, cast, TYPE_CHECKING, Optional, Union
+from typing import Any, TYPE_CHECKING, Optional, Union
 
 from cerulean.path import Path
 from cerulean.util import BaseExceptionType
-
-
-if TYPE_CHECKING:
-    from cerulean.file_system_impl import FileSystemImpl
 
 
 class UnsupportedOperationError(RuntimeError):

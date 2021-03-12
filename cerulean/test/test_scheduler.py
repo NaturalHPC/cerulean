@@ -42,7 +42,7 @@ def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
 def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
                           caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs, _ = scheduler_and_fs
+    sched, _, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
@@ -320,7 +320,6 @@ def test_num_nodes(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
         time.sleep(10.0)
 
     outfile = fs / 'home/cerulean/test_num_nodes.out'
-    num_nodes_output = outfile.read_text()
     assert '2' in outfile.read_text()
     outfile.unlink()
 

@@ -37,10 +37,10 @@ def test_make_terminal() -> None:
         assert isinstance(t3, cerulean.SshTerminal)
 
     with pytest.raises(ValueError):
-        t4 = make_terminal('ssh')
+        make_terminal('ssh')
 
     with pytest.raises(ValueError):
-        t5 = make_terminal('non-existent-protocol')
+        make_terminal('non-existent-protocol')
 
 
 def test_make_scheduler() -> None:

@@ -4,7 +4,7 @@ from pathlib import PurePosixPath
 import requests
 from urllib.parse import urljoin
 from types import TracebackType
-from typing import Any, cast, Dict, Generator, Iterable, List, Optional, Tuple
+from typing import Any, cast, Dict, Generator, Iterable, Optional, Tuple
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET     # type: ignore
