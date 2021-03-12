@@ -22,13 +22,15 @@ class DirectGnuScheduler(Scheduler):
     it will be prepended onto these commands. Note that this is a
     simple string concatenation, so you may need a semicolon at the
     end depending your exact prefix command.
-
-    Args:
-        terminal: The terminal to execute on.
-        prefix: A string to prefix the shell commands with.
     """
-
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
+        """Create a DirectGnuScheduler.
+
+        Args:
+            terminal: The terminal to execute on.
+            prefix: A string to prefix the shell commands with.
+
+        """
         self.__terminal = terminal
         self.__prefix = prefix
 

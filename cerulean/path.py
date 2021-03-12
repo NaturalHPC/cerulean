@@ -62,6 +62,7 @@ class Path:
 
     Attributes:
         filesystem: The file system that this path is on.
+
     """
     def __init__(self, filesystem: 'FileSystemImpl', path: AbstractPath
                  ) -> None:
@@ -71,24 +72,29 @@ class Path:
         self.filesystem = filesystem
 
     def __str__(self) -> str:
+        """Return string representation of this Path."""
         return str(self.__path)
 
     def __repr__(self) -> str:
+        """Return an object-like representation of this Path."""
         return 'Path({}, {})'.format(self.filesystem, self)
 
     # PurePath operators
     def __eq__(self, other: object) -> bool:
+        """Return True iff the paths are equal."""
         if not isinstance(other, Path):
             return NotImplemented
         return (self.filesystem == other.filesystem
                 and self.__path == other.__path)
 
     def __neq__(self, other: object) -> bool:
+        """Return True iff the paths are not equal."""
         if not isinstance(other, Path):
             return NotImplemented
         return not (self == other)
 
     def __lt__(self, other: object) -> bool:
+        """Return True iff this path sorts before other."""
         if not isinstance(other, Path):
             return NotImplemented
         if self.filesystem != other.filesystem:
@@ -96,15 +102,19 @@ class Path:
         return self.__path < other.__path
 
     def __gt__(self, other: object) -> bool:
+        """Return True iff this path sorts after other."""
         return other < self
 
     def __le__(self, other: object) -> bool:
+        """Return True iff this path is equal to or sorts before other."""
         return self < other or self == other
 
     def __ge__(self, other: object) -> bool:
+        """Return True iff this path is equal to or sorts after other."""
         return other < self or self == other
 
     def __truediv__(self, suffix: Union[str, 'Path']) -> 'Path':
+        """Append a suffix to the path and return the result."""
         if isinstance(suffix, Path):
             path = self.__path / suffix.__path
         else:
@@ -148,8 +158,10 @@ class Path:
 
     @property
     def name(self) -> str:
-        """The name of the file or directory, excluding parents but \
-        including the suffix.
+        """The name of the file or directory.
+
+        This excludes parents but includes the suffix.
+
         """
         return self.__path.name
 
@@ -165,8 +177,11 @@ class Path:
 
     @property
     def stem(self) -> str:
-        """The name of the file or directory, excluding parents and \
-        excluding the suffix.
+        """The stem of this path.
+
+        This is the name of the file or directory, excluding
+        parents and excluding the suffix.
+
         """
         return self.__path.stem
 
@@ -178,6 +193,7 @@ class Path:
         """Returns a URI representing the path.
 
         This is not yet implemented, please file an issue if you need it.
+
         """
         raise NotImplementedError('Not yet implemented, please file an issue')
 
@@ -189,6 +205,7 @@ class Path:
         """Return whether the path is reserved.
 
         This can only happen on Windows on a LocalFileSystem.
+
         """
         return self.__path.is_reserved()
 
@@ -197,6 +214,10 @@ class Path:
 
         Args:
             other: The other path to append to this one.
+
+        Returns:
+            The combined path.
+
         """
         def get_path(segment: Union[str, 'Path']) -> str:
             if isinstance(segment, str):
@@ -216,6 +237,7 @@ class Path:
 
         Args:
             other: The path to use as a reference.
+
         """
         def get_path(segment: Union[str, 'Path']) -> str:
             if isinstance(segment, str):
@@ -231,6 +253,7 @@ class Path:
 
         Args:
             name: The new name to use.
+
         """
         return Path(self.filesystem, self.__path.with_name(name))
 
@@ -239,6 +262,7 @@ class Path:
 
         Args:
             suffix: The new suffix to use.
+
         """
         return Path(self.filesystem, self.__path.with_suffix(suffix))
 
@@ -253,6 +277,7 @@ class Path:
 
         Returns:
             True iff the path exists on the filesystem.
+
         """
         return self.filesystem._exists(self.__path)
 
@@ -271,6 +296,7 @@ class Path:
             mode: A numerical Posix access permissions mode.
             parents: Whether to make parent directories.
             exists_ok: Don't raise if target already exists.
+
         """
         self.filesystem._mkdir(self.__path, mode, parents, exists_ok)
 
@@ -279,6 +305,7 @@ class Path:
 
         Yields:
             Paths of entries in the directory.
+
         """
         for entry in self.filesystem._iterdir(self.__path):
             yield Path(self.filesystem, entry)
@@ -316,6 +343,7 @@ class Path:
 
         Yields:
             Tuples (dirpath, dirnames, filenames), as above.
+
         """
         dirnames = list()  # type: List[str]
         filenames = list()  # type: List[str]
@@ -345,6 +373,7 @@ class Path:
 
         If recursive is True, remove all files and directories inside \
         as well. If recursive is False, the directory must be empty.
+
         """
         self.filesystem._rmdir(self.__path, recursive)
 
@@ -353,6 +382,7 @@ class Path:
 
         If the file does not exist, it will be created, which is often \
         what this function is used for.
+
         """
         self.filesystem._touch(self.__path)
 
@@ -361,6 +391,7 @@ class Path:
 
         This is a generator function that generates bytes objects \
         containing consecutive chunks of the file.
+
         """
         return self.filesystem._streaming_read(self.__path)
 
@@ -372,6 +403,7 @@ class Path:
 
         Args:
             data: An iterable of bytes containing data to be written.
+
         """
         self.filesystem._streaming_write(self.__path, data)
 
@@ -380,6 +412,7 @@ class Path:
 
         Returns:
             The contents of the file.
+
         """
         data = bytearray()
         for chunk in self.streaming_read():
@@ -396,6 +429,7 @@ class Path:
 
         Returns:
             The contents of the file.
+
         """
         return self.read_bytes().decode(encoding)
 
@@ -406,6 +440,7 @@ class Path:
 
         Args:
             data: The data to be written.
+
         """
         self.streaming_write([data])
 
@@ -417,6 +452,7 @@ class Path:
         Args:
             text: The text to be written.
             encoding: The encoding to use.
+
         """
         self.write_bytes(text.encode(encoding))
 
@@ -428,6 +464,7 @@ class Path:
 
         Args:
             target: The new path of the file.
+
         """
         if target.filesystem != self:
             raise RuntimeError('Cannot rename across file systems')
@@ -437,6 +474,7 @@ class Path:
         """Removes a file or device node.
 
         For removing directories, see rmdir().
+
         """
         self.filesystem._unlink(self.__path)
 
@@ -448,6 +486,7 @@ class Path:
         error if there is nothing there already.
 
         Use this method to ensure that there is no entry at this path.
+
         """
         if self.exists() or self.is_symlink():
             if self.is_symlink():
@@ -465,6 +504,7 @@ class Path:
         Returns:
             True iff the path exists and is a directory, or a symbolic \
             link pointing to a directory.
+
         """
         return self.filesystem._is_dir(self.__path)
 
@@ -474,6 +514,7 @@ class Path:
         Returns:
             True iff the path exists and is a file, or a symbolic \
             link pointing to a file.
+
         """
         return self.filesystem._is_file(self.__path)
 
@@ -482,6 +523,7 @@ class Path:
 
         Returns:
             True iff the path exists and is a symbolic link.
+
         """
         return self.filesystem._is_symlink(self.__path)
 
@@ -494,6 +536,7 @@ class Path:
 
         Raises:
             FileNotFoundError: If there is no file here.
+
         """
         return self.filesystem._entry_type(self.__path)
 
@@ -502,6 +545,7 @@ class Path:
 
         Returns:
             An integer with the number of bytes in the file.
+
         """
         return self.filesystem._size(self.__path)
 
@@ -512,6 +556,7 @@ class Path:
 
         Returns:
             An integer with the id, or None if not supported.
+
         """
         return self.filesystem._uid(self.__path)
 
@@ -520,6 +565,7 @@ class Path:
 
         Returns:
             An integer with the id, or None of not supported.
+
         """
         return self.filesystem._gid(self.__path)
 
@@ -531,6 +577,7 @@ class Path:
 
         Returns:
             True iff the object exists and has the given permission.
+
         """
         return self.filesystem._has_permission(self.__path, permission)
 
@@ -541,6 +588,7 @@ class Path:
         Args:
             permission: The permission to set.
             value: Whether to enable or disable the permission.
+
         """
         self.filesystem._set_permission(self.__path, permission, value)
 
@@ -551,6 +599,7 @@ class Path:
             mode: The numerical mode describing the permissions to set. \
                   This uses standard POSIX mode definitions, see \
                   man chmod.
+
         """
         self.filesystem._chmod(self.__path, mode)
 
@@ -568,6 +617,7 @@ class Path:
         Raises:
             FileExistsError: if you try to overwrite an existing entry \
                     with a symlink.
+
         """
         if self.filesystem != target.filesystem:
             raise RuntimeError('Cannot symlink across filesystems')
@@ -593,5 +643,6 @@ class Path:
         Raises:
             RunTimeError: The recursion depth was reached, probably as a \
                     result of a link loop.
+
         """
         return self.filesystem._readlink(self.__path, recursive)

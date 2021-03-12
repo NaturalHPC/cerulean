@@ -12,6 +12,7 @@ class LocalTerminal(Terminal):
     """A Terminal for running commands on the local machine.
 
     To create one, just do ``term = LocalTerminal()``.
+
     """
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Terminal):

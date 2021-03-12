@@ -20,11 +20,13 @@ class Terminal(ABC):
     """
 
     def __enter__(self) -> 'Terminal':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         pass
 
     def close(self) -> None:
@@ -66,5 +68,6 @@ class Terminal(ABC):
         Returns:
             A tuple containing the exit code, standard output, and \
             standard error output.
+
         """
         pass

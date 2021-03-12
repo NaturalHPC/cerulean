@@ -38,9 +38,15 @@ class JobDescription:
         system_out_file and/or system_err_file are, then the command \
         output/error will end up in the system output/error file \
         together with the scheduler output.
+
     """
 
     def __init__(self) -> None:
+        """Create a default JobDescription.
+
+        This sets the name of the job to `cerulean` and everything
+        else to None or an empty dict or list.
+        """
         self.name = 'cerulean'
         self.working_directory = None  # type: Optional[str]
         self.environment = dict()   # type: Dict[str, str]

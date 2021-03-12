@@ -24,6 +24,7 @@ class SshTerminal(Terminal):
         host: The hostname to connect to.
         port: The port to connect on.
         credential: The credential to authenticate with.
+
     """
     def __init__(self, host: str, port: int, credential: Credential) -> None:
         self.__host = host
@@ -34,11 +35,13 @@ class SshTerminal(Terminal):
         self.__transport2 = None    # type: Optional[paramiko.Transport]
 
     def __enter__(self) -> 'SshTerminal':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         self.close()
 
     def close(self) -> None:
@@ -51,6 +54,7 @@ class SshTerminal(Terminal):
         logger.debug('Disconnected from SSH server')
 
     def __eq__(self, other: Any) -> bool:
+        """Returns True iff this terminal equals other."""
         if not isinstance(other, Terminal):
             return NotImplemented
         if isinstance(other, SshTerminal):
@@ -67,6 +71,7 @@ class SshTerminal(Terminal):
 
         Returns:
             An SFTP client object using this terminal's connection.
+
         """
         self.__transport = self.__ensure_connection(self.__transport)
         client = paramiko.SFTPClient.from_transport(self.__transport)
@@ -85,6 +90,7 @@ class SshTerminal(Terminal):
 
         Returns:
             An SFTP client object using a second connection.
+
         """
         self.__transport2 = self.__ensure_connection(self.__transport2)
         client = paramiko.SFTPClient.from_transport(self.__transport2)

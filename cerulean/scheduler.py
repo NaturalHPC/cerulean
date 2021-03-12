@@ -22,6 +22,7 @@ class Scheduler(ABC):
 
         Returns:
             A job id that can be used to keep track of it.
+
         """
         pass
 
@@ -37,6 +38,7 @@ class Scheduler(ABC):
 
         Returns:
             The status of the job as a :class:`JobStatus`
+
         """
         pass
 
@@ -53,6 +55,7 @@ class Scheduler(ABC):
 
         Returns:
             The exit code, or None if there is none.
+
         """
         pass
 
@@ -64,6 +67,7 @@ class Scheduler(ABC):
 
         Args:
             job_id: Id of the job to be cancelled.
+
         """
         pass
 
@@ -88,6 +92,7 @@ class Scheduler(ABC):
 
         Returns:
             The exit code of the job.
+
         """
         if time_out < 0.0:
             time_end = None

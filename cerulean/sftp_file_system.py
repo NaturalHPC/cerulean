@@ -44,6 +44,7 @@ class SftpFileSystem(FileSystemImpl):
         terminal: The terminal to connect through.
         own_term: Whether to close the terminal when the file system \
                 is closed.
+
     """
     def __init__(self, terminal: SshTerminal, own_term: bool = False) -> None:
         self.__terminal = terminal
@@ -53,11 +54,13 @@ class SftpFileSystem(FileSystemImpl):
         self.__max_tries = 3
 
     def __enter__(self) -> 'SftpFileSystem':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         if self.__own_term:
             self.close()
 

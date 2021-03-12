@@ -27,8 +27,10 @@ class LocalFileSystem(FileSystemImpl):
     it doesn't hold any resources, you do not need to use them. It may \
     be good to do so anyway, to avoid leaks if you ever replace it with \
     a different :class:`FileSystem` that does.
+
     """
     def __eq__(self, other: Any) -> bool:
+        """Return True iff this file system equals other."""
         if not isinstance(other, FileSystem):
             return NotImplemented
         return isinstance(other, LocalFileSystem)

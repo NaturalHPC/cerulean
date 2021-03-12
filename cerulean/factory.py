@@ -40,6 +40,7 @@ def make_file_system(protocol: str, location: Optional[str] = None,
     Returns:
         An instance of a FileSystem representing the described file \
                 system.
+
     """
     if protocol == 'local':
         return LocalFileSystem()
@@ -78,6 +79,7 @@ def make_terminal(protocol: str, location: Optional[str] = None,
     Returns:
         An instance of a FileSystem representing the described file \
                 system.
+
     """
     if protocol == 'local':
         return LocalTerminal()
@@ -116,6 +118,7 @@ def make_scheduler(name: str, terminal: Terminal, prefix: str = ''
 
     Returns:
         The Scheduler.
+
     """
     if name == 'directgnu':
         return DirectGnuScheduler(terminal, prefix)

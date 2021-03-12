@@ -4,7 +4,7 @@ from pathlib import PurePosixPath
 import requests
 from urllib.parse import urljoin
 from types import TracebackType
-from typing import Any, cast, Dict, Generator, Iterable, Optional, Tuple
+from typing import Any, cast, Dict, Generator, Iterable, Optional
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET     # type: ignore
@@ -75,11 +75,13 @@ class WebdavFileSystem(FileSystemImpl):
         self.__max_tries = 3
 
     def __enter__(self) -> 'WebdavFileSystem':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         self.close()
 
     def close(self) -> None:
@@ -87,6 +89,7 @@ class WebdavFileSystem(FileSystemImpl):
         logger.info('Disconnected from WebDAV server')
 
     def __eq__(self, other: Any) -> bool:
+        """Returns True iff this file system equals other."""
         if not isinstance(other, FileSystem):
             return NotImplemented
         if isinstance(other, WebdavFileSystem):
@@ -359,6 +362,7 @@ class WebdavFileSystem(FileSystemImpl):
 
         Returns:
             A dictionary mapping urls to XML subtrees.
+
         """
         headers = {'Depth': str(depth)}
         response = self.__session.request('PROPFIND', url, headers=headers)

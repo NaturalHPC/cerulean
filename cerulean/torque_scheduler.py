@@ -27,6 +27,7 @@ class TorqueScheduler(Scheduler):
     Arguments:
         terminal: The terminal to use to talk to the scheduler.
         prefix: A string to prefix the Torque commands with.
+
     """
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
         self.__terminal = terminal

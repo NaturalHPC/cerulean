@@ -114,7 +114,6 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
         The approximate total number of bytes written.
     """
     logger.debug('Copying %s to %s', source_path, target_path)
-    target_path_exists = target_path.exists() or target_path.is_symlink()
     if source_path.is_symlink():
         if _copy_symlink(source_path, target_path, overwrite, context):
             return already_written
@@ -239,8 +238,7 @@ def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
               copy_permissions: bool, context: Optional[Path],
               callback: Optional[CopyCallback], already_written: int, size: int
               ) -> int:
-    """Copy a directory recursively.
-    """
+    """Copy a directory recursively."""
     target_path_exists = target_path.exists() or target_path.is_symlink()
 
     if target_path_exists:

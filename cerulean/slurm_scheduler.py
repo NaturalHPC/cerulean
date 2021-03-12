@@ -23,12 +23,15 @@ class SlurmScheduler(Scheduler):
     class. Note that this is a plain string concatenation, so you'll
     probably need something like 'module load slurm;', with a
     semicolon to separate the commands.
-
-    Arguments:
-        terminal: The terminal to use to talk to the scheduler.
-        prefix: A string to prefix the SLURM commands with.
     """
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
+        """Create ea SlurmScheduler.
+
+        Arguments:
+            terminal: The terminal to use to talk to the scheduler.
+            prefix: A string to prefix the SLURM commands with.
+
+        """
         self.__terminal = terminal
         self.__prefix = prefix
 
@@ -195,6 +198,7 @@ def _seconds_to_time(seconds: int) -> str:
 
     Returns:
         A string of the form DD:HH:MM:SS.
+
     """
     seconds_per_day = 60 * 60 * 24
     seconds_per_hour = 60 * 60

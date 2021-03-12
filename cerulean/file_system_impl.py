@@ -31,6 +31,7 @@ class FileSystemImpl(FileSystem):
 
         Returns:
             Whether it is supported.
+
         """
         pass
 

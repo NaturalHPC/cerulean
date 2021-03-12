@@ -8,7 +8,7 @@ if [ "$result" != "0" ] ; then
     exit $result
 fi
 
-if [ $CI == 'true' ] ; then
+if [ "$CI" == 'true' ] ; then
     pytest --timeout=120 -k 'test_scheduler and not flaky' -v -n 4 --max-worker-restart=0 --cov=cerulean --cov-append --cov-report term-missing --cov-report xml
 else
     pytest --timeout=120 -k 'test_scheduler' -v -n 4 --max-worker-restart=0 --cov=cerulean --cov-append --cov-report term-missing --cov-report xml
