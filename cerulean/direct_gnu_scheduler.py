@@ -22,13 +22,15 @@ class DirectGnuScheduler(Scheduler):
     it will be prepended onto these commands. Note that this is a
     simple string concatenation, so you may need a semicolon at the
     end depending your exact prefix command.
-
-    Args:
-        terminal: The terminal to execute on.
-        prefix: A string to prefix the shell commands with.
     """
-
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
+        """Create a DirectGnuScheduler.
+
+        Args:
+            terminal: The terminal to execute on.
+            prefix: A string to prefix the shell commands with.
+
+        """
         self.__terminal = terminal
         self.__prefix = prefix
 
@@ -79,37 +81,37 @@ class DirectGnuScheduler(Scheduler):
         job_script += 'echo -n $! $exit_code_file\n'
         job_script += 'disown\n'
 
-        logger.debug('Job script: {}'.format(job_script))
+        logger.debug('Job script: %s', job_script)
         command = self.__prefix + ' bash'
-        exit_code, output, error = self.__terminal.run(10.0, command, [],
+        _, output, error = self.__terminal.run(10.0, command, [],
                                                        job_script)
 
         return output
 
     def get_status(self, job_id: str) -> JobStatus:
         pid = job_id.split(' ')[0]
-        logger.debug('Running ps -p {}'.format(pid))
+        logger.debug('Running ps -p %s', pid)
         command = self.__prefix + ' ps'
         exit_code, output, error = self.__terminal.run(10.0, command, ['-p', pid])
 
-        logger.debug('ps exit code: {}'.format(exit_code))
-        logger.debug('ps output: {}'.format(output))
-        logger.debug('ps error: {}'.format(error))
+        logger.debug('ps exit code: %s', exit_code)
+        logger.debug('ps output: %s', output)
+        logger.debug('ps error: %s', error)
 
         if exit_code == 0:
             return JobStatus.RUNNING
-        else:
-            return JobStatus.DONE
+
+        return JobStatus.DONE
 
     def get_exit_code(self, job_id: str) -> Optional[int]:
         exit_code_file = job_id.split(' ', maxsplit=1)[1]
-        logger.debug('Running cat {}'.format(exit_code_file))
+        logger.debug('Running cat %s', exit_code_file)
         command = self.__prefix + ' cat'
         exit_code, output, error = self.__terminal.run(10.0, command,
                                                        [exit_code_file])
-        logger.debug('cat exit code: {}'.format(exit_code))
-        logger.debug('cat output: {}'.format(output))
-        logger.debug('cat error: {}'.format(error))
+        logger.debug('cat exit code: %s', exit_code)
+        logger.debug('cat output: %s', output)
+        logger.debug('cat error: %s', error)
         # TODO: delete tempfile?
         try:
             return int(output)
@@ -118,13 +120,12 @@ class DirectGnuScheduler(Scheduler):
 
     def cancel(self, job_id: str) -> None:
         pid = job_id.split(' ')[0]
-        logger.debug('Running kill {}'.format(pid))
+        logger.debug('Running kill %s', pid)
         command = self.__prefix + ' kill'
         exit_code, output, error = self.__terminal.run(10.0, command, [pid])
 
-        logger.debug('kill exit code: {}'.format(exit_code))
-        logger.debug('kill output: {}'.format(output))
-        logger.debug('kill error: {}'.format(error))
+        logger.debug('kill exit code: %s', exit_code)
+        logger.debug('kill output: %s', output)
+        logger.debug('kill error: %s', error)
         # TODO: Check exit code and return whether it was running?
         # TODO: Check if it's stopped, do a -9 if not?
-        pass

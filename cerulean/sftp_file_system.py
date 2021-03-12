@@ -44,20 +44,23 @@ class SftpFileSystem(FileSystemImpl):
         terminal: The terminal to connect through.
         own_term: Whether to close the terminal when the file system \
                 is closed.
+
     """
     def __init__(self, terminal: SshTerminal, own_term: bool = False) -> None:
         self.__terminal = terminal
         self.__own_term = own_term
         self.__ensure_sftp(True)
-        self.__sftp2 = None  # type: paramiko.SFTPClient
+        self.__sftp2 = None  # type: Optional[paramiko.SFTPClient]
         self.__max_tries = 3
 
     def __enter__(self) -> 'SftpFileSystem':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         if self.__own_term:
             self.close()
 
@@ -70,8 +73,7 @@ class SftpFileSystem(FileSystemImpl):
             return NotImplemented
         if isinstance(other, SftpFileSystem):
             return self.__terminal == other.__terminal
-        else:
-            return False
+        return False
 
     def root(self) -> Path:
         return Path(self, PurePosixPath('/'))
@@ -93,11 +95,9 @@ class SftpFileSystem(FileSystemImpl):
         except IOError:
             return False
 
-    def _mkdir(self,
-              path: AbstractPath,
-              mode: Optional[int] = None,
-              parents: bool = False,
-              exists_ok: bool = False) -> None:
+    def _mkdir(
+            self, path: AbstractPath, mode: Optional[int] = None,
+            parents: bool = False, exists_ok: bool = False) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         if parents:
@@ -111,9 +111,13 @@ class SftpFileSystem(FileSystemImpl):
             else:
                 return
 
-        self.__sftp.mkdir(str(lpath), mode)
+        if mode is not None:
+            self.__sftp.mkdir(str(lpath), mode)
+        else:
+            self.__sftp.mkdir(str(lpath))
 
-    def _iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
+    def _iterdir(
+            self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         # Note: we're not using listdir_iter here, because it hangs:
@@ -153,7 +157,8 @@ class SftpFileSystem(FileSystemImpl):
         with self.__sftp.file(str(lpath), 'a'):
             pass
 
-    def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
+    def _streaming_read(
+            self, path: AbstractPath) -> Generator[bytes, None, None]:
         # Buffer size vs. speed (MB/s) against localhost
         #       up      down        local
         # 8k    33      56          159
@@ -175,14 +180,15 @@ class SftpFileSystem(FileSystemImpl):
                     else:
                         raise
 
-                if not self.__sftp2.get_channel().get_transport().is_active():
+                channel = self.__sftp2.get_channel()
+                if not (channel and channel.get_transport().is_active()):
                     self.__sftp2 = self.__terminal._get_downstream_sftp_client()
 
         lpath = cast(PurePosixPath, path)
         ensure_sftp2(self)
         try:
             size = self._size(path)
-            with self.__sftp2.file(str(lpath), 'rb') as f:
+            with self.__sftp2.file(str(lpath), 'rb') as f:  # type: ignore
                 f.prefetch(size)
                 data = f.read(24576)
                 while len(data) > 0:
@@ -194,7 +200,8 @@ class SftpFileSystem(FileSystemImpl):
             else:
                 raise e
 
-    def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
+    def _streaming_write(
+            self, path: AbstractPath, data: Iterable[bytes]) -> None:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
@@ -223,7 +230,8 @@ class SftpFileSystem(FileSystemImpl):
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
-            return bool(stat.S_ISDIR(self.__stat(lpath).st_mode))
+            mode = self.__stat(lpath).st_mode
+            return mode is not None and bool(stat.S_ISDIR(mode))
         except FileNotFoundError:
             return False
 
@@ -232,7 +240,7 @@ class SftpFileSystem(FileSystemImpl):
         lpath = cast(PurePosixPath, path)
         try:
             mode = self.__stat(lpath).st_mode
-            return bool(stat.S_ISREG(mode))
+            return mode is not None and bool(stat.S_ISREG(mode))
         except FileNotFoundError:
             return False
 
@@ -240,21 +248,21 @@ class SftpFileSystem(FileSystemImpl):
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         try:
-            return bool(stat.S_ISLNK(self.__lstat(lpath).st_mode))
+            mode = self.__lstat(lpath).st_mode
+            return mode is not None and bool(stat.S_ISLNK(mode))
         except FileNotFoundError:
             return False
 
     def _entry_type(self, path: AbstractPath) -> EntryType:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        mode_to_type = [(stat.S_ISDIR, EntryType.DIRECTORY), (stat.S_ISREG,
-                                                              EntryType.FILE),
+        mode_to_type = [(stat.S_ISDIR, EntryType.DIRECTORY),
+                        (stat.S_ISREG, EntryType.FILE),
                         (stat.S_ISLNK, EntryType.SYMBOLIC_LINK),
-                        (stat.S_ISCHR,
-                         EntryType.CHARACTER_DEVICE), (stat.S_ISBLK,
-                                                       EntryType.BLOCK_DEVICE),
-                        (stat.S_ISFIFO, EntryType.FIFO), (stat.S_ISSOCK,
-                                                          EntryType.SOCKET)]
+                        (stat.S_ISCHR, EntryType.CHARACTER_DEVICE),
+                        (stat.S_ISBLK, EntryType.BLOCK_DEVICE),
+                        (stat.S_ISFIFO, EntryType.FIFO),
+                        (stat.S_ISSOCK, EntryType.SOCKET)]
 
         try:
             mode = self.__lstat(lpath).st_mode
@@ -263,7 +271,7 @@ class SftpFileSystem(FileSystemImpl):
                           str(lpath))
 
         for predicate, result in mode_to_type:
-            if predicate(mode):
+            if mode is not None and predicate(mode):
                 return result
         raise RuntimeError('Object is of unknown type, please report a'
                            'Cerulean bug')
@@ -271,30 +279,44 @@ class SftpFileSystem(FileSystemImpl):
     def _size(self, path: AbstractPath) -> int:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        return self.__stat(lpath).st_size
+        size = self.__stat(lpath).st_size
+        if size is None:
+            raise RuntimeError('Server did not return size')
+        return size
 
     def _uid(self, path: AbstractPath) -> int:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        return self.__stat(lpath).st_uid
+        uid = self.__stat(lpath).st_uid
+        if uid is None:
+            raise RuntimeError('Server did not return a UID')
+        return uid
 
     def _gid(self, path: AbstractPath) -> int:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        return self.__stat(lpath).st_gid
+        gid = self.__stat(lpath).st_gid
+        if gid is None:
+            raise RuntimeError('Server did not return a GID')
+        return gid
 
-    def _has_permission(self, path: AbstractPath, permission: Permission) -> bool:
-        self.__ensure_sftp()
-        lpath = cast(PurePosixPath, path)
-        return bool(self.__stat(lpath).st_mode & permission.value)
-
-    def _set_permission(self,
-                       path: AbstractPath,
-                       permission: Permission,
-                       value: bool = True) -> None:
+    def _has_permission(
+            self, path: AbstractPath, permission: Permission) -> bool:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
         mode = self.__stat(lpath).st_mode
+        if mode is None:
+            raise RuntimeError('Server did not return file mode')
+        return bool(mode & permission.value)
+
+    def _set_permission(
+            self, path: AbstractPath, permission: Permission,
+            value: bool = True) -> None:
+        self.__ensure_sftp()
+        lpath = cast(PurePosixPath, path)
+        mode = self.__stat(lpath).st_mode
+        if mode is None:
+            raise RuntimeError('Server did not return file mode')
         if value:
             mode = mode | permission.value
         else:
@@ -323,7 +345,10 @@ class SftpFileSystem(FileSystemImpl):
             cur_path = lpath
             iter_count = 0
             while self._is_symlink(cur_path) and iter_count < max_iter:
-                target = PurePosixPath(self.__sftp.readlink(str(cur_path)))
+                target_str = self.__sftp.readlink(str(cur_path))
+                if target_str is None:
+                    raise RuntimeError('Server error while reading link')
+                target = PurePosixPath(target_str)
                 if not target.is_absolute():
                     target = cur_path.parent / target
                 cur_path = target
@@ -334,7 +359,10 @@ class SftpFileSystem(FileSystemImpl):
 
             target = PurePosixPath(self.__sftp.normalize(str(path)))
         else:
-            target = PurePosixPath(self.__sftp.readlink(str(path)))
+            target_str = self.__sftp.readlink(str(path))
+            if target_str is None:
+                raise RuntimeError('Server error while reading link')
+            target = PurePosixPath(target_str)
             if not target.is_absolute():
                 target = lpath.parent / target
 
@@ -362,7 +390,8 @@ class SftpFileSystem(FileSystemImpl):
                 else:
                     raise
 
-            if not self.__sftp.get_channel().get_transport().is_active():
+            channel = self.__sftp.get_channel()
+            if not (channel and channel.get_transport().is_active()):
                 logger.info('Reconnecting to SFTP server')
                 self.__sftp = self.__terminal._get_sftp_client()
                 logger.info('Connected to SFTP server')

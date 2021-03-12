@@ -1,7 +1,6 @@
 from cerulean import JobDescription
-from cerulean.torque_scheduler import (_get_field_from_qstat_xml,
-                                       _job_desc_to_job_script,
-                                       _seconds_to_time)
+from cerulean.torque_scheduler import (
+        _job_desc_to_job_script, _seconds_to_time)
 
 
 def test_job_script_name() -> None:

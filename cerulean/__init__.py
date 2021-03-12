@@ -6,7 +6,7 @@ Below, you will also find documentation for submodules. That is \
 developer documentation, you do not need it to use Cerulean.
 """
 
-__version__ = '0.1.0'
+__version__ = '0.3.7'
 
 __author__ = 'Lourens Veen'
 __email__ = 'l.veen@esciencecenter.nl'

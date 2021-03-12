@@ -11,6 +11,7 @@ class Credential(ABC):
 
     Attributes:
         username: The name of the user to connect as.
+
     """
     pass
 
@@ -21,6 +22,7 @@ class PasswordCredential(Credential):
     Attributes:
         username: The name of the user to connect as
         password: The password to authenticate with
+
     """
 
     def __init__(self, username: str, password: str) -> None:
@@ -29,6 +31,7 @@ class PasswordCredential(Credential):
         Args:
             username: The name of the user to connect as
             password: The password to authenticate with
+
         """
         self.username = username
         self.password = password
@@ -41,6 +44,7 @@ class PubKeyCredential(Credential):
         username: The name of the user to connect as
         public_key: The (local) path to a key file
         passphrase: The passphrase to decrypt the key with; optional.
+
     """
 
     def __init__(self, username: str, public_key: str,
@@ -51,6 +55,7 @@ class PubKeyCredential(Credential):
             username: The name of the user to connect as
             pub_key: The (local) path to a key file
             passphrase The passphrase to decrypt the key with; optional.
+
         """
         self.username = username
         self.public_key = public_key

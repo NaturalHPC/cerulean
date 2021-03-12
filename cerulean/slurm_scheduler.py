@@ -23,36 +23,39 @@ class SlurmScheduler(Scheduler):
     class. Note that this is a plain string concatenation, so you'll
     probably need something like 'module load slurm;', with a
     semicolon to separate the commands.
-
-    Arguments:
-        terminal: The terminal to use to talk to the scheduler.
-        prefix: A string to prefix the SLURM commands with.
     """
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
+        """Create ea SlurmScheduler.
+
+        Arguments:
+            terminal: The terminal to use to talk to the scheduler.
+            prefix: A string to prefix the SLURM commands with.
+
+        """
         self.__terminal = terminal
         self.__prefix = prefix
 
         command = self.__prefix + ' sbatch'
         exit_code, output, error = self.__terminal.run(10, command,
                                                        ['--version'])
-        logger.debug('sbatch --version exit code: {}'.format(exit_code))
-        logger.debug('sbatch --version output: {}'.format(output))
-        logger.debug('sbatch --version error: {}'.format(error))
+        logger.debug('sbatch --version exit code: %s', exit_code)
+        logger.debug('sbatch --version output: %s', output)
+        logger.debug('sbatch --version error: %s', error)
 
     def submit(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
 
         job_script = _job_desc_to_job_script(job_description)
-        logger.debug('Submitting job script: {}'.format(job_script))
+        logger.debug('Submitting job script: %s', job_script)
 
         command = self.__prefix + ' sbatch'
         exit_code, output, error = self.__terminal.run(10, command, [],
                                                        job_script, None)
 
-        logger.debug('sbatch exit code: {}'.format(exit_code))
-        logger.debug('sbatch output: {}'.format(output))
-        logger.debug('sbatch error: {}'.format(error))
+        logger.debug('sbatch exit code: %s', exit_code)
+        logger.debug('sbatch output: %s', output)
+        logger.debug('sbatch error: %s', error)
         if exit_code != 0:
             raise RuntimeError('Error running sbatch: {}'.format(error))
 
@@ -60,13 +63,13 @@ class SlurmScheduler(Scheduler):
         return job_id
 
     def get_status(self, job_id: str) -> JobStatus:
-        logger.debug('Calling squeue -j {} -h -o %T'.format(job_id))
+        logger.debug('Calling squeue -j %s -h -o %%T', job_id)
         command = self.__prefix + ' squeue'
         exit_code, output, error = self.__terminal.run(
             10, command, ['-j', job_id, '-h', '-o', '%T'], None, None)
-        logger.debug('squeue exit code: {}'.format(exit_code))
-        logger.debug('squeue output: {}'.format(output))
-        logger.debug('squeue error: {}'.format(error))
+        logger.debug('squeue exit code: %s', exit_code)
+        logger.debug('squeue output: %s', output)
+        logger.debug('squeue error: %s', error)
 
         status = output.strip()
         if status == '':
@@ -78,7 +81,7 @@ class SlurmScheduler(Scheduler):
             exit_code, output, error = self.__terminal.run(
                 10, command, ['-j', job_id, '-h', '-o', '%T'])
             status = output.strip()
-            logger.debug('squeue output 2: {}'.format(status))
+            logger.debug('squeue output 2: %s', status)
 
         status_map = {
             'PENDING': JobStatus.WAITING,
@@ -101,7 +104,7 @@ class SlurmScheduler(Scheduler):
         except KeyError:
             job_status = JobStatus.DONE
 
-        logger.debug('get_status returning {}'.format(job_status.name))
+        logger.debug('get_status returning %s', job_status.name)
 
         return job_status
 
@@ -109,14 +112,14 @@ class SlurmScheduler(Scheduler):
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
-        logger.debug('get_exit_code() running sacct -j {} --noheader'
-                     ' --format=ExitCode'.format(job_id))
+        logger.debug('get_exit_code() running sacct -j %s --noheader'
+                     ' --format=ExitCode', job_id)
         command = self.__prefix + ' sacct'
         err, output, error = self.__terminal.run(
             10, command, ['-j', job_id, '--noheader', '--format=ExitCode'])
-        logger.debug('sacct exit code: {}'.format(err))
-        logger.debug('sacct output: {}'.format(output))
-        logger.debug('sacct error: {}'.format(error))
+        logger.debug('sacct exit code: %s', err)
+        logger.debug('sacct output: %s', output)
+        logger.debug('sacct error: %s', error)
         if err != 0:
             raise RuntimeError('Error running sacct: {}'.format(error))
 
@@ -126,7 +129,7 @@ class SlurmScheduler(Scheduler):
         return exit_code
 
     def cancel(self, job_id: str) -> None:
-        logger.debug('Running scancel {}'.format(job_id))
+        logger.debug('Running scancel %s', job_id)
         command = self.__prefix + ' scancel'
         self.__terminal.run(10, command, [job_id])
 
@@ -195,6 +198,7 @@ def _seconds_to_time(seconds: int) -> str:
 
     Returns:
         A string of the form DD:HH:MM:SS.
+
     """
     seconds_per_day = 60 * 60 * 24
     seconds_per_hour = 60 * 60

@@ -24,6 +24,7 @@ class SshTerminal(Terminal):
         host: The hostname to connect to.
         port: The port to connect on.
         credential: The credential to authenticate with.
+
     """
     def __init__(self, host: str, port: int, credential: Credential) -> None:
         self.__host = host
@@ -31,14 +32,16 @@ class SshTerminal(Terminal):
         self.__credential = credential
 
         self.__transport = self.__ensure_connection(None)
-        self.__transport2 = None
+        self.__transport2 = None    # type: Optional[paramiko.Transport]
 
     def __enter__(self) -> 'SshTerminal':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         self.close()
 
     def close(self) -> None:
@@ -51,6 +54,7 @@ class SshTerminal(Terminal):
         logger.debug('Disconnected from SSH server')
 
     def __eq__(self, other: Any) -> bool:
+        """Returns True iff this terminal equals other."""
         if not isinstance(other, Terminal):
             return NotImplemented
         if isinstance(other, SshTerminal):
@@ -67,9 +71,13 @@ class SshTerminal(Terminal):
 
         Returns:
             An SFTP client object using this terminal's connection.
+
         """
         self.__transport = self.__ensure_connection(self.__transport)
-        return paramiko.SFTPClient.from_transport(self.__transport)
+        client = paramiko.SFTPClient.from_transport(self.__transport)
+        if client is None:
+            raise RuntimeError('Could not open a channel for SFTP')
+        return client
 
     def _get_downstream_sftp_client(self) -> paramiko.SFTPClient:
         """Gets a second SFTP client using this terminal.
@@ -82,9 +90,13 @@ class SshTerminal(Terminal):
 
         Returns:
             An SFTP client object using a second connection.
+
         """
         self.__transport2 = self.__ensure_connection(self.__transport2)
-        return paramiko.SFTPClient.from_transport(self.__transport2)
+        client = paramiko.SFTPClient.from_transport(self.__transport2)
+        if client is None:
+            raise RuntimeError('Could not open a channel for SFTP')
+        return client
 
     def run(self,
             timeout: float,
@@ -98,7 +110,7 @@ class SshTerminal(Terminal):
         else:
             cmd_str = '{} {}'.format(command, ' '.join(args))
 
-        logger.debug('Executing {}'.format(cmd_str))
+        logger.debug('Executing %s', cmd_str)
         last_exception = None  # type: Optional[BaseException]
         start_time = perf_counter()
         while perf_counter() < start_time + timeout:
@@ -117,8 +129,9 @@ class SshTerminal(Terminal):
                     session, 'stdout', timeout)
                 got_all_stderr, stderr_text = self.__get_data_from_channel(
                     session, 'stderr', timeout)
-                logger.debug('got output {} {} {} {}'.format(
-                        got_all_stdout, stdout_text, got_all_stderr, stderr_text))
+                logger.debug(
+                        'got output %s %s %s %s', got_all_stdout, stdout_text,
+                        got_all_stderr, stderr_text)
                 if not got_all_stdout or not got_all_stderr:
                     logger.debug('Command did not finish within timeout')
                     session.close()
@@ -126,7 +139,7 @@ class SshTerminal(Terminal):
 
                 session.settimeout(2.0)
                 exit_status = session.recv_exit_status()
-                logger.debug('received exit status {}'.format(exit_status))
+                logger.debug('received exit status %s', exit_status)
                 session.close()
 
                 if exit_status == -1:
@@ -198,20 +211,22 @@ class SshTerminal(Terminal):
                 messages += '{}; '.format(e)
 
         if key is None:
-            logger.debug('Invalid key: {}'.format(messages))
+            logger.debug('Invalid key: %s', messages)
             raise RuntimeError(
-                'Invalid key specified, could not open as RSA, ECDSA or Ed25519 key'
+                'Invalid key specified, could not open as RSA, ECDSA or'
+                ' Ed25519 key'
             )
 
         return key
 
-    def __ensure_connection(self, transport: paramiko.Transport,
-                            force: bool=False) -> paramiko.Transport:
+    def __ensure_connection(self, transport: Optional[paramiko.Transport],
+                            force: bool = False) -> paramiko.Transport:
         if transport is None or not transport.is_active() or force:
             if transport is not None:
                 transport.close()
             transport = paramiko.Transport((self.__host, self.__port))
-            logger.info('Connecting to {} on port {}'.format(self.__host, self.__port))
+            logger.info(
+                    'Connecting to %s on port %s', self.__host, self.__port)
             try:
                 if isinstance(self.__credential, PasswordCredential):
                     logger.debug('Authenticating using a password')

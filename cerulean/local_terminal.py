@@ -12,6 +12,7 @@ class LocalTerminal(Terminal):
     """A Terminal for running commands on the local machine.
 
     To create one, just do ``term = LocalTerminal()``.
+
     """
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Terminal):
@@ -28,7 +29,7 @@ class LocalTerminal(Terminal):
         whole_command = '{} {}'.format(command, ' '.join(args))
         if workdir is not None:
             workdir = str(workdir)
-        logger.debug('LocalTerminal running {}'.format(whole_command))
+        logger.debug('LocalTerminal running %s', whole_command)
         with Popen(
                 whole_command,
                 stdin=PIPE,
@@ -39,8 +40,8 @@ class LocalTerminal(Terminal):
             stdout_text, stderr_text = process.communicate(
                 stdin_data, timeout=timeout)
 
-        logger.debug('LocalTerminal output {}'.format(stdout_text))
-        logger.debug('LocalTerminal error {}'.format(stderr_text))
+        logger.debug('LocalTerminal output %s', stdout_text)
+        logger.debug('LocalTerminal error %s', stderr_text)
         if stderr_text is None:
             stderr_text = ''
         return process.returncode, stdout_text, stderr_text

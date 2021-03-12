@@ -19,10 +19,10 @@ def test_make_file_system() -> None:
         assert isinstance(fs4, cerulean.WebdavFileSystem)
 
     with pytest.raises(ValueError):
-        fs4 = make_file_system('sftp')
+        make_file_system('sftp')
 
     with pytest.raises(ValueError):
-        fs5 = make_file_system('non-existent-protocol')
+        make_file_system('non-existent-protocol')
 
 
 def test_make_terminal() -> None:
@@ -37,10 +37,10 @@ def test_make_terminal() -> None:
         assert isinstance(t3, cerulean.SshTerminal)
 
     with pytest.raises(ValueError):
-        t4 = make_terminal('ssh')
+        make_terminal('ssh')
 
     with pytest.raises(ValueError):
-        t5 = make_terminal('non-existent-protocol')
+        make_terminal('non-existent-protocol')
 
 
 def test_make_scheduler() -> None:

@@ -1,4 +1,3 @@
-import pytest
 from cerulean import PasswordCredential, PubKeyCredential
 
 

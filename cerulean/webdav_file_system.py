@@ -1,11 +1,10 @@
 import errno
 import logging
-import stat
 from pathlib import PurePosixPath
 import requests
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from types import TracebackType
-from typing import Any, cast, Dict, Generator, Iterable, List, Optional, Tuple
+from typing import Any, cast, Dict, Generator, Iterable, Optional
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET     # type: ignore
@@ -76,11 +75,13 @@ class WebdavFileSystem(FileSystemImpl):
         self.__max_tries = 3
 
     def __enter__(self) -> 'WebdavFileSystem':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         self.close()
 
     def close(self) -> None:
@@ -88,10 +89,11 @@ class WebdavFileSystem(FileSystemImpl):
         logger.info('Disconnected from WebDAV server')
 
     def __eq__(self, other: Any) -> bool:
+        """Returns True iff this file system equals other."""
         if not isinstance(other, FileSystem):
             return NotImplemented
         if isinstance(other, WebdavFileSystem):
-           return self.__base_url == other.__base_url
+            return self.__base_url == other.__base_url
         else:
             return False
 
@@ -112,28 +114,26 @@ class WebdavFileSystem(FileSystemImpl):
         response = self.__session.head(self.__url(path))
         return response.status_code == 200
 
-    def _mkdir(self,
-              path: AbstractPath,
-              mode: Optional[int] = None,
-              parents: bool = False,
-              exists_ok: bool = False) -> None:
+    def _mkdir(
+            self, path: AbstractPath, mode: Optional[int] = None,
+            parents: bool = False, exists_ok: bool = False) -> None:
 
         def handle_mkcol_error(response: requests.Response) -> None:
             if response.status_code == 201:
                 pass
             elif response.status_code == 403:
                 raise PermissionError(('Permission denied while accessing {}'
-                                      ).format(self.__url(path)))
+                                       ).format(self.__url(path)))
             elif response.status_code == 405:
                 raise FileExistsError(('File or directory {} already exists'
-                                      ).format(self.__url(path)))
+                                       ).format(self.__url(path)))
             elif response.status_code == 409:
                 raise FileNotFoundError(('One or more parent directories of'
                                          ' {} do not exist').format(
                                              self.__url(path)))
             elif response.status_code == 507:
                 raise IOError(('Out of storage space while making dir {}'
-                              ).format(self.__url(path)))
+                               ).format(self.__url(path)))
             else:
                 raise RuntimeError(('An error occurred while making'
                                     ' dir {}, the server said {}').format(
@@ -165,7 +165,7 @@ class WebdavFileSystem(FileSystemImpl):
         self.__ensure_http()
         url = self.__url(path)
         collection = self.__propfind(url, None, 1)
-        for child_url in collection.keys():
+        for child_url in collection:
             child_abs_url = urljoin(self.__base_url, child_url)
             if child_abs_url != url:
                 if not child_abs_url.startswith(self.__base_url):
@@ -251,7 +251,6 @@ class WebdavFileSystem(FileSystemImpl):
                                 ' file {}, the server said {}').format(
                                     self.__url(path), response.reason))
 
-
     def _is_dir(self, path: AbstractPath) -> bool:
         self.__ensure_http()
         if not self._exists(path):
@@ -311,7 +310,7 @@ class WebdavFileSystem(FileSystemImpl):
     def _chmod(self, path: AbstractPath, mode: int) -> None:
         if self.__unsupported_methods_raise:
             raise UnsupportedOperationError(
-                    'WebDAV does not support Posix permissions')
+                'WebDAV does not support Posix permissions')
 
     def _symlink_to(self, path: AbstractPath, target: AbstractPath) -> None:
         if self.__unsupported_methods_raise:
@@ -363,8 +362,9 @@ class WebdavFileSystem(FileSystemImpl):
 
         Returns:
             A dictionary mapping urls to XML subtrees.
+
         """
-        headers = { 'Depth': str(depth) }
+        headers = {'Depth': str(depth)}
         response = self.__session.request('PROPFIND', url, headers=headers)
         if response.status_code < 400:
             print(response.text)
@@ -380,12 +380,12 @@ class WebdavFileSystem(FileSystemImpl):
                 else:
                     results[prop_url] = None
             return results
-        elif response.status_code == 401:
+        if response.status_code == 401:
             raise PermissionError('Invalid credentials supplied')
-        elif response.status_code == 403:
+        if response.status_code == 403:
             raise PermissionError(('Permission denied while accessing {}'
                                   ).format(url))
-        else:
-            raise RuntimeError(('An error occurred while checking dir {},'
-                                ' the server said {}').format(url,
-                                    response.reason))
+
+        raise RuntimeError(
+                ('An error occurred while checking dir {}, the server said {}'
+                    ).format(url, response.reason))

@@ -26,14 +26,16 @@ def password_credential() -> PasswordCredential:
 
 
 @pytest.fixture(scope='module')
-def ssh_terminal(password_credential: PasswordCredential
+def ssh_terminal(
+        password_credential: PasswordCredential
         ) -> Generator[SshTerminal, None, None]:
     with SshTerminal('cerulean-test-ssh', 22, password_credential) as term:
         yield term
 
 
 @pytest.fixture(scope='module')
-def flaky_ssh_terminal(password_credential: PasswordCredential
+def flaky_ssh_terminal(
+        password_credential: PasswordCredential
         ) -> Generator[SshTerminal, None, None]:
     with SshTerminal('cerulean-test-flaky', 22, password_credential) as term:
         yield term
@@ -56,7 +58,8 @@ def webdav_filesystem_quiet() -> Generator[WebdavFileSystem, None, None]:
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp', 'webdav'])
-def filesystem(request: Any, ssh_terminal: SshTerminal
+def filesystem(
+        request: Any, ssh_terminal: SshTerminal
         ) -> Generator[FileSystemImpl, None, None]:
     if request.param == 'local':
         yield LocalFileSystem()
@@ -69,7 +72,8 @@ def filesystem(request: Any, ssh_terminal: SshTerminal
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp'])
-def filesystem2(request: Any, password_credential: PasswordCredential
+def filesystem2(
+        request: Any, password_credential: PasswordCredential
         ) -> Generator[FileSystemImpl, None, None]:
     if request.param == 'local':
         yield LocalFileSystem()
@@ -101,7 +105,6 @@ def make_paths(filesystem: FileSystem) -> Dict[str, Path]:
             'broken_link': root / 'links' / 'link2',
             'link_loop': root / 'links' / 'link3',
             'fifo': root / 'fifo',
-            'chardev': root / 'chardev',
             'blockdev': root / 'blockdev',
         }
 
@@ -126,16 +129,16 @@ def paths_local(local_filesystem: FileSystem) -> Dict[str, Path]:
 
 
 @pytest.fixture(scope='module')
-def lpaths_webdav_raises(webdav_filesystem_raises: FileSystem
-                         ) -> Dict[str, AbstractPath]:
+def lpaths_webdav_raises(
+        webdav_filesystem_raises: FileSystem) -> Dict[str, AbstractPath]:
     # And then we need some WebDAV paths to specifically test that.
     paths = make_paths(webdav_filesystem_raises)
     return paths_to_lpaths(paths)
 
 
 @pytest.fixture(scope='module')
-def lpaths_webdav_quiet(webdav_filesystem_quiet: FileSystem
-                        ) -> Dict[str, AbstractPath]:
+def lpaths_webdav_quiet(
+        webdav_filesystem_quiet: FileSystem) -> Dict[str, AbstractPath]:
     # And then we need some WebDAV paths to specifically test that.
     paths = make_paths(webdav_filesystem_quiet)
     return paths_to_lpaths(paths)
@@ -147,9 +150,10 @@ def lpaths(paths: Dict[str, Path]) -> Dict[str, AbstractPath]:
 
 
 @pytest.fixture(scope='module', params=['local', 'ssh', 'flakyssh'])
-def terminal(request: Any, ssh_terminal: SshTerminal,
-             flaky_ssh_terminal: SshTerminal
-             ) -> Generator[Terminal, None, None]:
+def terminal(
+        request: Any, ssh_terminal: SshTerminal,
+        flaky_ssh_terminal: SshTerminal
+        ) -> Generator[Terminal, None, None]:
     if request.param == 'local':
         yield LocalTerminal()
     elif request.param == 'ssh':
@@ -162,18 +166,19 @@ def terminal(request: Any, ssh_terminal: SshTerminal,
     'local_direct',
     'ssh_direct',
     'ssh_torque-6',
-    'ssh_slurm-14-11',
-    'ssh_slurm-15-08',
     'ssh_slurm-16-05',
     'ssh_slurm-17-02',
     'ssh_slurm-17-11',
     'ssh_slurm-18-08',
+    'ssh_slurm-19-05',
+    'ssh_slurm-20-02',
     'flakyssh_direct',
     'flakyssh_slurm-17-11'])
-def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
-                     password_credential: PasswordCredential
-                     ) -> Generator[
-                             Tuple[Scheduler, FileSystem, str], None, None]:
+def scheduler_and_fs(
+        request: Any, ssh_terminal: SshTerminal,
+        password_credential: PasswordCredential
+        ) -> Generator[Tuple[Scheduler, FileSystem, str], None, None]:
+    term = None
     if request.param == 'local_direct':
         yield DirectGnuScheduler(LocalTerminal()), LocalFileSystem(), request.param
     elif request.param == 'ssh_direct':
@@ -183,30 +188,6 @@ def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
         term = SshTerminal('cerulean-test-torque-6', 22, password_credential)
         with SftpFileSystem(term) as fs:
             yield TorqueScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-14-11':
-        term = SshTerminal('cerulean-test-slurm-14-11', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-15-08':
-        term = SshTerminal('cerulean-test-slurm-15-08', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-16-05':
-        term = SshTerminal('cerulean-test-slurm-16-05', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-17-02':
-        term = SshTerminal('cerulean-test-slurm-17-02', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-17-11':
-        term = SshTerminal('cerulean-test-slurm-17-11', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
-    elif request.param == 'ssh_slurm-18-08':
-        term = SshTerminal('cerulean-test-slurm-18-08', 22, password_credential)
-        with SftpFileSystem(term) as fs:
-            yield SlurmScheduler(term), fs, request.param
     elif request.param == 'flakyssh_direct':
         term = SshTerminal('cerulean-test-flaky', 22, password_credential)
         with SftpFileSystem(term) as fs:
@@ -215,6 +196,14 @@ def scheduler_and_fs(request: Any, ssh_terminal: SshTerminal,
         term = SshTerminal('cerulean-test-flaky', 22, password_credential)
         with SftpFileSystem(term) as fs:
             yield SlurmScheduler(term), fs, request.param
+    else:
+        host = 'cerulean-test-slurm-{}'.format(request.param[-5:])
+        term = SshTerminal(host, 22, password_credential)
+        with SftpFileSystem(term) as fs:
+            yield SlurmScheduler(term), fs, request.param
+
+    if term:
+        term.close()
 
 
 @pytest.fixture(scope='module', params=[1, 2])

@@ -1,14 +1,9 @@
 from abc import ABC
-from pathlib import PurePath
 from types import TracebackType
-from typing import Any, cast, TYPE_CHECKING, Optional, Union
+from typing import Any, Optional, Union
 
 from cerulean.path import Path
 from cerulean.util import BaseExceptionType
-
-
-if TYPE_CHECKING:
-    from cerulean.file_system_impl import FileSystemImpl
 
 
 class UnsupportedOperationError(RuntimeError):
@@ -40,16 +35,24 @@ class FileSystem(ABC):
 
     which produces a :class:`Path`, through which you can do things \
     with files.
+
     """
     def __enter__(self) -> 'FileSystem':
+        """Enter context manager."""
         return self
 
     def __exit__(self, exc_type: Optional[BaseExceptionType],
                  exc_value: Optional[BaseException],
                  traceback: Optional[TracebackType]) -> None:
+        """Exit context manager."""
         pass
 
     def __eq__(self, other: Any) -> bool:
+        """Returns True iff this filesystem and other are equal.
+
+        FileSystem objects compare equal if they access the same
+        file system on the same host via the same protocol.
+        """
         return NotImplemented
 
     def close(self) -> None:
@@ -68,4 +71,5 @@ class FileSystem(ABC):
         raise NotImplementedError()
 
     def __truediv__(self, segment: str) -> Path:
+        """Returns a Path anchored at this file system's root."""
         raise NotImplementedError()

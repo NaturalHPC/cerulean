@@ -42,7 +42,7 @@ def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
 def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
                           caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
-    sched, fs, _ = scheduler_and_fs
+    sched, _, _ = scheduler_and_fs
 
     job_desc = JobDescription()
     job_desc.working_directory = '/home/cerulean'
@@ -210,12 +210,12 @@ def test_system_out_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     job_desc.working_directory = '/home'
     job_desc.command = 'ls'
     job_desc.time_reserved = 1
-    job_desc.system_out_file = '/home/cerulean/test_sys_redirect.out'
+    job_desc.system_out_file = '/home/cerulean/test_sys_redirect2.out'
 
     job_id = sched.submit(job_desc)
     sched.wait(job_id)
 
-    sysout = (fs / 'home/cerulean/test_sys_redirect.out').read_text()
+    sysout = (fs / 'home/cerulean/test_sys_redirect2.out').read_text()
 
     retval = sched.get_exit_code(job_id)
     assert retval == 0
@@ -254,12 +254,12 @@ def test_system_err_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     job_desc.command = 'while [ a = a ] ; do echo bla >/dev/null; done'
     job_desc.time_reserved = 1
     job_desc.stderr_file = '/dev/null'
-    job_desc.system_err_file = '/home/cerulean/test_sys_redirect.err'
+    job_desc.system_err_file = '/home/cerulean/test_sys_redirect2.err'
 
     job_id = sched.submit(job_desc)
     sched.wait(job_id)
 
-    syserr = (fs / 'home/cerulean/test_sys_redirect.err').read_text()
+    syserr = (fs / 'home/cerulean/test_sys_redirect2.err').read_text()
 
     print('Sys err: {}'.format(syserr))
 
@@ -320,7 +320,6 @@ def test_num_nodes(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
         time.sleep(10.0)
 
     outfile = fs / 'home/cerulean/test_num_nodes.out'
-    num_nodes_output = outfile.read_text()
     assert '2' in outfile.read_text()
     outfile.unlink()
 

@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
 
 setup(
     name='cerulean',
-    version='0.3.6',
+    version='0.3.7',
     description="A Python 3 library for talking to HPC clusters and supercomputers",
     long_description=readme + '\n\n',
     author="Lourens Veen",
@@ -24,14 +24,16 @@ setup(
     zip_safe=False,
     keywords='cerulean',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
     test_suite='tests',
     install_requires=[
@@ -44,14 +46,14 @@ setup(
         # dependency for `python setup.py test`
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
-        'sphinx',
+        'sphinx<2',
         'sphinx-rtd-theme',
         'recommonmark'
     ],
     tests_require=[
-        'coverage<5.0',
-        'docker',
-        'docker-compose',
+        'coverage',
+        'docker-compose==1.24',
+        'docker[ssh]>=3.7.0,<4.0',
         'pytest>=3.6.0',
         'pytest-cov',
         'pycodestyle',
