@@ -36,23 +36,23 @@ class TorqueScheduler(Scheduler):
         command = self.__prefix + ' qsub'
         exit_code, output, error = self.__terminal.run(10, 'qsub',
                                                        ['--version'])
-        logger.debug('qsub --version exit_code: %', exit_code)
-        logger.debug('qsub --version std output: %', output)
-        logger.debug('qsub --version std error: %', error)
+        logger.debug('qsub --version exit_code: %s', exit_code)
+        logger.debug('qsub --version std output: %s', output)
+        logger.debug('qsub --version std error: %s', error)
 
     def submit(self, job_description: JobDescription) -> str:
         if job_description.command is None:
             raise ValueError('Job description is missing a command')
 
         job_script = _job_desc_to_job_script(job_description)
-        logger.debug('Running qsub with job script:\n%', job_script)
+        logger.debug('Running qsub with job script:\n%s', job_script)
         command = self.__prefix + ' qsub'
         exit_code, output, error = self.__terminal.run(10, command, ['-'],
                                                        job_script)
 
-        logger.debug('qsub exit code: %', exit_code)
-        logger.debug('qsub std output: %', output)
-        logger.debug('qsub std error: %', error)
+        logger.debug('qsub exit code: %s', exit_code)
+        logger.debug('qsub std output: %s', output)
+        logger.debug('qsub std error: %s', error)
 
         if exit_code != 0:
             raise RuntimeError('Torque qsub error: {}'.format(error))
@@ -61,13 +61,13 @@ class TorqueScheduler(Scheduler):
         return job_id
 
     def get_status(self, job_id: str) -> JobStatus:
-        logger.debug('Running qstat with job id %', job_id)
+        logger.debug('Running qstat with job id %s', job_id)
         command = self.__prefix + ' qstat'
         exit_code, output, error = self.__terminal.run(10, command,
                                                        ['-x', job_id])
-        logger.debug('qstat exit code: %', exit_code)
-        logger.debug('qstat output: %', output)
-        logger.debug('qstat error: %', error)
+        logger.debug('qstat exit code: %s', exit_code)
+        logger.debug('qstat output: %s', output)
+        logger.debug('qstat error: %s', error)
 
         if output == '':
             raise RuntimeError(
@@ -77,7 +77,7 @@ class TorqueScheduler(Scheduler):
             return JobStatus.DONE
 
         status = _get_field_from_qstat_xml(xml_data, 'job_state')
-        logger.debug('qstat status: %', status)
+        logger.debug('qstat status: %s', status)
 
         status_map = {
             'W': JobStatus.WAITING,  # waiting for start time
@@ -96,32 +96,32 @@ class TorqueScheduler(Scheduler):
                 'Received an unexpected job status {} from qstat'.format(
                     status))
 
-        logger.debug('get_status returning %', job_status.name)
+        logger.debug('get_status returning %s', job_status.name)
         return job_status
 
     def get_exit_code(self, job_id: str) -> Optional[int]:
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
-        logger.debug('get_exit_code() running qstat -x %', job_id)
+        logger.debug('get_exit_code() running qstat -x %s', job_id)
         command = self.__prefix + ' qstat'
         exit_code, output, error = self.__terminal.run(10, command,
                                                        ['-x', job_id])
-        logger.debug('qstat exit code: %', exit_code)
-        logger.debug('qstat output: %', output)
-        logger.debug('qstat error: %', error)
+        logger.debug('qstat exit code: %s', exit_code)
+        logger.debug('qstat output: %s', output)
+        logger.debug('qstat error: %s', error)
 
         xml_data = ElementTree.fromstring(output)
         job_exit_code = int(_get_field_from_qstat_xml(xml_data, 'exit_status'))
         return job_exit_code
 
     def cancel(self, job_id: str) -> None:
-        logger.debug('cancel() running qdel %', job_id)
+        logger.debug('cancel() running qdel %s', job_id)
         command = self.__prefix + ' qdel'
         exit_code, output, error = self.__terminal.run(10, command, [job_id])
-        logger.debug('qdel exit code: %', exit_code)
-        logger.debug('qdel output: %', output)
-        logger.debug('qdel error: %', error)
+        logger.debug('qdel exit code: %s', exit_code)
+        logger.debug('qdel output: %s', output)
+        logger.debug('qdel error: %s', error)
 
 
 def _job_desc_to_job_script(job_description: JobDescription) -> str:

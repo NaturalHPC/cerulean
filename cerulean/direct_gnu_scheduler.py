@@ -79,7 +79,7 @@ class DirectGnuScheduler(Scheduler):
         job_script += 'echo -n $! $exit_code_file\n'
         job_script += 'disown\n'
 
-        logger.debug('Job script: %', job_script)
+        logger.debug('Job script: %s', job_script)
         command = self.__prefix + ' bash'
         _, output, error = self.__terminal.run(10.0, command, [],
                                                        job_script)
@@ -88,13 +88,13 @@ class DirectGnuScheduler(Scheduler):
 
     def get_status(self, job_id: str) -> JobStatus:
         pid = job_id.split(' ')[0]
-        logger.debug('Running ps -p %', pid)
+        logger.debug('Running ps -p %s', pid)
         command = self.__prefix + ' ps'
         exit_code, output, error = self.__terminal.run(10.0, command, ['-p', pid])
 
-        logger.debug('ps exit code: %', exit_code)
-        logger.debug('ps output: %', output)
-        logger.debug('ps error: %', error)
+        logger.debug('ps exit code: %s', exit_code)
+        logger.debug('ps output: %s', output)
+        logger.debug('ps error: %s', error)
 
         if exit_code == 0:
             return JobStatus.RUNNING
@@ -103,13 +103,13 @@ class DirectGnuScheduler(Scheduler):
 
     def get_exit_code(self, job_id: str) -> Optional[int]:
         exit_code_file = job_id.split(' ', maxsplit=1)[1]
-        logger.debug('Running cat %', exit_code_file)
+        logger.debug('Running cat %s', exit_code_file)
         command = self.__prefix + ' cat'
         exit_code, output, error = self.__terminal.run(10.0, command,
                                                        [exit_code_file])
-        logger.debug('cat exit code: %', exit_code)
-        logger.debug('cat output: %', output)
-        logger.debug('cat error: %', error)
+        logger.debug('cat exit code: %s', exit_code)
+        logger.debug('cat output: %s', output)
+        logger.debug('cat error: %s', error)
         # TODO: delete tempfile?
         try:
             return int(output)
@@ -118,12 +118,12 @@ class DirectGnuScheduler(Scheduler):
 
     def cancel(self, job_id: str) -> None:
         pid = job_id.split(' ')[0]
-        logger.debug('Running kill %', pid)
+        logger.debug('Running kill %s', pid)
         command = self.__prefix + ' kill'
         exit_code, output, error = self.__terminal.run(10.0, command, [pid])
 
-        logger.debug('kill exit code: %', exit_code)
-        logger.debug('kill output: %', output)
-        logger.debug('kill error: %', error)
+        logger.debug('kill exit code: %s', exit_code)
+        logger.debug('kill output: %s', output)
+        logger.debug('kill error: %s', error)
         # TODO: Check exit code and return whether it was running?
         # TODO: Check if it's stopped, do a -9 if not?

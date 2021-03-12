@@ -28,7 +28,7 @@ class LocalTerminal(Terminal):
         whole_command = '{} {}'.format(command, ' '.join(args))
         if workdir is not None:
             workdir = str(workdir)
-        logger.debug('LocalTerminal running %', whole_command)
+        logger.debug('LocalTerminal running %s', whole_command)
         with Popen(
                 whole_command,
                 stdin=PIPE,
@@ -39,8 +39,8 @@ class LocalTerminal(Terminal):
             stdout_text, stderr_text = process.communicate(
                 stdin_data, timeout=timeout)
 
-        logger.debug('LocalTerminal output %', stdout_text)
-        logger.debug('LocalTerminal error %', stderr_text)
+        logger.debug('LocalTerminal output %s', stdout_text)
+        logger.debug('LocalTerminal error %s', stderr_text)
         if stderr_text is None:
             stderr_text = ''
         return process.returncode, stdout_text, stderr_text

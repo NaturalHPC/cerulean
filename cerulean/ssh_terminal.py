@@ -104,7 +104,7 @@ class SshTerminal(Terminal):
         else:
             cmd_str = '{} {}'.format(command, ' '.join(args))
 
-        logger.debug('Executing {}'.format(cmd_str))
+        logger.debug('Executing %s', cmd_str)
         last_exception = None  # type: Optional[BaseException]
         start_time = perf_counter()
         while perf_counter() < start_time + timeout:
@@ -123,8 +123,9 @@ class SshTerminal(Terminal):
                     session, 'stdout', timeout)
                 got_all_stderr, stderr_text = self.__get_data_from_channel(
                     session, 'stderr', timeout)
-                logger.debug('got output {} {} {} {}'.format(
-                        got_all_stdout, stdout_text, got_all_stderr, stderr_text))
+                logger.debug(
+                        'got output %s %s %s %s', got_all_stdout, stdout_text,
+                        got_all_stderr, stderr_text)
                 if not got_all_stdout or not got_all_stderr:
                     logger.debug('Command did not finish within timeout')
                     session.close()
@@ -132,7 +133,7 @@ class SshTerminal(Terminal):
 
                 session.settimeout(2.0)
                 exit_status = session.recv_exit_status()
-                logger.debug('received exit status {}'.format(exit_status))
+                logger.debug('received exit status %s', exit_status)
                 session.close()
 
                 if exit_status == -1:
@@ -204,9 +205,10 @@ class SshTerminal(Terminal):
                 messages += '{}; '.format(e)
 
         if key is None:
-            logger.debug('Invalid key: {}'.format(messages))
+            logger.debug('Invalid key: %s', messages)
             raise RuntimeError(
-                'Invalid key specified, could not open as RSA, ECDSA or Ed25519 key'
+                'Invalid key specified, could not open as RSA, ECDSA or'
+                ' Ed25519 key'
             )
 
         return key
@@ -217,7 +219,8 @@ class SshTerminal(Terminal):
             if transport is not None:
                 transport.close()
             transport = paramiko.Transport((self.__host, self.__port))
-            logger.info('Connecting to {} on port {}'.format(self.__host, self.__port))
+            logger.info(
+                    'Connecting to %s on port %s', self.__host, self.__port)
             try:
                 if isinstance(self.__credential, PasswordCredential):
                     logger.debug('Authenticating using a password')

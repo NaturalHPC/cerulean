@@ -113,7 +113,7 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
     Returns:
         The approximate total number of bytes written.
     """
-    logger.debug('Copying % to %', source_path, target_path)
+    logger.debug('Copying %s to %s', source_path, target_path)
     target_path_exists = target_path.exists() or target_path.is_symlink()
     if source_path.is_symlink():
         if _copy_symlink(source_path, target_path, overwrite, context):
@@ -129,7 +129,7 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
     elif source_path.exists() or source_path.is_symlink():
         # We don't copy special entries or broken links
         logger.debug(
-            'Skipping special entry or broken link %', source_path)
+            'Skipping special entry or broken link %s', source_path)
     else:
         raise FileNotFoundError(('Source path {} does not exist, cannot'
                                  ' copy').format(source_path))
@@ -151,7 +151,7 @@ def _copy_symlink(source_path: Path, target_path: Path, overwrite: str,
             if context in linked_path.parents:
                 rel_path = linked_path.relative_to(context)
                 logger.debug(
-                        'Making relative link from % to %', target_path,
+                        'Making relative link from %s to %s', target_path,
                         rel_path)
                 target_fs = target_path.filesystem
                 if target_path.exists() or target_path.is_symlink():
@@ -177,7 +177,7 @@ def _copy_file(source_path: Path, target_path: Path, overwrite: str,
     target_path_exists = target_path.exists() or target_path.is_symlink()
 
     if not target_path_exists or overwrite == 'always':
-        logger.debug('Copying file from % to %', source_path, target_path)
+        logger.debug('Copying file from %s to %s', source_path, target_path)
 
         if not target_path.is_symlink() and target_path.is_dir():
             target_path.rmdir(recursive=True)
@@ -253,7 +253,7 @@ def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
             return already_written
 
     if not target_path.exists():
-        logger.debug('Making new dir %', target_path)
+        logger.debug('Making new dir %s', target_path)
         target_path.mkdir()
 
     perms = dict()
@@ -266,7 +266,7 @@ def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
         pass
 
     for entry in source_path.iterdir():
-        logger.debug('Recursively copying entry %', entry)
+        logger.debug('Recursively copying entry %s', entry)
         already_written = _copy(entry, target_path / entry.name, overwrite,
                                 copy_permissions, context, callback,
                                 already_written, size)
