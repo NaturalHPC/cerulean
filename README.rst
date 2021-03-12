@@ -1,8 +1,8 @@
-.. image:: https://readthedocs.org/projects/cerulean/badge/?version=develop
-    :target: https://cerulean.readthedocs.io/en/latest/?badge=develop
+.. image:: https://readthedocs.org/projects/cerulean/badge/?version=master
+    :target: https://cerulean.readthedocs.io/en/latest/?badge=master
     :alt: Documentation Build Status
 
-.. image:: https://github.com/MD-Studio/cerulean/actions/workflows/ci.yaml/badge.svg?branch=develop
+.. image:: https://github.com/MD-Studio/cerulean/actions/workflows/ci.yaml/badge.svg?branch=master
     :target: https://github.com/MD-Studio/cerulean/actions
     :alt: Build Status
 
@@ -14,8 +14,8 @@
     :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
     :alt: Code Coverage
 
-.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
-    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=develop
+.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=master
+    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=master
     :alt: Requirements Status
 
 ################################################################################
