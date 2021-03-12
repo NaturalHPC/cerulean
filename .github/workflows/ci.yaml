@@ -19,5 +19,6 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install 'requests<2.20' codacy-coverage 'pytest>=3.6.0'
+          PATH=${PATH}:/home/runner/.local/bin
           python setup.py test
           python-codacy-coverage -r coverage.xml
