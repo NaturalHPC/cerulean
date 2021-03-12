@@ -254,12 +254,12 @@ def test_system_err_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     job_desc.command = 'while [ a = a ] ; do echo bla >/dev/null; done'
     job_desc.time_reserved = 1
     job_desc.stderr_file = '/dev/null'
-    job_desc.system_err_file = '/home/cerulean/test_sys_redirect.err'
+    job_desc.system_err_file = '/home/cerulean/test_sys_redirect2.err'
 
     job_id = sched.submit(job_desc)
     sched.wait(job_id)
 
-    syserr = (fs / 'home/cerulean/test_sys_redirect.err').read_text()
+    syserr = (fs / 'home/cerulean/test_sys_redirect2.err').read_text()
 
     print('Sys err: {}'.format(syserr))
 
