@@ -1,0 +1,71 @@
+[project]
+name = "cerulean"
+authors = [{name = "Lourens Veen"}]
+description = "A Python library for talking to HPC clusters and supercomputers"
+readme = "README.rst"
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    ]
+
+version = "0.3.8.dev"
+requires-python = ">=3.7"
+dependencies = [
+    "defusedxml",
+    "paramiko",
+    "requests",
+    "types-requests"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.tox]
+legacy_tox_ini = """
+
+[tox]
+envlist = py37, py38, py39, py310
+skip_missing_interpreters = true
+
+[testenv]
+deps =
+    coverage
+    docker-compose
+    docker[ssh]<7
+    pytest>=3.6.0
+    pytest-cov
+    pycodestyle
+    PyYAML<5.4
+    sh
+
+commands =
+    pytest
+
+[testenv:docs]
+description = Build documentation using Sphinx
+basepython = python3
+deps =
+    docutils
+    sphinx
+    sphinx-rtd-theme
+    recommonmark
+commands = sphinx-build docs/ docs/_build/html -bhtml
+
+"""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-s"
+
+[tool.coverage.run]
+branch = true
+source = ["cerulean"]
+

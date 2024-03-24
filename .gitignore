@@ -7,6 +7,7 @@ build
 dist
 .cache
 .mypy_cache
+.tox
 __pycache__
 
 htmlcov
