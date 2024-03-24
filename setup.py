@@ -39,21 +39,22 @@ setup(
     install_requires=[
         'defusedxml',
         'paramiko',
-        'typing',
-        'typing-extensions'
+        'requests',
+        'types-requests',
     ],
     setup_requires=[
         # dependency for `python setup.py test`
         'pytest-runner',
         # dependencies for `python setup.py build_sphinx`
-        'sphinx<2',
+        'docutils',
+        'sphinx',
         'sphinx-rtd-theme',
         'recommonmark'
     ],
     tests_require=[
         'coverage',
-        'docker-compose==1.24',
-        'docker[ssh]>=3.7.0,<4.0',
+        'docker-compose',
+        'docker[ssh]<7',
         'pytest>=3.6.0',
         'pytest-cov',
         'pycodestyle',

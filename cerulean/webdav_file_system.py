@@ -212,7 +212,7 @@ class WebdavFileSystem(FileSystemImpl):
         url = self.__url(path)
 
         with self.__session.get(url, stream=True) as response:
-            yield from response.iter_content(24576)
+            yield from response.iter_content(24576)     # type: ignore
 
     def _streaming_write(self, path: AbstractPath, data: Iterable[bytes]) -> None:
         def data_generator(data: Iterable[bytes]) -> Generator[bytes, None, None]:
