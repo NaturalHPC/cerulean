@@ -6,9 +6,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 \
     python3-pip openssl python3-openssl libffi-dev libssl-dev openssh-client && \
     pip3 install --upgrade pip
 
-COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3.7 python3.7-dev python3.7-venv \
+    python3.8 python3.8-dev python3.8-venv python3.9 python3.9-dev python3.9-venv \
+    python3-venv python3.11 python3.11-dev python3.11-venv python3.12 python3.12-dev \
+    python3.12-venv
 
-RUN pip3 install -r /home/cerulean/test_requirements.txt
+COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
 
 COPY . /home/cerulean/cerulean
 RUN find /home/cerulean -path '*__pycache__*' -delete && \

@@ -35,8 +35,6 @@ def test_cerulean(target_images):
     # Clean up target containers
     sh.docker_compose.down(_cwd=workdir, _out=sys.stdout)
 
-    exit_code_1 = lines[0].strip()
-    assert exit_code_1 == '0'
-
-    exit_code_2 = lines[1].strip()
-    assert exit_code_2 == '0'
+    for line in lines:
+        exit_code = line.strip()
+        assert exit_code == '0'

@@ -12,6 +12,9 @@ classifiers = [
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
     ]
 
 version = "0.3.8.dev"
@@ -32,7 +35,7 @@ build-backend = "setuptools.build_meta"
 legacy_tox_ini = """
 
 [tox]
-envlist = py37, py38, py39, py310
+envlist = py37, py38, py39, py310, py311, py312
 skip_missing_interpreters = true
 
 [testenv]
