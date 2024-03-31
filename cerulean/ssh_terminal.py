@@ -2,13 +2,12 @@ import logging
 import socket
 from time import perf_counter
 from types import TracebackType
-from typing import Any, List, Optional, Tuple, Type, TYPE_CHECKING
+from typing import Any, List, Optional, Tuple, Type
 
 import paramiko
 from cerulean.credential import (Credential, PasswordCredential,
                                  PubKeyCredential)
 from cerulean.terminal import Terminal
-from cerulean.util import BaseExceptionType
 
 
 logger = logging.getLogger(__name__)
@@ -39,7 +38,7 @@ class SshTerminal(Terminal):
         return self
 
     def __exit__(
-            self, exc_type: Optional[BaseExceptionType],
+            self, exc_type: Optional[Type[BaseException]],
             exc_value: Optional[BaseException],
             traceback: Optional[TracebackType]) -> None:
         """Exit context manager."""

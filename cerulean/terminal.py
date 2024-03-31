@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
-from typing import Any, List, Optional, Tuple
-
-from cerulean.util import BaseExceptionType
+from typing import Any, List, Optional, Tuple, Type
 
 
 class Terminal(ABC):
@@ -23,7 +21,7 @@ class Terminal(ABC):
         return self
 
     def __exit__(
-            self, exc_type: Optional[BaseExceptionType],
+            self, exc_type: Optional[Type[BaseException]],
             exc_value: Optional[BaseException],
             traceback: Optional[TracebackType]) -> None:
         """Exit context manager."""

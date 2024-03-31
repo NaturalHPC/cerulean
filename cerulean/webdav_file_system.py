@@ -4,7 +4,7 @@ from pathlib import PurePosixPath
 import requests
 from urllib.parse import urljoin
 from types import TracebackType
-from typing import Any, cast, Dict, Generator, Iterable, Optional
+from typing import Any, cast, Dict, Generator, Iterable, Optional, Type
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET     # type: ignore
@@ -13,7 +13,6 @@ from cerulean.credential import Credential, PasswordCredential
 from cerulean.file_system import FileSystem, UnsupportedOperationError
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
-from cerulean.util import BaseExceptionType
 
 
 logger = logging.getLogger(__name__)
@@ -74,7 +73,7 @@ class WebdavFileSystem(FileSystemImpl):
         return self
 
     def __exit__(
-            self, exc_type: Optional[BaseExceptionType],
+            self, exc_type: Optional[Type[BaseException]],
             exc_value: Optional[BaseException],
             traceback: Optional[TracebackType]) -> None:
         """Exit context manager."""

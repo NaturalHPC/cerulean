@@ -1,4 +1,4 @@
-from typing import cast, Optional
+from typing import cast, Optional, Type
 
 from cerulean.credential import Credential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler

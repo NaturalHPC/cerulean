@@ -3,14 +3,13 @@ import logging
 import stat
 from pathlib import PurePosixPath
 from types import TracebackType
-from typing import Any, cast, Generator, Iterable, Optional
+from typing import Any, cast, Generator, Iterable, Optional, Type
 
 import paramiko
 from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
 from cerulean.ssh_terminal import SshTerminal
-from cerulean.util import BaseExceptionType
 
 
 logger = logging.getLogger(__name__)
@@ -57,7 +56,7 @@ class SftpFileSystem(FileSystemImpl):
         return self
 
     def __exit__(
-            self, exc_type: Optional[BaseExceptionType],
+            self, exc_type: Optional[Type[BaseException]],
             exc_value: Optional[BaseException], traceback: Optional[TracebackType]
             ) -> None:
         """Exit context manager."""

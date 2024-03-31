@@ -1,9 +1,8 @@
 from abc import ABC
 from types import TracebackType
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
 
 from cerulean.path import Path
-from cerulean.util import BaseExceptionType
 
 
 class UnsupportedOperationError(RuntimeError):
@@ -39,7 +38,7 @@ class FileSystem(ABC):
         return self
 
     def __exit__(
-            self, exc_type: Optional[BaseExceptionType],
+            self, exc_type: Optional[Type[BaseException]],
             exc_value: Optional[BaseException], traceback: Optional[TracebackType]
             ) -> None:
         """Exit context manager."""
