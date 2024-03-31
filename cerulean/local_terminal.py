@@ -23,8 +23,8 @@ class LocalTerminal(Terminal):
             timeout: float,
             command: str,
             args: List[str],
-            stdin_data: str = None,
-            workdir: str = None) -> Tuple[Optional[int], str, str]:
+            stdin_data: Optional[str] = None,
+            workdir: Optional[str] = None) -> Tuple[Optional[int], str, str]:
 
         whole_command = '{} {}'.format(command, ' '.join(args))
         if workdir is not None:

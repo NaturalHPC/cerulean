@@ -182,7 +182,7 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
 def _add_option(job_script: str, option: str,
                 value: Optional[Union[int, str]]) -> str:
     if value is not None:
-        if value is not '':
+        if value != '':
             return job_script + '#SBATCH --{}={}\n'.format(option, value)
         else:
             return job_script + '#SBATCH --{}\n'.format(option)

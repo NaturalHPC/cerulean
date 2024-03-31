@@ -49,8 +49,8 @@ class Terminal(ABC):
             timeout: float,
             command: str,
             args: List[str],
-            stdin_data: str = None,
-            workdir: str = None) -> Tuple[Optional[int], str, str]:
+            stdin_data: Optional[str] = None,
+            workdir: Optional[str] = None) -> Tuple[Optional[int], str, str]:
         """Run a shell command.
 
         The command will be run in the default shell, and arguments are
