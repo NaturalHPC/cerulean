@@ -9,16 +9,13 @@ jobs:
 
     steps:
       - name: Check out
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run tests and upload coverage
         env:
           CODACY_PROJECT_TOKEN: ${{secrets.CODACY_PROJECT_TOKEN}}
         run: |
           cd $GITHUB_WORKSPACE
           python3 -c 'import platform ; print(platform.platform())'
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install 'requests<2.20' codacy-coverage 'pytest>=3.6.0'
-          PATH=${PATH}:/home/runner/.local/bin
-          python setup.py test
+          python3 -m pip install tox
+          tox
           python-codacy-coverage -r coverage.xml
