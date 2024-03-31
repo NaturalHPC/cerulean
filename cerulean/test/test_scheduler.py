@@ -3,12 +3,13 @@ import time
 from typing import Any, Tuple
 
 import pytest
-from cerulean import (DirectGnuScheduler, FileSystem, JobDescription,
-                      JobStatus, Scheduler, SlurmScheduler, TorqueScheduler)
+from cerulean import (
+        DirectGnuScheduler, FileSystem, JobDescription, JobStatus, Scheduler,
+        SlurmScheduler, TorqueScheduler)
 
 
-def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
-                   caplog: Any) -> None:
+def test_scheduler(
+        scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
     sched, fs, _ = scheduler_and_fs
 
@@ -32,15 +33,16 @@ def test_scheduler(scheduler_and_fs: Tuple[Scheduler, FileSystem],
         msg = ''
         for path in (fs/'home/cerulean').iterdir():
             msg += '{}\n'.format(path)
-        pytest.xfail('Output file not found, to be investigated.'
-                     ' Debug output: {}'.format(msg))
+        pytest.xfail(
+                'Output file not found, to be investigated. Debug output: {}'.format(
+                    msg))
     assert 'cerulean' in output
 
     (fs / 'home/cerulean/test_scheduler.out').unlink()
 
 
-def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
-                          caplog: Any) -> None:
+def test_scheduler_cancel(
+        scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
     sched, _, _ = scheduler_and_fs
 
@@ -63,8 +65,8 @@ def test_scheduler_cancel(scheduler_and_fs: Tuple[Scheduler, FileSystem],
         assert t < 10.0
 
 
-def test_scheduler_exit_code(scheduler_and_fs: Tuple[Scheduler, FileSystem],
-                             caplog: Any) -> None:
+def test_scheduler_exit_code(
+        scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
     sched, fs, _ = scheduler_and_fs
 
@@ -106,8 +108,8 @@ def test_scheduler_timeout(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> No
     # assert sched.get_exit_code(job_id) != 0
 
 
-def test_scheduler_wait(scheduler_and_fs: Tuple[Scheduler, FileSystem],
-                        caplog: Any) -> None:
+def test_scheduler_wait(
+        scheduler_and_fs: Tuple[Scheduler, FileSystem], caplog: Any) -> None:
     caplog.set_level(logging.DEBUG)
     sched, fs, _ = scheduler_and_fs
 
@@ -158,8 +160,7 @@ def test_scheduler_no_command(scheduler_and_fs: Tuple[Scheduler, FileSystem]) ->
         sched.submit(job_desc)
 
 
-def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
-                         ) -> None:
+def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -181,8 +182,7 @@ def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     outfile.unlink()
 
 
-def test_system_out_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
-                             ) -> None:
+def test_system_out_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -202,8 +202,7 @@ def test_system_out_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     assert sysout == ''
 
 
-def test_system_out_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
-                             ) -> None:
+def test_system_out_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -222,8 +221,7 @@ def test_system_out_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     assert 'cerulean' in sysout
 
 
-def test_system_err_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
-                             ) -> None:
+def test_system_err_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -245,8 +243,7 @@ def test_system_err_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]
     assert 'syntax error' in syserr
 
 
-def test_system_err_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]
-                              ) -> None:
+def test_system_err_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs, _ = scheduler_and_fs
 
     job_desc = JobDescription()
@@ -349,8 +346,7 @@ def test_environment(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     outfile.unlink()
 
 
-def test_prefix(request: Any, scheduler_and_fs: Tuple[Scheduler, FileSystem]
-                ) -> None:
+def test_prefix(request: Any, scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None:
     sched, fs, fixture_id = scheduler_and_fs
 
     # We have tests running in parallel, so use a unique name

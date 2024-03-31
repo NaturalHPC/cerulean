@@ -2,8 +2,8 @@
 
 This module contains all the functions you need to use Cerulean.
 
-Below, you will also find documentation for submodules. That is \
-developer documentation, you do not need it to use Cerulean.
+Below, you will also find documentation for submodules. That is developer documentation,
+you do not need it to use Cerulean.
 """
 
 __version__ = '0.3.8.dev'
@@ -36,8 +36,7 @@ import logging
 logger = logging.getLogger('cerulean')
 """The Cerulean root logger. Use this to set Cerulean's log level.
 
-In particular, if something goes wrong and you want more debug output, you \
-can do::
+In particular, if something goes wrong and you want more debug output, you can do::
 
     import logging
 
@@ -48,10 +47,10 @@ or for even more::
     cerulean.logger.setLevel(logging.DEBUG)
 """
 
-__all__ = ['copy', 'logger', 'make_file_system', 'make_terminal',
-           'make_scheduler', 'CopyCallback', 'Credential', 'EntryType',
-           'PasswordCredential', 'Permission', 'PubKeyCredential',
-           'DirectGnuScheduler', 'FileSystem', 'JobDescription', 'JobStatus',
-           'LocalFileSystem', 'LocalTerminal', 'Path', 'Scheduler',
-           'SftpFileSystem', 'SlurmScheduler', 'SshTerminal', 'Terminal',
-           'TorqueScheduler', 'UnsupportedOperationError', 'WebdavFileSystem']
+__all__ = [
+        'copy', 'logger', 'make_file_system', 'make_terminal', 'make_scheduler',
+        'CopyCallback', 'Credential', 'EntryType', 'PasswordCredential', 'Permission',
+        'PubKeyCredential', 'DirectGnuScheduler', 'FileSystem', 'JobDescription',
+        'JobStatus', 'LocalFileSystem', 'LocalTerminal', 'Path', 'Scheduler',
+        'SftpFileSystem', 'SlurmScheduler', 'SshTerminal', 'Terminal',
+        'TorqueScheduler', 'UnsupportedOperationError', 'WebdavFileSystem']

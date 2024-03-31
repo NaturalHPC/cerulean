@@ -132,16 +132,17 @@ def test_walk_bottom_up(paths_local: Dict[str, Path]) -> None:
         for filename in filenames:
             files.append(str(dirpath / filename))
 
-    assert (dirs == [
-            str(newdir) + '/dir1/dir2',
-            str(newdir) + '/dir1',
-            str(newdir) + '/dir3',
-            str(newdir)]
-        or dirs == [
-            str(newdir) + '/dir3',
-            str(newdir) + '/dir1/dir2',
-            str(newdir) + '/dir1',
-            str(newdir)])
+    assert (
+            dirs == [
+                str(newdir) + '/dir1/dir2',
+                str(newdir) + '/dir1',
+                str(newdir) + '/dir3',
+                str(newdir)]
+            or dirs == [
+                str(newdir) + '/dir3',
+                str(newdir) + '/dir1/dir2',
+                str(newdir) + '/dir1',
+                str(newdir)])
 
     assert subdirs == [
         str(newdir) + '/dir1/dir2',

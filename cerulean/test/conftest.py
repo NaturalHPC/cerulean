@@ -53,8 +53,8 @@ def webdav_filesystem_raises() -> Generator[WebdavFileSystem, None, None]:
 
 @pytest.fixture(scope='module')
 def webdav_filesystem_quiet() -> Generator[WebdavFileSystem, None, None]:
-    yield WebdavFileSystem('http://cerulean-test-webdav/files',
-                           unsupported_methods_raise=False)
+    yield WebdavFileSystem(
+            'http://cerulean-test-webdav/files', unsupported_methods_raise=False)
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp', 'webdav'])

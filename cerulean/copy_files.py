@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 CopyCallback = Callable[[int, int], None]
 """The type of a callback function for the copy() function.
 
-A callback function takes two arguments, the number of bytes copied \
-thus far, and the approximate total number of bytes to copy. To \
-interrupt the copy operation, raise an exception.
+A callback function takes two arguments, the number of bytes copied thus far, and the
+approximate total number of bytes to copy. To interrupt the copy operation, raise an
+exception.
 """
 
 
@@ -26,40 +26,33 @@ def copy(source_path: Path,
          callback: Optional[CopyCallback] = None) -> None:
     """Copy a file or directory from one path to another.
 
-    Note that source_path and target_path may be paths on different \
-    file systems.
+    Note that source_path and target_path may be paths on different file systems.
 
-    The overwrite parameter decides what to do if a file is encountered \
-    on the target side that would be overwritten. If overwrite equals \
-    'raise', then a FileExistsError is raised. If overwrite equals \
-    'always', then the file is overwritten (removed and replaced \
-    if needed). If overwrite equals 'never', then the existing \
-    file is kept, and the source file not copied.
+    The overwrite parameter decides what to do if a file is encountered on the target
+    side that would be overwritten. If overwrite equals 'raise', then a FileExistsError
+    is raised. If overwrite equals 'always', then the file is overwritten (removed and
+    replaced if needed). If overwrite equals 'never', then the existing file is kept,
+    and the source file not copied.
 
-    If the target is a directory and copy_into is True (the default), \
-    the source will be copied into the \
-    target directory. If an entry with the same name already exists \
-    within the target directory, then the overwrite parameter decides \
-    what happens. If copy_into is False, the source will \
-    be copied on top of the directory, subject to the setting for \
-    overwrite.
+    If the target is a directory and copy_into is True (the default), the source will be
+    copied into the target directory. If an entry with the same name already exists
+    within the target directory, then the overwrite parameter decides what happens. If
+    copy_into is False, the source will be copied on top of the directory, subject to
+    the setting for overwrite.
 
-    If copy_permissions is True, this function will make the target's \
-    permissions match those of the source, `including` SETUID, SETGID \
-    and sticky bits. If copy_permissions is False, the target's \
-    permissions are left at their default values (according to the \
-    umask, on Unix-like systems), less any permissions that the source \
-    file does not have.
+    If copy_permissions is True, this function will make the target's permissions match
+    those of the source, `including` SETUID, SETGID and sticky bits. If copy_permissions
+    is False, the target's permissions are left at their default values (according to
+    the umask, on Unix-like systems), less any permissions that the source file does not
+    have.
 
-    If callback is provided, it should be a function taking two \
-    arguments, the current count of bytes copied and the total number \
-    of bytes to be copied. It will be called once at the beginning of \
-    the copy operation (with count == 0), once at the end (with count \
-    == total), and in between about once per second, if the copy takes \
-    long enough. Note that the total number of bytes passed to the \
-    callback is approximate, and that the count may be larger than \
-    the total if the estimate was off. To abort the copy, raise an \
-    exception from the callback function.
+    If callback is provided, it should be a function taking two arguments, the current
+    count of bytes copied and the total number of bytes to be copied. It will be called
+    once at the beginning of the copy operation (with count == 0), once at the end (with
+    count == total), and in between about once per second, if the copy takes long
+    enough. Note that the total number of bytes passed to the callback is approximate,
+    and that the count may be larger than the total if the estimate was off. To abort
+    the copy, raise an exception from the callback function.
 
     Args:
         source_path: The path to the source file.
@@ -67,12 +60,12 @@ def copy(source_path: Path,
         overwrite: Selects behaviour when the target exists.
         copy_into: Whether to copy into target directories.
         copy_permissions: Whether to copy permissions along.
-        callback: A callback function to call regularly with progress \
-                reports.
+        callback: A callback function to call regularly with progress reports.
     """
     if overwrite not in ['always', 'never', 'raise']:
-        raise ValueError('Invalid value for overwrite. Valid values are' +
-                         '"always", "never" and "raise".')
+        raise ValueError(
+                'Invalid value for overwrite. Valid values are "always", "never" and'
+                ' "raise".')
 
     if target_path.is_dir() and copy_into:
         target_path = target_path / source_path.name
@@ -82,23 +75,24 @@ def copy(source_path: Path,
     if callback is not None:
         callback(0, size)
 
-    total_written = _copy(source_path, target_path, overwrite,
-                          copy_permissions, source_path, callback, 0, size)
+    total_written = _copy(
+            source_path, target_path, overwrite, copy_permissions, source_path,
+            callback, 0, size)
 
     if callback is not None:
         callback(total_written, size)
 
 
-def _copy(source_path: Path, target_path: Path, overwrite: str,
-          copy_permissions: bool, context: Optional[Path],
-          callback: Optional[CopyCallback], already_written: int, size: int
-          ) -> int:
+def _copy(
+        source_path: Path, target_path: Path, overwrite: str, copy_permissions: bool,
+        context: Optional[Path], callback: Optional[CopyCallback],
+        already_written: int, size: int) -> int:
     """Copy a file or directory from one path to another.
 
     See the documentation of copy() for the required behaviour.
 
-    The context path is guaranteed to be a prefix of source_path, on \
-    the same file system.
+    The context path is guaranteed to be a prefix of source_path, on the same file
+    system.
 
     Args:
         source_path: The path to the source file.
@@ -118,30 +112,30 @@ def _copy(source_path: Path, target_path: Path, overwrite: str,
         if _copy_symlink(source_path, target_path, overwrite, context):
             return already_written
     if source_path.is_file():
-        already_written = _copy_file(source_path, target_path, overwrite,
-                                     copy_permissions, callback,
-                                     already_written, size)
+        already_written = _copy_file(
+                source_path, target_path, overwrite, copy_permissions, callback,
+                already_written, size)
     elif source_path.is_dir():
-        already_written = _copy_dir(source_path, target_path, overwrite,
-                                    copy_permissions, context, callback,
-                                    already_written, size)
+        already_written = _copy_dir(
+                source_path, target_path, overwrite, copy_permissions, context,
+                callback, already_written, size)
     elif source_path.exists() or source_path.is_symlink():
         # We don't copy special entries or broken links
         logger.debug(
             'Skipping special entry or broken link %s', source_path)
     else:
-        raise FileNotFoundError(('Source path {} does not exist, cannot'
-                                 ' copy').format(source_path))
+        raise FileNotFoundError(
+                'Source path {} does not exist, cannot copy'.format(source_path))
     return already_written
 
 
-def _copy_symlink(source_path: Path, target_path: Path, overwrite: str,
-                  context: Optional[Path]) -> bool:
+def _copy_symlink(
+        source_path: Path, target_path: Path, overwrite: str, context: Optional[Path]
+        ) -> bool:
     """Copy a symlink.
 
-    Copies links to an existing file within the context as links and
-    returns True, otherwise returns False. If overwrite is True,
-    overwrites the target.
+    Copies links to an existing file within the context as links and returns True,
+    otherwise returns False. If overwrite is True, overwrites the target.
     """
     target_path_exists = target_path.exists() or target_path.is_symlink()
     if not target_path_exists or overwrite == 'always':
@@ -166,9 +160,9 @@ def _copy_symlink(source_path: Path, target_path: Path, overwrite: str,
     return True  # target path exists and overwrite is never, fail silently
 
 
-def _copy_file(source_path: Path, target_path: Path, overwrite: str,
-               copy_permissions: bool, callback: Optional[CopyCallback],
-               already_written: int, size: int) -> int:
+def _copy_file(
+        source_path: Path, target_path: Path, overwrite: str, copy_permissions: bool,
+        callback: Optional[CopyCallback], already_written: int, size: int) -> int:
     """Copy a file.
 
     Returns the number of bytes written.
@@ -219,11 +213,10 @@ def _copy_file(source_path: Path, target_path: Path, overwrite: str,
     return already_written
 
 
-def _call_back(callback: Optional[CopyCallback], next_callback: float,
-               already_written: int, total_size: int, stream: Iterable[bytes]
-               ) -> Generator[bytes, None, None]:
-    """Calls the callback every second or so.
-    """
+def _call_back(
+        callback: Optional[CopyCallback], next_callback: float, already_written: int,
+        total_size: int, stream: Iterable[bytes]) -> Generator[bytes, None, None]:
+    """Calls the callback every second or so."""
     written_here = 0
     for chunk in stream:
         yield chunk
@@ -234,10 +227,10 @@ def _call_back(callback: Optional[CopyCallback], next_callback: float,
             next_callback = perf_counter() + 1.0
 
 
-def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
-              copy_permissions: bool, context: Optional[Path],
-              callback: Optional[CopyCallback], already_written: int, size: int
-              ) -> int:
+def _copy_dir(
+        source_path: Path, target_path: Path, overwrite: str, copy_permissions: bool,
+        context: Optional[Path], callback: Optional[CopyCallback],
+        already_written: int, size: int) -> int:
     """Copy a directory recursively."""
     target_path_exists = target_path.exists() or target_path.is_symlink()
 
@@ -265,9 +258,9 @@ def _copy_dir(source_path: Path, target_path: Path, overwrite: str,
 
     for entry in source_path.iterdir():
         logger.debug('Recursively copying entry %s', entry)
-        already_written = _copy(entry, target_path / entry.name, overwrite,
-                                copy_permissions, context, callback,
-                                already_written, size)
+        already_written = _copy(
+                entry, target_path / entry.name, overwrite, copy_permissions, context,
+                callback, already_written, size)
 
     try:
         for permission in Permission:

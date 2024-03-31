@@ -46,11 +46,15 @@ deps =
     pytest>=3.6.0
     pytest-cov
     pycodestyle
+    pydocstyle
     PyYAML<5.4
     sh
+    tomli
 
 commands =
     pytest
+    pycodestyle --max-line-length=88 --max-doc-length=88 cerulean
+    pydocstyle cerulean
 
 [testenv:docs]
 description = Build documentation using Sphinx
@@ -71,4 +75,9 @@ addopts = "-s"
 [tool.coverage.run]
 branch = true
 source = ["cerulean"]
+
+[tool.pydocstyle]
+ignore = [
+    "D100", "D102", "D103", "D105", "D203", "D204", "D213", "D215", "D400", "D401",
+    "D404", "D406", "D407", "D408", "D409", "D413"]
 
