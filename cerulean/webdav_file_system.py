@@ -164,6 +164,9 @@ class WebdavFileSystem(FileSystemImpl):
     def _iterdir(self, path: AbstractPath) -> Generator[PurePosixPath, None, None]:
         self.__ensure_http()
         url = self.__url(path)
+        # directory URLs should always end in a / in WebDAV
+        if not url.endswith('/'):
+            url = url + '/'
         collection = self.__propfind(url, None, 1)
         for child_url in collection:
             child_abs_url = urljoin(self.__base_url, child_url)
@@ -258,6 +261,9 @@ class WebdavFileSystem(FileSystemImpl):
 
         url = self.__url(path)
         props = self.__propfind(url, '{DAV:}resourcetype')
+
+        if url not in props and (url + '/') in props:
+            url = url + '/'
         if props[url] is None:
             return False
         return props[url].find('{DAV:}collection') is not None
@@ -367,7 +373,6 @@ class WebdavFileSystem(FileSystemImpl):
         headers = {'Depth': str(depth)}
         response = self.__session.request('PROPFIND', url, headers=headers)
         if response.status_code < 400:
-            print(response.text)
             xml_props = ET.fromstring(response.text)
             results = dict()
             for resp in xml_props.iter('{DAV:}response'):
