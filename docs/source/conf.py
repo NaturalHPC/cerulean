@@ -24,6 +24,11 @@ sys.path.insert(0, path.abspath(path.join(here, '..', '..')))
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.napoleon']
 
+autodoc_default_options = {
+        'special-members': '__init__'
+        }
+
+
 templates_path = ['_templates']
 exclude_patterns = []
 
