@@ -2,21 +2,10 @@
     :target: https://cerulean.readthedocs.io/en/latest/?badge=develop
     :alt: Documentation Build Status
 
-.. image:: https://github.com/MD-Studio/cerulean/actions/workflows/ci.yaml/badge.svg?branch=develop
-    :target: https://github.com/MD-Studio/cerulean/actions
+.. image:: https://github.com/NaturalHPC/cerulean/actions/workflows/ci.yaml/badge.svg?branch=develop
+    :target: https://github.com/NaturalHPC/cerulean/actions
     :alt: Build Status
 
-.. image:: https://app.codacy.com/project/badge/Grade/4909f6a7c0d94cc3a4b3c83230a20248
-    :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
-    :alt: Codacy Grade
-
-.. image:: https://app.codacy.com/project/badge/Coverage/4909f6a7c0d94cc3a4b3c83230a20248
-    :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
-    :alt: Code Coverage
-
-.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=develop
-    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=develop
-    :alt: Requirements Status
 
 ################################################################################
 Cerulean
