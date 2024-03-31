@@ -102,8 +102,8 @@ class SshTerminal(Terminal):
             timeout: float,
             command: str,
             args: List[str],
-            stdin_data: str = None,
-            workdir: str = None) -> Tuple[Optional[int], str, str]:
+            stdin_data: Optional[str] = None,
+            workdir: Optional[str] = None) -> Tuple[Optional[int], str, str]:
 
         if workdir:
             cmd_str = 'cd {}; {} {}'.format(workdir, command, ' '.join(args))

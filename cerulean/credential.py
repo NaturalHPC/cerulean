@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import Optional
 
 
 class Credential(ABC):
@@ -48,7 +49,7 @@ class PubKeyCredential(Credential):
     """
 
     def __init__(self, username: str, public_key: str,
-                 passphrase: str = None) -> None:
+                 passphrase: Optional[str] = None) -> None:
         """Create a PubKeyCredential.
 
         Args:

@@ -1,8 +1,7 @@
 defusedxml
-docker
-docker-compose
 mypy
 overrides
+requests
 paramiko
 pytest
 pytest-cov
@@ -10,5 +9,6 @@ pytest-mypy
 pytest-runner
 pytest-timeout
 pytest-xdist
+types-requests
 typing
 typing-extensions

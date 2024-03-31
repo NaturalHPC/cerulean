@@ -71,8 +71,8 @@ class Scheduler(ABC):
         """
         pass
 
-    def wait(self, job_id: str, time_out: float = -1.0, interval: float = None
-             ) -> Optional[int]:
+    def wait(self, job_id: str, time_out: float = -1.0,
+             interval: Optional[float] = None) -> Optional[int]:
         """Wait until the job is done.
 
         Will wait approximately time_out seconds for the job to finish.

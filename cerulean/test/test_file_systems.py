@@ -217,8 +217,8 @@ def test_size(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> No
 
 def test_owner(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     if filesystem._supports('permissions'):
-        assert filesystem._uid(lpaths['root']) == 999
-        assert filesystem._gid(lpaths['root']) == 999
+        assert filesystem._uid(lpaths['root']) == 997
+        assert filesystem._gid(lpaths['root']) == 997
 
 
 def test_has_permission(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
