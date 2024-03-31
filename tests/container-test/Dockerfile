@@ -1,9 +1,9 @@
-FROM mdstudio/cerulean-test-base:latest
+FROM ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-base:latest
 
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends python3 \
-    python3-dev python3-setuptools build-essential python3-pip openssl \
-    python-openssl libffi-dev libssl-dev openssh-client && \
+    python3-dev cython3 python3-setuptools python3-wheel build-essential \
+    python3-pip openssl python3-openssl libffi-dev libssl-dev openssh-client && \
     pip3 install --upgrade pip
 
 COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
