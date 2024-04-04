@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from types import TracebackType
-from typing import Any, List, Optional, Tuple, Type
+from typing import Any, List, Optional, Tuple, Type, Union
 
 
 class Terminal(ABC):
@@ -43,8 +44,8 @@ class Terminal(ABC):
 
     @abstractmethod
     def run(
-            self, timeout: float, command: str, args: List[str],
-            stdin_data: Optional[str] = None, workdir: Optional[str] = None
+            self, timeout: float, command: Union[str, Path], args: List[str],
+            stdin_data: Optional[str] = None, workdir: Optional[Union[str, Path]] = None
             ) -> Tuple[Optional[int], str, str]:
         """Run a shell command.
 

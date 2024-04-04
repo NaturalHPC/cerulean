@@ -1,8 +1,9 @@
 import logging
+from pathlib import Path
 import socket
 from time import perf_counter
 from types import TracebackType
-from typing import Any, List, Optional, Tuple, Type
+from typing import Any, List, Optional, Tuple, Type, Union
 
 import paramiko
 from cerulean.credential import (Credential, PasswordCredential,
@@ -97,8 +98,8 @@ class SshTerminal(Terminal):
         return client
 
     def run(
-            self, timeout: float, command: str, args: List[str],
-            stdin_data: Optional[str] = None, workdir: Optional[str] = None
+            self, timeout: float, command: Union[str, Path], args: List[str],
+            stdin_data: Optional[str] = None, workdir: Optional[Union[str, Path]] = None
             ) -> Tuple[Optional[int], str, str]:
 
         if workdir:
