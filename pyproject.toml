@@ -41,13 +41,12 @@ skip_missing_interpreters = true
 [testenv]
 deps =
     coverage
-    docker-compose
-    docker[ssh]<7
+    docker[ssh]
     pytest>=3.6.0
     pytest-cov
     pycodestyle
     pydocstyle
-    PyYAML<5.4
+    PyYAML
     sh
     tomli
 
