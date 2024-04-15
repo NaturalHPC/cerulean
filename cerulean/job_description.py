@@ -38,12 +38,12 @@ class JobDescription:
         extra_scheduler_options (str): Additional options to add to the scheduler
                 command line on job submission. Note that these are scheduler-specific!
 
-        Note that stdout_file and stderr_file will receive the output of the process
-        you are starting, while system_out_file and system_err_file will receive
-        messages from the scheduler (e.g. that the job ran out of its time limit and
-        was killed). If stdout_file and/or stderr_file are not specified but
-        system_out_file and/or system_err_file are, then the command output/error will
-        end up in the system output/error file together with the scheduler output.
+    Note that ``stdout_file`` and ``stderr_file`` will receive the output of the process
+    you are starting, while ``system_out_file`` and ``system_err_file`` will receive
+    messages from the scheduler (e.g. that the job ran out of its time limit and was
+    killed). If ``stdout_file`` and/or ``stderr_file`` are not specified but
+    ``system_out_file`` and/or ``system_err_file`` are, then the command output/error
+    will end up in the system output/error file together with the scheduler output.
     """
 
     def __init__(self) -> None:
