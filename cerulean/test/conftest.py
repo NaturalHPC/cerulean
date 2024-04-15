@@ -172,6 +172,10 @@ def terminal(
     'ssh_slurm-18-08',
     'ssh_slurm-19-05',
     'ssh_slurm-20-02',
+    'ssh_slurm-21-08',
+    'ssh_slurm-22-05',
+    'ssh_slurm-23-02',
+    'ssh_slurm-23-11',
     'flakyssh_direct',
     'flakyssh_slurm-17-11'])
 def scheduler_and_fs(
