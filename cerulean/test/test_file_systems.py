@@ -8,7 +8,7 @@ from cerulean.file_system_impl import AbstractPath, FileSystemImpl
 
 
 def test_equality(filesystem: FileSystemImpl, filesystem2: FileSystemImpl) -> None:
-    if type(filesystem) == type(filesystem2):
+    if type(filesystem) is type(filesystem2):
         assert filesystem == filesystem2
         assert not (filesystem != filesystem2)
     else:
@@ -60,15 +60,22 @@ def test_mkdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
         old_umask = os.umask(0o022)
         filesystem._mkdir(lpaths['deep_new_dir'], mode=0o660, parents=True)
         assert filesystem._is_dir(lpaths['deep_new_dir'].parent)
-        assert filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.OTHERS_READ)
-        assert not filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.GROUP_WRITE)
-        assert not filesystem._has_permission(lpaths['deep_new_dir'].parent, Permission.OTHERS_WRITE)
+        assert filesystem._has_permission(
+                lpaths['deep_new_dir'].parent, Permission.OTHERS_READ)
+        assert not filesystem._has_permission(
+                lpaths['deep_new_dir'].parent, Permission.GROUP_WRITE)
+        assert not filesystem._has_permission(
+                lpaths['deep_new_dir'].parent, Permission.OTHERS_WRITE)
 
         assert filesystem._is_dir(lpaths['deep_new_dir'])
-        assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.OTHERS_READ)
-        assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.GROUP_EXECUTE)
-        assert not filesystem._has_permission(lpaths['deep_new_dir'], Permission.OWNER_EXECUTE)
-        assert filesystem._has_permission(lpaths['deep_new_dir'], Permission.OWNER_WRITE)
+        assert not filesystem._has_permission(
+                lpaths['deep_new_dir'], Permission.OTHERS_READ)
+        assert not filesystem._has_permission(
+                lpaths['deep_new_dir'], Permission.GROUP_EXECUTE)
+        assert not filesystem._has_permission(
+                lpaths['deep_new_dir'], Permission.OWNER_EXECUTE)
+        assert filesystem._has_permission(
+                lpaths['deep_new_dir'], Permission.OWNER_WRITE)
         filesystem._rmdir(lpaths['deep_new_dir'])
         filesystem._rmdir(lpaths['deep_new_dir'].parent)
     except UnsupportedOperationError:
@@ -88,8 +95,9 @@ def test_mkdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
 def test_iterdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     for entry in filesystem._iterdir(lpaths['dir']):
         assert str(entry).startswith('/home/cerulean/test_files/links')
-        assert entry.name in ['executable', 'file0', 'file1', 'link0', 'link1',
-                              'link2', 'link3', 'link4', 'private']
+        assert entry.name in [
+                'executable', 'file0', 'file1', 'link0', 'link1', 'link2', 'link3',
+                'link4', 'private']
 
 
 def test_rmdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
@@ -109,14 +117,16 @@ def test_rmdir(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
         filesystem._rmdir(lpaths['file'])
 
 
-def test_streaming_read(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_streaming_read(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     content = bytearray()
     for chunk in filesystem._streaming_read(lpaths['file']):
         content += chunk
     assert content == bytes('Hello World\n', 'utf-8')
 
 
-def test_streaming_write(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_streaming_write(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     testdata0 = bytes('Helo', 'utf-8')
     testdata1 = bytes(', world!', 'utf-8')
     filesystem._streaming_write(lpaths['new_file'], [testdata0, testdata1])
@@ -129,17 +139,20 @@ def test_streaming_write(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractP
     filesystem._unlink(lpaths['new_file'])
 
 
-def test_read_bytes(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_read_bytes(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     content = filesystem._read_bytes(lpaths['file'])
     assert content == bytes('Hello World\n', 'utf-8')
 
 
-def test_read_text(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_read_text(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     content = filesystem._read_text(lpaths['file'], encoding='utf-8')
     assert content == 'Hello World\n'
 
 
-def test_write_bytes(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_write_bytes(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     data = bytes('Hello, world!', 'utf-8')
     filesystem._write_bytes(lpaths['new_file'], data)
 
@@ -148,7 +161,8 @@ def test_write_bytes(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
     filesystem._unlink(lpaths['new_file'])
 
 
-def test_write_text(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_write_text(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     data = 'Hello, world!'
     filesystem._write_text(lpaths['new_file'], data)
 
@@ -157,8 +171,7 @@ def test_write_text(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath])
     filesystem._unlink(lpaths['new_file'])
 
 
-def test_rename(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
-                ) -> None:
+def test_rename(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     assert not filesystem._exists(lpaths['new_file'])
     assert filesystem._exists(lpaths['file'])
     filesystem._rename(lpaths['file'], lpaths['new_file'])
@@ -167,16 +180,15 @@ def test_rename(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
     filesystem._rename(lpaths['new_file'], lpaths['file'])
 
 
-def test_unlink(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
-                ) -> None:
+def test_unlink(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     filesystem._touch(lpaths['new_file'])
     assert filesystem._exists(lpaths['new_file'])
     filesystem._unlink(lpaths['new_file'])
     assert not filesystem._exists(lpaths['new_file'])
 
 
-def test_entry_types(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
-                     ) -> None:
+def test_entry_types(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     assert filesystem._is_dir(lpaths['root'])
     assert not filesystem._is_dir(lpaths['file'])
     assert not filesystem._is_dir(lpaths['new_dir'])
@@ -200,7 +212,7 @@ def test_entry_types(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]
     if filesystem._supports('symlinks'):
         assert filesystem._entry_type(lpaths['link']) == EntryType.SYMBOLIC_LINK
         # disable for now, doesn't work in a docker
-        #assert filesystem._entry_type(lpaths['chardev']) == EntryType.CHARACTER_DEVICE
+        # assert filesystem._entry_type(lpaths['chardev']) == EntryType.CHARACTER_DEVICE
         assert filesystem._entry_type(lpaths['blockdev']) == EntryType.BLOCK_DEVICE
         assert filesystem._entry_type(lpaths['fifo']) == EntryType.FIFO
         # TODO: socket?
@@ -221,7 +233,8 @@ def test_owner(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
         assert filesystem._gid(lpaths['root']) == 997
 
 
-def test_has_permission(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_has_permission(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     if filesystem._supports('permissions'):
         assert filesystem._has_permission(lpaths['root'], Permission.OWNER_READ)
         assert filesystem._has_permission(lpaths['root'], Permission.OWNER_WRITE)
@@ -236,7 +249,8 @@ def test_has_permission(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPa
         assert not filesystem._has_permission(lpaths['file'], Permission.OTHERS_WRITE)
 
 
-def test_set_permission(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_set_permission(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     if filesystem._supports('permissions'):
         for permission in Permission:
             filesystem._set_permission(lpaths['root'], permission, False)
@@ -271,7 +285,8 @@ def test_chmod(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> N
                 assert not filesystem._has_permission(lpaths['root'], permission)
 
 
-def test_symlink_to(filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
+def test_symlink_to(
+        filesystem: FileSystemImpl, lpaths: Dict[str, AbstractPath]) -> None:
     if filesystem._supports('symlinks'):
         filesystem._symlink_to(lpaths['new_file'], lpaths['file'])
         assert filesystem._is_symlink(lpaths['new_file'])

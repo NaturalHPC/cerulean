@@ -21,36 +21,67 @@ services:
     slurm-16-05:
         container_name: cerulean-test-slurm-16-05
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-16-05:latest
+        # image: naturalhpc/cerulean-fake-slurm-16-05:latest
         ports: ['22']
 
     slurm-17-02:
         container_name: cerulean-test-slurm-17-02
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-17-02:latest
+        # image: naturalhpc/cerulean-fake-slurm-17-02:latest
         ports: ['22']
 
     slurm-17-11:
         container_name: cerulean-test-slurm-17-11
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-17-11:latest
+        # image: naturalhpc/cerulean-fake-slurm-17-11:latest
         ports: ['22']
 
     slurm-17-11-flaky:
         container_name: cerulean-test-flaky
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-flaky:latest
+        # image: naturalhpc/cerulean-fake-slurm-flaky:latest
         ports: ['22']
 
     slurm-18-08:
         container_name: cerulean-test-slurm-18-08
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-18-08:latest
+        # image: naturalhpc/cerulean-fake-slurm-18-08:latest
         ports: ['22']
 
     slurm-19-05:
         container_name: cerulean-test-slurm-19-05
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-19-05:latest
+        # image: naturalhpc/cerulean-fake-slurm-19-05:latest
         ports: ['22']
 
     slurm-20-02:
         container_name: cerulean-test-slurm-20-02
         image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-20-02:latest
+        # image: naturalhpc/cerulean-fake-slurm-20-02:latest
+        ports: ['22']
+
+    slurm-21-08:
+        container_name: cerulean-test-slurm-21-08
+        image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-21-08:latest
+        # image: naturalhpc/cerulean-fake-slurm-21-08:latest
+        ports: ['22']
+
+    slurm-22-05:
+        container_name: cerulean-test-slurm-22-05
+        image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-22-05:latest
+        # image: naturalhpc/cerulean-fake-slurm-22-05:latest
+        ports: ['22']
+
+    slurm-23-02:
+        container_name: cerulean-test-slurm-23-02
+        image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-23-02:latest
+        # image: naturalhpc/cerulean-fake-slurm-23-02:latest
+        ports: ['22']
+
+    slurm-23-11:
+        container_name: cerulean-test-slurm-23-11
+        image: ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-slurm-23-11:latest
+        # image: naturalhpc/cerulean-fake-slurm-23-11:latest
         ports: ['22']
 
     cerulean-test:
@@ -66,6 +97,10 @@ services:
             - slurm-17-11-flaky
             - slurm-19-05
             - slurm-20-02
+            - slurm-21-08
+            - slurm-22-05
+            - slurm-23-02
+            - slurm-23-11
         build:
             context: ../
             dockerfile: tests/container-test/Dockerfile

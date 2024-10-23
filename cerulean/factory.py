@@ -1,4 +1,4 @@
-from typing import cast, Optional
+from typing import cast, Optional, Type
 
 from cerulean.credential import Credential
 from cerulean.direct_gnu_scheduler import DirectGnuScheduler
@@ -14,33 +14,30 @@ from cerulean.torque_scheduler import TorqueScheduler
 from cerulean.webdav_file_system import WebdavFileSystem
 
 
-def make_file_system(protocol: str, location: Optional[str] = None,
-                     credential: Optional[Credential] = None
-                     ) -> FileSystem:
+def make_file_system(
+        protocol: str, location: Optional[str] = None,
+        credential: Optional[Credential] = None) -> FileSystem:
     """Make a file system object.
 
-    This is a factory function for FileSystem objects. It will \
-    instantiate a FileSystem implementation according to the parameters \
-    you give it.
+    This is a factory function for FileSystem objects. It will instantiate a
+    FileSystem implementation according to the parameters you give it.
 
-    FileSystems may hold resources, so you should either use this \
-    function with a ``with`` statement, or call :meth:`close` on the \
-    returned object when you are done with it.
+    FileSystems may hold resources, so you should either use this function with
+    a ``with`` statement, or call :meth:`close` on the returned object when you
+    are done with it.
 
     Args:
-        protocol: The protocol to use to connect to the file system. \
-                Can be `local`, `sftp` or `webdav`. For `local`, \
-                location and credential can be omitted. For `webdav`, \
-                credential can be omitted.
-        location: The location in the form `hostname`, \
-                `hostname:port` or `http(s)://hostname:port/base_path` \
-                to connect to.
+        protocol: The protocol to use to connect to the file system. Can be `local`,
+                `sftp` or `webdav`. For `local`, location and credential can be omitted.
+                For `webdav`, credential can be omitted.
+
+        location: The location in the form `hostname`, `hostname:port` or
+                `http(s)://hostname:port/base_path` to connect to.
+
         credential: The :class:`Credential` to use to connect with.
 
     Returns:
-        An instance of a FileSystem representing the described file \
-                system.
-
+        An instance of a FileSystem representing the described file system.
     """
     if protocol == 'local':
         return LocalFileSystem()
@@ -55,31 +52,28 @@ def make_file_system(protocol: str, location: Optional[str] = None,
         raise ValueError('Unknown protocol, use local, sftp or webdav')
 
 
-def make_terminal(protocol: str, location: Optional[str] = None,
-                  credential: Optional[Credential] = None
-                  ) -> Terminal:
+def make_terminal(
+        protocol: str, location: Optional[str] = None,
+        credential: Optional[Credential] = None) -> Terminal:
     """Make a terminal object.
 
-    This is a factory function for Terminal objects. It will \
-    instantiate a Terminal implementation according to the parameters \
-    you give it.
+    This is a factory function for Terminal objects. It will instantiate a Terminal
+    implementation according to the parameters you give it.
 
-    Terminals may hold resources, so you should either use this \
-    function with a ``with`` statement, or call :meth:`close` on the \
-    returned object when you are done with it.
+    Terminals may hold resources, so you should either use this function with a
+    ``with`` statement, or call :meth:`close` on the returned object when you
+    are done with it.
 
     Args:
-        protocol: The protocol to use to connect to the file system. \
-                Can be `local` or `sftp`. For `local`, location and \
-                credential can be omitted.
-        location: The location in the form `hostname` or \
-                `hostname:port` to connect to.
+        protocol: The protocol to use to connect to the file system.  Can be `local`
+                or `sftp`. For `local`, location and credential can be omitted.
+
+        location: The location in the form `hostname` or `hostname:port` to connect to.
+
         credential: The :class:`Credential` to use to connect with.
 
     Returns:
-        An instance of a FileSystem representing the described file \
-                system.
-
+        An instance of a FileSystem representing the described file system.
     """
     if protocol == 'local':
         return LocalTerminal()
@@ -102,23 +96,23 @@ def make_terminal(protocol: str, location: Optional[str] = None,
         raise ValueError('Unknown protocol, use either local or ssh')
 
 
-def make_scheduler(name: str, terminal: Terminal, prefix: str = ''
-                   ) -> Scheduler:
+def make_scheduler(
+        name: str, terminal: Terminal, prefix: str = '') -> Scheduler:
     """Make a scheduler object.
 
-    This is a factory function for Scheduler objects. It will \
-    instantiate a Scheduler implementation according to the parameters \
-    you give it, which talks to the supplied Terminal.
+    This is a factory function for Scheduler objects. It will instantiate a Scheduler
+    implementation according to the parameters you give it, which talks to the supplied
+    Terminal.
 
     Args:
-        name: The name of the scheduler. One of ``directgnu``,
-                ``slurm``, or ``torque``.
+        name: The name of the scheduler. One of ``directgnu``, ``slurm``, or ``torque``.
+
         terminal: The terminal this Scheduler will communicate on.
+
         prefix: A string to prefix any shell commands with.
 
     Returns:
         The Scheduler.
-
     """
     if name == 'directgnu':
         return DirectGnuScheduler(terminal, prefix)
@@ -127,5 +121,6 @@ def make_scheduler(name: str, terminal: Terminal, prefix: str = ''
     elif name == 'torque':
         return TorqueScheduler(terminal, prefix)
     else:
-        raise ValueError('Unknown scheduler type {} specified, expected one of'
-                         ' directgnu, slurm, or torque.'.format(name))
+        raise ValueError(
+                'Unknown scheduler type {} specified, expected one of directgnu,'
+                ' slurm, or torque.'.format(name))

@@ -1,4 +1,3 @@
-========
 Tutorial
 ========
 
@@ -18,7 +17,7 @@ dependencies.
 
 
 Accessing files
-===============
+---------------
 
 The file access functions of Cerulean use a ``pathlib``-like API, but unlike in
 ``pathlib``, Cerulean supports remote file systems. That means that there is no
@@ -66,7 +65,7 @@ You can use the ``/`` operator to build paths from components as with
 documentation for :class:`cerulean.Path` for details.
 
 Remote filesystems
-------------------
+``````````````````
 
 Cerulean supports remote file systems through the SFTP protocol. (It uses the
 Paramiko library internally for this.) Accessing a remote file system through
@@ -105,7 +104,7 @@ from there it works just like a local file system. Just like
 another ``with``-statement.
 
 Copying files
--------------
+`````````````
 
 When running jobs on HPC machines, you often start with copying the input files
 from the local system to the HPC machine, and finish with copying the results
@@ -132,7 +131,7 @@ you would expect:
           cerulean.copy(job_dir / 'output.txt', output_file)
 
 Running commands
-================
+----------------
 
 If you have read the above, then the secret is already out: running commands
 using Cerulean is done using a :class:`Terminal`. For example, you can run a
@@ -173,7 +172,7 @@ except you use an :class:`SshTerminal`, as above:
 
 
 Submitting jobs
-===============
+---------------
 
 On High Performance Computing machines, you don't run commands directly.
 Instead, you submit batch jobs to a scheduler, which will place them in a queue,
@@ -215,7 +214,7 @@ the scheduler is local, and you want to use a :class:`LocalTerminal` with your
 
 
 More information
-================
+----------------
 
 To find all the details of what Cerulean can do and how to do it, please refer
-to the :doc:`API documentation<apidocs/cerulean>`.
+to the :doc:`API documentation<api>`.

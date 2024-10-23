@@ -4,7 +4,7 @@ from pathlib import PurePosixPath
 import requests
 from urllib.parse import urljoin
 from types import TracebackType
-from typing import Any, cast, Dict, Generator, Iterable, Optional
+from typing import Any, cast, Dict, Generator, Iterable, Optional, Type
 from xml.etree.ElementTree import Element
 
 import defusedxml.ElementTree as ET     # type: ignore
@@ -13,7 +13,6 @@ from cerulean.credential import Credential, PasswordCredential
 from cerulean.file_system import FileSystem, UnsupportedOperationError
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
-from cerulean.util import BaseExceptionType
 
 
 logger = logging.getLogger(__name__)
@@ -28,45 +27,40 @@ class WebdavFileSystem(FileSystemImpl):
 
       fs / 'path'
 
-    which produces a :class:`Path`, through which you can do things \
-    with the remote files.
+    which produces a :class:`Path`, through which you can do things with the remote
+    files.
 
-    It is also a context manager, so that you can (and should!) use it \
-    with a ``with`` statement, which will ensure that the connection \
-    is closed when you are done with the it. Alternatively, you can \
-    call :meth:`close` to close the connection.
+    It is also a context manager, so that you can (and should!) use it with a ``with``
+    statement, which will ensure that the connection is closed when you are done with
+    the it. Alternatively, you can call :meth:`close` to close the connection.
 
-    The WebDAV protocol does not support all operations specified by \
-    the Cerulean API. In particular, symbolic links are not supported, \
-    nor are ownership and permissions. Read-access to these properties \
-    is emulated, e.g. `is_symlink()` simply always returns false, all \
-    files and directories are owned by uid 0 and gid 0, with access \
-    permissions determined by whether the server will let us access \
-    them.
+    The WebDAV protocol does not support all operations specified by the Cerulean API.
+    In particular, symbolic links are not supported, nor are ownership and permissions.
+    Read-access to these properties is emulated, e.g. `is_symlink()` simply always
+    returns false, all files and directories are owned by uid 0 and gid 0, with access
+    permissions determined by whether the server will let us access them.
 
-    By default, if you try to run any of the related modifying methods, \
-    e.g. `symlink_to()` or `set_permissions()`, an \
-    :class:`UnsupportedOperationError` will be raised. If you set \
-    `unsupported_methods_raise` to `False` when creating a \
-    WebdavFileSystem, then these methods will simply return without \
-    doing anything.
+    By default, if you try to run any of the related modifying methods, e.g.
+    `symlink_to()` or `set_permissions()`, an :class:`UnsupportedOperationError` will be
+    raised. If you set `unsupported_methods_raise` to `False` when creating a
+    WebdavFileSystem, then these methods will simply return without doing anything.
 
-    WebdavFileSystem supports both HTTP and HTTPS, but not (yet) \
-    client-side certificates.
-
-    Args:
-        url: The server base location, e.g. http://example.com/webdav
-        credential: The credential to use to connect.
-        host_ca_cert_file: Path to a certificate file to use for \
-                authentication. Useful for servers that use a self-signed \
-                certificate.
-        unsupported_methods_raise: Raise on using an unsupported \
-                method, see above.
+    WebdavFileSystem supports both HTTP and HTTPS, but not (yet) client-side
+    certificates.
     """
-    def __init__(self, url: str,
-                 credential: Optional[Credential] = None,
-                 host_ca_cert_file: Optional[str] = None,
-                 unsupported_methods_raise: Optional[bool] = True) -> None:
+    def __init__(
+            self, url: str, credential: Optional[Credential] = None,
+            host_ca_cert_file: Optional[str] = None,
+            unsupported_methods_raise: Optional[bool] = True) -> None:
+        """Create a WebdavFileSystem.
+
+        Args:
+            url: The server base location, e.g. http://example.com/webdav
+            credential: The credential to use to connect.
+            host_ca_cert_file: Path to a certificate file to use for authentication.
+                    Useful for servers that use a self-signed certificate.
+            unsupported_methods_raise: Raise on using an unsupported method, see above.
+        """
         self.__base_url = url.rstrip('/')
         self.__credential = credential
         self.__host_ca_cert_file = host_ca_cert_file
@@ -78,9 +72,10 @@ class WebdavFileSystem(FileSystemImpl):
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type: Optional[BaseExceptionType],
-                 exc_value: Optional[BaseException],
-                 traceback: Optional[TracebackType]) -> None:
+    def __exit__(
+            self, exc_type: Optional[Type[BaseException]],
+            exc_value: Optional[BaseException],
+            traceback: Optional[TracebackType]) -> None:
         """Exit context manager."""
         self.close()
 
@@ -122,34 +117,35 @@ class WebdavFileSystem(FileSystemImpl):
             if response.status_code == 201:
                 pass
             elif response.status_code == 403:
-                raise PermissionError(('Permission denied while accessing {}'
-                                       ).format(self.__url(path)))
+                raise PermissionError(
+                        'Permission denied while accessing {}'.format(
+                            self.__url(path)))
             elif response.status_code == 405:
-                raise FileExistsError(('File or directory {} already exists'
-                                       ).format(self.__url(path)))
+                raise FileExistsError(
+                        'File or directory {} already exists'.format(self.__url(path)))
             elif response.status_code == 409:
-                raise FileNotFoundError(('One or more parent directories of'
-                                         ' {} do not exist').format(
-                                             self.__url(path)))
+                raise FileNotFoundError(
+                        'One or more parent directories of {} do not exist'.format(
+                            self.__url(path)))
             elif response.status_code == 507:
-                raise IOError(('Out of storage space while making dir {}'
-                               ).format(self.__url(path)))
+                raise IOError(
+                        'Out of storage space while making dir {}'.format(
+                            self.__url(path)))
             else:
-                raise RuntimeError(('An error occurred while making'
-                                    ' dir {}, the server said {}').format(
-                                        self.__url(path), response.reason))
+                raise RuntimeError((
+                        'An error occurred while making dir {}, the server said'
+                        ' {}').format(self.__url(path), response.reason))
 
         if mode is not None and self.__unsupported_methods_raise:
-            raise UnsupportedOperationError('Tried to make a directory with a'
-                                            ' permission mask, but WebDAV does'
-                                            ' not support permissions.')
+            raise UnsupportedOperationError(
+                    'Tried to make a directory with a permission mask, but WebDAV does'
+                    ' not support permissions.')
         self.__ensure_http()
         lpath = cast(PurePosixPath, path)
         if parents:
             for parent in reversed(lpath.parents):
                 if not self._exists(parent):
-                    response = self.__session.request('MKCOL',
-                                                      self.__url(parent))
+                    response = self.__session.request('MKCOL', self.__url(parent))
                     handle_mkcol_error(response)
         if self._exists(lpath):
             if not exists_ok:
@@ -172,11 +168,10 @@ class WebdavFileSystem(FileSystemImpl):
             child_abs_url = urljoin(self.__base_url, child_url)
             if child_abs_url != url:
                 if not child_abs_url.startswith(self.__base_url):
-                    raise RuntimeError(('Something went wrong processing a'
-                                        ' URL returned by the WebDAV server'
-                                        ' in iterdir(). The URL is {} and'
-                                        ' the base URL is {}.').format(
-                                            child_url, self.__base_url))
+                    raise RuntimeError((
+                            'Something went wrong processing a URL returned by the'
+                            ' WebDAV server in iterdir(). The URL is {} and the base'
+                            ' URL is {}.').format(child_url, self.__base_url))
                 rel_child_path = child_abs_url[len(self.__base_url):]
                 rel_child = PurePosixPath(rel_child_path)
                 if self._exists(rel_child):
@@ -207,8 +202,9 @@ class WebdavFileSystem(FileSystemImpl):
                 # exists at this point, which is what we're trying to achieve
                 pass
             else:
-                raise RuntimeError(('Error trying to create file {}: {}'
-                                   ).format(url, response.reason))
+                raise RuntimeError(
+                        'Error trying to create file {}: {}'.format(
+                            url, response.reason))
 
     def _streaming_read(self, path: AbstractPath) -> Generator[bytes, None, None]:
         self.__ensure_http()
@@ -238,9 +234,9 @@ class WebdavFileSystem(FileSystemImpl):
         if response.status_code in [201, 204]:
             pass
         else:
-            raise RuntimeError(('An error occurred while moving'
-                                ' {}, the server said {}').format(
-                                    url, response.reason))
+            raise RuntimeError(
+                    'An error occurred while moving {}, the server said {}'.format(
+                        url, response.reason))
 
     def _unlink(self, path: AbstractPath) -> None:
         self.__ensure_http()
@@ -250,9 +246,9 @@ class WebdavFileSystem(FileSystemImpl):
         url = self.__url(path)
         response = self.__session.delete(url)
         if response.status_code != 204:
-            raise RuntimeError(('An error occurred when deleting'
-                                ' file {}, the server said {}').format(
-                                    self.__url(path), response.reason))
+            raise RuntimeError(
+                'An error occurred when deleting file {}, the server said {}'.format(
+                    self.__url(path), response.reason))
 
     def _is_dir(self, path: AbstractPath) -> bool:
         self.__ensure_http()
@@ -298,17 +294,16 @@ class WebdavFileSystem(FileSystemImpl):
     def _gid(self, path: AbstractPath) -> int:
         return 0
 
-    def _has_permission(self, path: AbstractPath, permission: Permission
-                        ) -> bool:
+    def _has_permission(
+            self, path: AbstractPath, permission: Permission) -> bool:
         permissions = [Permission.OWNER_READ, Permission.OWNER_WRITE]
         if self._is_dir(path):
             permissions.append(Permission.OWNER_EXECUTE)
         return permission in permissions
 
-    def _set_permission(self,
-                       path: AbstractPath,
-                       permission: Permission,
-                       value: bool = True) -> None:
+    def _set_permission(
+            self, path: AbstractPath, permission: Permission, value: bool = True
+            ) -> None:
         if self.__unsupported_methods_raise:
             raise UnsupportedOperationError(
                     'WebDAV does not support Posix permissions')
@@ -340,23 +335,25 @@ class WebdavFileSystem(FileSystemImpl):
                             self.__credential.username,
                             self.__credential.password)
                 else:
-                    raise ValueError('Only a PasswordCredential can be used'
-                                     ' with WebdavFileSystem.')
+                    raise ValueError(
+                            'Only a PasswordCredential can be used with'
+                            ' WebdavFileSystem.')
             if self.__host_ca_cert_file is not None:
                 if isinstance(self.__host_ca_cert_file, str):
                     self.__session.verify = self.__host_ca_cert_file
             response = self.__session.head(self.__base_url)
             if response.status_code != 200:
-                raise RuntimeError('Error connecting to WebDAV server at {}:'
-                                   ' {}'.format(self.__base_url,
-                                       response.reason))
+                raise RuntimeError(
+                        'Error connecting to WebDAV server at {}: {}'.format(
+                            self.__base_url, response.reason))
             logger.info('Connected to WebDAV server')
 
     def __url(self, path: AbstractPath) -> str:
         return self.__base_url + str(path)
 
-    def __propfind(self, url: str, req_prop: Optional[str], depth: int = 0
-                   ) -> Dict[str, Element]:
+    def __propfind(
+            self, url: str, req_prop: Optional[str], depth: int = 0
+            ) -> Dict[str, Element]:
         """Runs a PROPFIND command for a given resource.
 
         Actually, just requests everything and searches the result.
@@ -388,9 +385,9 @@ class WebdavFileSystem(FileSystemImpl):
         if response.status_code == 401:
             raise PermissionError('Invalid credentials supplied')
         if response.status_code == 403:
-            raise PermissionError(('Permission denied while accessing {}'
-                                  ).format(url))
+            raise PermissionError(
+                    'Permission denied while accessing {}'.format(url))
 
         raise RuntimeError(
-                ('An error occurred while checking dir {}, the server said {}'
-                    ).format(url, response.reason))
+                'An error occurred while checking dir {}, the server said {}'.format(
+                    url, response.reason))

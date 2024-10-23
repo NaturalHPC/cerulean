@@ -19,15 +19,12 @@ class LocalFileSystem(FileSystemImpl):
 
       fs / 'path'
 
-    which produces a :class:`Path`, through which you can do things \
-    with local files.
+    which produces a :class:`Path`, through which you can do things with local files.
 
-    LocalFileSystem is a context manager, so you can use it in a \
-    ``with`` statement, and it has a :meth:`close` method, but since \
-    it doesn't hold any resources, you do not need to use them. It may \
-    be good to do so anyway, to avoid leaks if you ever replace it with \
-    a different :class:`FileSystem` that does.
-
+    LocalFileSystem is a context manager, so you can use it in a ``with`` statement, and
+    it has a :meth:`close` method, but since it doesn't hold any resources, you do not
+    need to use them. It may be good to do so anyway, to avoid leaks if you ever replace
+    it with a different :class:`FileSystem` that does.
     """
     def __eq__(self, other: Any) -> bool:
         """Return True iff this file system equals other."""
@@ -58,11 +55,9 @@ class LocalFileSystem(FileSystemImpl):
                 return False
             raise
 
-    def _mkdir(self,
-              path: AbstractPath,
-              mode: Optional[int] = None,
-              parents: bool = False,
-              exists_ok: bool = False) -> None:
+    def _mkdir(
+            self, path: AbstractPath, mode: Optional[int] = None,
+            parents: bool = False, exists_ok: bool = False) -> None:
         lpath = cast(pathlib.Path, path)
         if mode is not None:
             lpath.mkdir(mode, parents, exists_ok)
@@ -143,14 +138,15 @@ class LocalFileSystem(FileSystemImpl):
         # Note: symlink goes first, because is_dir() and is_file() will
         # dereference and return true, while we want to say it's a
         # symlink and leave it at that.
-        pred_to_type = [(pathlib.Path.is_symlink, EntryType.SYMBOLIC_LINK),
-                        (pathlib.Path.is_dir, EntryType.DIRECTORY),
-                        (pathlib.Path.is_file, EntryType.FILE),
-                        (pathlib.Path.is_char_device,
-                            EntryType.CHARACTER_DEVICE),
-                        (pathlib.Path.is_block_device, EntryType.BLOCK_DEVICE),
-                        (pathlib.Path.is_fifo, EntryType.FIFO),
-                        (pathlib.Path.is_socket, EntryType.SOCKET)]
+        pred_to_type = [
+                (pathlib.Path.is_symlink, EntryType.SYMBOLIC_LINK),
+                (pathlib.Path.is_dir, EntryType.DIRECTORY),
+                (pathlib.Path.is_file, EntryType.FILE),
+                (pathlib.Path.is_char_device,
+                    EntryType.CHARACTER_DEVICE),
+                (pathlib.Path.is_block_device, EntryType.BLOCK_DEVICE),
+                (pathlib.Path.is_fifo, EntryType.FIFO),
+                (pathlib.Path.is_socket, EntryType.SOCKET)]
 
         if not self._exists(lpath):
             raise OSError(errno.ENOENT, 'No such file or directory',
@@ -177,8 +173,9 @@ class LocalFileSystem(FileSystemImpl):
         lpath = cast(pathlib.Path, path)
         return bool(lpath.stat().st_mode & permission.value)
 
-    def _set_permission(self, path: AbstractPath, permission: Permission,
-                       value: bool = True) -> None:
+    def _set_permission(
+            self, path: AbstractPath, permission: Permission, value: bool = True
+            ) -> None:
         lpath = cast(pathlib.Path, path)
         mode = lpath.stat().st_mode
         if value:

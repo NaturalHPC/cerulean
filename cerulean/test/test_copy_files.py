@@ -63,7 +63,8 @@ def test_copy_into(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     newdir.rmdir(recursive=True)
 
 
-def test_copy_dir_onto_nonexistent(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_dir_onto_nonexistent(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     dir0 = paths['dir']
     newdir = paths['new_dir']
     copy(dir0, newdir, overwrite='always', copy_into=False)
@@ -71,7 +72,8 @@ def test_copy_dir_onto_nonexistent(filesystem: FileSystemImpl, paths: Dict[str, 
     newdir.rmdir(recursive=True)
 
 
-def test_copy_file_onto_dir(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_file_onto_dir(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file1 = paths['file']
     newdir = paths['new_dir']
 
@@ -81,7 +83,8 @@ def test_copy_file_onto_dir(filesystem: FileSystemImpl, paths: Dict[str, Path]) 
     newdir.unlink()
 
 
-def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_file_single_fs(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     file1 = paths['file']
     new_file = paths['new_file']
 
@@ -115,7 +118,8 @@ def test_copy_file_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path])
         copy(paths['root'] / 'doesnotexist', new_file)
 
 
-def test_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_file_permissions(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     if not filesystem._supports('permissions'):
         return
 
@@ -175,7 +179,8 @@ def test_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path
     new_file.unlink()
 
 
-def test_no_copy_file_permissions(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_no_copy_file_permissions(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     if not filesystem._supports('permissions'):
         return
 
@@ -219,6 +224,7 @@ def test_copy_callback(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> No
         test_source.streaming_write(dummy_data())
 
         num_calls = 0
+
         def callback(count: int, total: int) -> None:
             nonlocal num_calls
             num_calls += 1
@@ -229,7 +235,8 @@ def test_copy_callback(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> No
         newdir.rmdir(recursive=True)
 
 
-def test_copy_callback_abort(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_callback_abort(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     test_source = paths['file']
     test_target = paths['new_file']
 
@@ -246,7 +253,8 @@ def test_copy_callback_abort(filesystem: FileSystemImpl, paths: Dict[str, Path])
             test_target.unlink()
 
 
-def test_copy_symlink_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_symlink_single_fs(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     if filesystem._supports('symlinks'):
         link = paths['multi_link']
         new_file = paths['new_file']
@@ -261,7 +269,8 @@ def test_copy_symlink_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Pat
         new_file.unlink()
 
 
-def test_copy_dir_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_dir_single_fs(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     dir1 = paths['dir']
     new_dir = paths['new_dir']
 
@@ -273,7 +282,8 @@ def test_copy_dir_single_fs(filesystem: FileSystemImpl, paths: Dict[str, Path]) 
     new_dir.rmdir(recursive=True)
 
 
-def test_copy_dir_single_fs2(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_dir_single_fs2(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     dir1 = paths['dir']
     new_dir = paths['new_dir']
 
@@ -287,7 +297,8 @@ def test_copy_dir_single_fs2(filesystem: FileSystemImpl, paths: Dict[str, Path])
     new_dir.rmdir(recursive=True)
 
 
-def test_copy_dir_single_fs3(filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
+def test_copy_dir_single_fs3(
+        filesystem: FileSystemImpl, paths: Dict[str, Path]) -> None:
     dir1 = paths['dir']
     new_dir = paths['new_dir']
 
@@ -314,9 +325,9 @@ def test_copy_dir_single_fs3(filesystem: FileSystemImpl, paths: Dict[str, Path])
     new_dir.rmdir(recursive=True)
 
 
-def test_copy_file_cross_fs(filesystem: FileSystemImpl,
-                            filesystem2: FileSystemImpl,
-                            paths: Dict[str, Path]) -> None:
+def test_copy_file_cross_fs(
+        filesystem: FileSystemImpl, filesystem2: FileSystemImpl, paths: Dict[str, Path]
+        ) -> None:
     file1 = paths['file']
     new_file = filesystem2 / str(paths['new_file'])
 
@@ -347,9 +358,9 @@ def test_copy_file_cross_fs(filesystem: FileSystemImpl,
     other_file.touch()
 
 
-def test_copy_symlink_cross_fs(filesystem: FileSystemImpl,
-                               filesystem2: FileSystemImpl,
-                               paths: Dict[str, Path]) -> None:
+def test_copy_symlink_cross_fs(
+        filesystem: FileSystemImpl, filesystem2: FileSystemImpl, paths: Dict[str, Path]
+        ) -> None:
     if filesystem._supports('symlinks') and filesystem2._supports('symlinks'):
         link = paths['multi_link']
         new_file = filesystem2 / str(paths['new_file'])
@@ -364,9 +375,9 @@ def test_copy_symlink_cross_fs(filesystem: FileSystemImpl,
         new_file.unlink()
 
 
-def test_copy_dir_cross_fs(filesystem: FileSystemImpl,
-                           filesystem2: FileSystemImpl,
-                           paths: Dict[str, Path]) -> None:
+def test_copy_dir_cross_fs(
+        filesystem: FileSystemImpl, filesystem2: FileSystemImpl, paths: Dict[str, Path]
+        ) -> None:
     dir1 = paths['dir']
     new_dir = filesystem2 / str(paths['new_dir'])
 

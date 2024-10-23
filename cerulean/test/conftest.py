@@ -53,8 +53,8 @@ def webdav_filesystem_raises() -> Generator[WebdavFileSystem, None, None]:
 
 @pytest.fixture(scope='module')
 def webdav_filesystem_quiet() -> Generator[WebdavFileSystem, None, None]:
-    yield WebdavFileSystem('http://cerulean-test-webdav/files',
-                           unsupported_methods_raise=False)
+    yield WebdavFileSystem(
+            'http://cerulean-test-webdav/files', unsupported_methods_raise=False)
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp', 'webdav'])
@@ -172,6 +172,10 @@ def terminal(
     'ssh_slurm-18-08',
     'ssh_slurm-19-05',
     'ssh_slurm-20-02',
+    'ssh_slurm-21-08',
+    'ssh_slurm-22-05',
+    'ssh_slurm-23-02',
+    'ssh_slurm-23-11',
     'flakyssh_direct',
     'flakyssh_slurm-17-11'])
 def scheduler_and_fs(

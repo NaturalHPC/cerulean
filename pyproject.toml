@@ -12,6 +12,9 @@ classifiers = [
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
     ]
 
 version = "0.3.8.dev"
@@ -32,22 +35,25 @@ build-backend = "setuptools.build_meta"
 legacy_tox_ini = """
 
 [tox]
-envlist = py37, py38, py39, py310
+envlist = py37, py38, py39, py310, py311, py312
 skip_missing_interpreters = true
 
 [testenv]
 deps =
     coverage
-    docker-compose
-    docker[ssh]<7
+    docker[ssh]
     pytest>=3.6.0
     pytest-cov
     pycodestyle
-    PyYAML<5.4
+    pydocstyle
+    PyYAML
     sh
+    tomli
 
 commands =
     pytest
+    pycodestyle --max-line-length=88 --max-doc-length=88 cerulean
+    pydocstyle cerulean
 
 [testenv:docs]
 description = Build documentation using Sphinx
@@ -57,7 +63,7 @@ deps =
     sphinx
     sphinx-rtd-theme
     recommonmark
-commands = sphinx-build docs/ docs/_build/html -bhtml
+commands = sphinx-build -M html docs/source docs/build
 
 """
 
@@ -68,4 +74,9 @@ addopts = "-s"
 [tool.coverage.run]
 branch = true
 source = ["cerulean"]
+
+[tool.pydocstyle]
+ignore = [
+    "D100", "D102", "D103", "D105", "D203", "D204", "D213", "D215", "D400", "D401",
+    "D404", "D406", "D407", "D408", "D409", "D413"]
 
