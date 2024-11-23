@@ -181,7 +181,7 @@ class SshTerminal(Terminal):
 
     def __get_key_from_file(
             self, filename: str, passphrase: Optional[str]) -> paramiko.pkey.PKey:
-        key = None
+        key: Optional[paramiko.pkey.PKey] = None
         messages = ''
         try:
             key = paramiko.ed25519key.Ed25519Key.from_private_key_file(
