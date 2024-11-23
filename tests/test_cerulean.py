@@ -7,6 +7,9 @@ import tempfile
 from time import sleep
 
 
+CLEAN_UP_CONTAINERS = True
+
+
 @pytest.fixture
 def container_prefix():
     # Use the top for local testing, bottom for getting images from GHCR
@@ -20,8 +23,6 @@ def server_names():
             'ssh', 'sftp', 'webdav', 'torque-6', 'slurm-17-02', 'slurm-17-11',
             'slurm-18-08', 'slurm-19-05', 'slurm-20-02', 'slurm-20-11',
             'slurm-21-08', 'slurm-22-05', 'slurm-23-02', 'slurm-23-11', 'flaky']
-
-    # names = ['ssh', 'webdav', 'torque-6', 'slurm-23-11']
 
     name_to_image = dict(zip(names, map(lambda n: 'cerulean-fake-' + n, names)))
 
@@ -48,7 +49,9 @@ def network(cleanup_docker):
     name = 'cerulean'
     sh.docker.network.create(name)
     yield name
-    # sh.docker.network.rm(name)
+
+    if CLEAN_UP_CONTAINERS:
+        sh.docker.network.rm(name)
 
 
 @pytest.fixture
@@ -103,8 +106,9 @@ def server_containers(cleanup_docker, container_prefix, server_names, network):
 
     yield
 
-    # for name in server_names:
-    #     sh.docker.rm('-f', full_name)
+    if CLEAN_UP_CONTAINERS:
+        for name in server_names:
+            sh.docker.rm('-f', 'cerulean-test-' + name)
 
 
 @pytest.fixture
@@ -137,7 +141,8 @@ def test_cerulean(cleanup_docker, network, server_containers, test_image, tmp_pa
     cov_path = Path(__file__).parent / 'coverage.xml'
     sh.docker.cp('cerulean-test:/home/cerulean/cerulean/coverage.xml', cov_path)
 
-    # sh.docker.rm('cerulean-test')
+    if CLEAN_UP_CONTAINERS:
+        sh.docker.rm('cerulean-test')
 
     for line in lines:
         exit_code = line.strip()
