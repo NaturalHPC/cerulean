@@ -1,7 +1,7 @@
 import errno
 import os
 import pathlib
-from typing import cast, Any, Generator, Iterable, Optional
+from typing import cast, Any, Callable, Generator, Iterable, List, Optional, Tuple
 
 from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
@@ -138,7 +138,8 @@ class LocalFileSystem(FileSystemImpl):
         # Note: symlink goes first, because is_dir() and is_file() will
         # dereference and return true, while we want to say it's a
         # symlink and leave it at that.
-        pred_to_type = [
+        Pred = Callable[[pathlib.Path], bool]
+        pred_to_type: List[Tuple[Pred, EntryType]] = [
                 (pathlib.Path.is_symlink, EntryType.SYMBOLIC_LINK),
                 (pathlib.Path.is_dir, EntryType.DIRECTORY),
                 (pathlib.Path.is_file, EntryType.FILE),

@@ -10,10 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 \
 
 RUN add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
-    apt-get install -y --no-install-recommends python3.7 python3.7-dev python3.7-venv \
-    python3.8 python3.8-dev python3.8-venv python3.9 python3.9-dev python3.9-venv \
-    python3-venv python3.11 python3.11-dev python3.11-venv python3.12 python3.12-dev \
-    python3.12-venv
+    apt-get install -y --no-install-recommends \
+        python3.8 python3.8-dev python3.8-venv \
+        python3.9 python3.9-dev python3.9-venv \
+        python3-venv \
+        python3.11 python3.11-dev python3.11-venv \
+        python3.12 python3.12-dev python3.12-venv \
+        python3.13 python3.13-dev python3.13-venv
 
 COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
 COPY tests/container-test/cerulean_webdav.crt /home/cerulean/cerulean_webdav.crt
