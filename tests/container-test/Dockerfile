@@ -1,4 +1,6 @@
-FROM ghcr.io/naturalhpc/cerulean-test-docker-images/cerulean-fake-base:latest
+# Use the second line to use locally built images
+FROM ghcr.io/naturalhpc/cerulean-fake-fileserver:latest
+# FROM naturalhpc/cerulean-fake-fileserver:latest
 
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends python3 \
@@ -14,6 +16,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa && \
     python3.12-venv
 
 COPY tests/test_requirements.txt /home/cerulean/test_requirements.txt
+COPY tests/container-test/cerulean_webdav.crt /home/cerulean/cerulean_webdav.crt
+COPY tests/container-test/endless-job.sh /usr/local/bin/endless-job.sh
 
 COPY . /home/cerulean/cerulean
 RUN find /home/cerulean -path '*__pycache__*' -delete && \
@@ -24,4 +28,4 @@ RUN find /home/cerulean -path '*__pycache__*' -delete && \
 
 USER cerulean
 WORKDIR /home/cerulean/cerulean
-CMD /home/cerulean/cerulean/tests/container-test/run_tests.sh
+CMD /home/cerulean/cerulean/tests/container-test/run_tests.sh | tee /home/cerulean/test_out.txt 2>&1

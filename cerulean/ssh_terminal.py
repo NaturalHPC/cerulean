@@ -73,8 +73,15 @@ class SshTerminal(Terminal):
             An SFTP client object using this terminal's connection.
 
         """
-        self.__transport = self.__ensure_connection(self.__transport)
-        client = paramiko.SFTPClient.from_transport(self.__transport)
+        tries = 0
+        while tries < 3:
+            try:
+                self.__transport = self.__ensure_connection(self.__transport)
+                client = paramiko.SFTPClient.from_transport(self.__transport)
+                break
+            except paramiko.ssh_exception.SSHException as e:
+                tries += 1
+
         if client is None:
             raise RuntimeError('Could not open a channel for SFTP')
         return client
@@ -176,12 +183,14 @@ class SshTerminal(Terminal):
                 new_data = receive(channel, 1024 * 1024)
         except socket.timeout:
             return False, data.decode('utf-8')
+        except ConnectionError:
+            return False, data.decode('utf-8')
 
         return True, data.decode('utf-8')
 
     def __get_key_from_file(
             self, filename: str, passphrase: Optional[str]) -> paramiko.pkey.PKey:
-        key = None
+        key: Optional[paramiko.pkey.PKey] = None
         messages = ''
         try:
             key = paramiko.ed25519key.Ed25519Key.from_private_key_file(

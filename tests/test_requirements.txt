@@ -9,6 +9,7 @@ pytest-mypy
 pytest-runner
 pytest-timeout
 pytest-xdist
+types-paramiko
 types-requests
 typing
 typing-extensions

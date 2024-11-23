@@ -321,7 +321,7 @@ class SftpFileSystem(FileSystemImpl):
             mode = mode | permission.value
         else:
             mode = mode & ~permission.value
-        self._chmod(lpath, mode)
+        self._chmod(lpath, mode)    # type: ignore[arg-type]
 
     def _chmod(self, path: AbstractPath, mode: int) -> None:
         self.__ensure_sftp()
