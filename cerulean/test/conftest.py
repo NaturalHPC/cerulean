@@ -210,7 +210,6 @@ def terminal(
     'local_direct',
     'ssh_direct',
     'ssh_torque-6',
-    'ssh_slurm-16-05',
     'ssh_slurm-17-02',
     'ssh_slurm-17-11',
     'ssh_slurm-18-08',
