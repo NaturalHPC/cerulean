@@ -22,7 +22,8 @@ def server_names():
     names = [
             'ssh', 'sftp', 'webdav', 'torque-6', 'slurm-17-02', 'slurm-17-11',
             'slurm-18-08', 'slurm-19-05', 'slurm-20-02', 'slurm-20-11',
-            'slurm-21-08', 'slurm-22-05', 'slurm-23-02', 'slurm-23-11', 'flaky']
+            'slurm-21-08', 'slurm-22-05', 'slurm-23-02', 'slurm-23-11', 'slurm-24-05',
+            'slurm-24-11', 'flaky']
 
     name_to_image = dict(zip(names, map(lambda n: 'cerulean-fake-' + n, names)))
 

@@ -219,6 +219,8 @@ def terminal(
     'ssh_slurm-22-05',
     'ssh_slurm-23-02',
     'ssh_slurm-23-11',
+    'ssh_slurm-24-05',
+    'ssh_slurm-24-11',
     'flakyssh_direct',
     'flakyssh_slurm-17-11'
     ])
