@@ -60,11 +60,17 @@ class SftpFileSystem(FileSystemImpl):
             exc_value: Optional[BaseException], traceback: Optional[TracebackType]
             ) -> None:
         """Exit context manager."""
-        if self.__own_term:
-            self.close()
+        self.close()
 
     def close(self) -> None:
         self.__sftp.close()
+
+        if self.__sftp2 is not None:
+            self.__sftp2.close()
+
+        if self.__own_term:
+            self.__terminal.close()
+
         logger.info('Disconnected from SFTP server')
 
     def __eq__(self, other: Any) -> bool:
