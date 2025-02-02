@@ -51,6 +51,13 @@ class SshTerminal(Terminal):
         This closes any connections and frees resources associated with the terminal.
         """
         self.__transport.close()
+        # work around broken Paramiko code that never calls join
+        # see https://github.com/paramiko/paramiko/issues/520
+        self.__transport.join(0.5)
+
+        if self.__transport2 is not None:
+            self.__transport2.close()
+            self.__transport2.join(0.5)
         logger.debug('Disconnected from SSH server')
 
     def __eq__(self, other: Any) -> bool:
