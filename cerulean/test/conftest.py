@@ -1,7 +1,9 @@
 from contextlib import contextmanager
 from paramiko.ssh_exception import SSHException
 import pytest
+import random
 import socket
+import time
 from typing import Any, Dict, Generator, Tuple
 
 from cerulean.credential import PasswordCredential
@@ -72,6 +74,7 @@ def password_credential() -> PasswordCredential:
 def ssh_terminal(
         password_credential: PasswordCredential
         ) -> Generator[SshTerminal, None, None]:
+    time.sleep(random.uniform(0.0, 2.0));
     with SshTerminal('cerulean-test-ssh', 22, password_credential) as term:
         yield term
 
