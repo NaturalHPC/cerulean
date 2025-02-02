@@ -218,7 +218,6 @@ def test_stderr_redirect(scheduler_and_fs: Tuple[Scheduler, FileSystem]) -> None
     while tries < NUM_TRIES:
         with abort_on_network_error():
             job_id = sched.submit(job_desc)
-            print('Job id: {}'.format(job_id))
 
             while sched.get_status(job_id) != JobStatus.DONE:
                 time.sleep(5.0)
@@ -331,10 +330,10 @@ def test_system_err_redirect2(scheduler_and_fs: Tuple[Scheduler, FileSystem]) ->
 
             syserr = (fs / 'home/cerulean/test_sys_redirect2.err').read_text()
 
-            print('Sys err: {}'.format(syserr))
-
-            assert 'CANCELLED' in syserr or 'killed' in syserr or 'Killed' in syserr
-
+            retval = sched.get_exit_code(job_id)
+            assert (
+                    retval == 124 or
+                    'CANCELLED' in syserr or 'killed' in syserr or 'Killed' in syserr)
             break
         tries += 1
 

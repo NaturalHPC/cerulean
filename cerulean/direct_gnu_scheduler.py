@@ -44,29 +44,39 @@ class DirectGnuScheduler(Scheduler):
                 ' appropriate parameter instead.')
 
         job_script = ''
+
         for name, value in job_description.environment.items():
             job_script += "export {}='{}'\n".format(name, value)
+
         if job_description.working_directory is not None:
             job_script += 'cd {}\n'.format(job_description.working_directory)
+
         job_script += 'exit_code_file=$(mktemp)\n'
         job_script += "(\n"
-        if job_description.time_reserved is not None:
-            job_script += "ulimit -t {}\n".format(
-                job_description.time_reserved)
+
         escaped_command = job_description.command.replace(
                 "'", "'\\\''")    # type: ignore
         escaped_args = map(lambda s: s.replace("'", "'\\\''"),
                            job_description.arguments)
+
         job_script += "bash -c '"
+
+        if job_description.time_reserved is not None:
+            job_script += "timeout {} ".format(job_description.time_reserved)
+
         job_script += '{}'.format(escaped_command)
         job_script += ' {}'.format(' '.join(escaped_args))
+
         if job_description.stdout_file is not None:
             job_script += ' >{}'.format(job_description.stdout_file)
+
         if job_description.stderr_file is not None:
             job_script += ' 2>{}'.format(job_description.stderr_file)
+
         job_script += "' ; "
         job_script += 'echo $? >$exit_code_file'
         job_script += ')'
+
         if job_description.system_out_file is not None:
             job_script += ' >{}'.format(job_description.system_out_file)
         else:
@@ -76,7 +86,9 @@ class DirectGnuScheduler(Scheduler):
             job_script += ' 2>{}'.format(job_description.system_err_file)
         else:
             job_script += ' 2>/dev/null'
+
         job_script += ' &\n'
+
         job_script += 'echo -n $! $exit_code_file\n'
         job_script += 'disown\n'
 
