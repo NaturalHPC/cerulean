@@ -233,6 +233,8 @@ class SshTerminal(Terminal):
             self, transport: Optional[paramiko.Transport], force: bool = False
             ) -> paramiko.Transport:
         if transport is None or not transport.is_active() or force:
+            if not force:
+                logger.info('Connection was lost, reconnecting...')
             if transport is not None:
                 transport.close()
             transport = paramiko.Transport((self.__host, self.__port))
