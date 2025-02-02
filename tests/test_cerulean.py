@@ -7,7 +7,7 @@ import tempfile
 from time import sleep
 
 
-CLEAN_UP_CONTAINERS = True
+CLEAN_UP_CONTAINERS = False
 
 
 @pytest.fixture
