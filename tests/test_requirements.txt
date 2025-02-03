@@ -6,6 +6,7 @@ paramiko
 pytest
 pytest-cov
 pytest-mypy
+pytest-rerunfailures
 pytest-runner
 pytest-timeout
 pytest-xdist
