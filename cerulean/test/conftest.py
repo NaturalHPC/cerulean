@@ -74,7 +74,7 @@ def password_credential() -> PasswordCredential:
 def ssh_terminal(
         password_credential: PasswordCredential
         ) -> Generator[SshTerminal, None, None]:
-    time.sleep(random.uniform(0.0, 2.0));
+    time.sleep(random.uniform(0.0, 2.0))
     with SshTerminal('cerulean-test-ssh', 22, password_credential) as term:
         yield term
 
