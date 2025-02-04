@@ -14,4 +14,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           python3 -m pip install tox
-          tox || docker logs cerulean-test
+          tox
+          docker logs cerulean-test
+          docker rm cerulean-test
+          docker network rm cerulean

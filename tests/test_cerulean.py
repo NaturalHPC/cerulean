@@ -7,7 +7,7 @@ import tempfile
 from time import sleep
 
 
-CLEAN_UP_CONTAINERS = False
+CLEAN_UP_CONTAINERS = True
 
 
 @pytest.fixture
@@ -51,8 +51,8 @@ def network(cleanup_docker):
     sh.docker.network.create(name)
     yield name
 
-    if CLEAN_UP_CONTAINERS:
-        sh.docker.network.rm(name)
+    # We could sh.docker.network.rm(name) here, but we don't so we can leave the test
+    # container and access the logs if needed, especially on the CI.
 
 
 @pytest.fixture
@@ -142,8 +142,9 @@ def test_cerulean(cleanup_docker, network, server_containers, test_image, tmp_pa
     cov_path = Path(__file__).parent / 'coverage.xml'
     sh.docker.cp('cerulean-test:/home/cerulean/cerulean/coverage.xml', cov_path)
 
-    if CLEAN_UP_CONTAINERS:
-        sh.docker.rm('cerulean-test')
+    # We could sh.docker.rm('cerulean-test') here, but we don't so that we can always
+    # debug, and so that we can print the logs on the CI and have a chance of finding
+    # out what went wrong there.
 
     for line in lines:
         exit_code = line.strip()
