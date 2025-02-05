@@ -1,0 +1,86 @@
+[project]
+name = "cerulean"
+authors = [{name = "Lourens Veen"}]
+description = "A Python library for talking to HPC clusters and supercomputers"
+readme = "README.rst"
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    ]
+
+version = "1.0.0"
+requires-python = ">=3.8"
+dependencies = [
+    "defusedxml",
+    "paramiko",
+    "requests",
+    "types-requests"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.tox]
+# This configures the outer tox, which runs tests/test_cerulean, which starts the
+# containers and then launches the actual tests inside one using
+# tests/container-test/run_tests.sh. You may want to edit that instead for debugging.
+legacy_tox_ini = """
+
+[tox]
+envlist = py38, py39, py310, py311, py312, py313
+skip_missing_interpreters = true
+
+[testenv]
+deps =
+    coverage
+    docker[ssh]
+    pytest>=3.6.0
+    pytest-cov
+    pycodestyle
+    pydocstyle
+    PyYAML
+    sh
+    tomli
+
+commands =
+    pytest
+    # pytest -s -vv
+    pycodestyle --max-line-length=88 --max-doc-length=88 cerulean
+    pydocstyle cerulean
+
+[testenv:docs]
+description = Build documentation using Sphinx
+basepython = python3
+deps =
+    docutils
+    sphinx
+    sphinx-rtd-theme
+    recommonmark
+commands = sphinx-build -M html docs/source docs/build
+
+"""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-s"
+
+[tool.coverage.run]
+branch = true
+source = ["cerulean"]
+
+[tool.pydocstyle]
+ignore = [
+    "D100", "D102", "D103", "D105", "D203", "D204", "D213", "D215", "D400", "D401",
+    "D404", "D406", "D407", "D408", "D409", "D413"]
+

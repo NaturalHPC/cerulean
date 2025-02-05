@@ -5,6 +5,29 @@ Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
+1.0.0
+*****
+
+Fixed
+-----
+
+* Trailing slashes in directory names when using WebDAV
+* Resource leak with SftpFileSystem
+* Added work-around for bug in Paramiko that left a thread hanging
+* DirectGnuScheduler now uses timeout instead of ulimit
+
+Added
+-----
+
+* Python 3.11, 3.12 and 3.13
+* Allow Paths for executables and workdirs in Terminal.run()
+* Tests with newer versions of SLURM
+
+Removed
+-------
+
+* Python 3.7
+
 0.3.7
 *****
 

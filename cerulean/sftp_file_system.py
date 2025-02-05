@@ -3,14 +3,13 @@ import logging
 import stat
 from pathlib import PurePosixPath
 from types import TracebackType
-from typing import Any, cast, Generator, Iterable, Optional
+from typing import Any, cast, Generator, Iterable, Optional, Type
 
 import paramiko
 from cerulean.file_system import FileSystem
 from cerulean.file_system_impl import FileSystemImpl
 from cerulean.path import AbstractPath, EntryType, Path, Permission
 from cerulean.ssh_terminal import SshTerminal
-from cerulean.util import BaseExceptionType
 
 
 logger = logging.getLogger(__name__)
@@ -25,28 +24,27 @@ class SftpFileSystem(FileSystemImpl):
 
       fs / 'path'
 
-    which produces a :class:`Path`, through which you can do things \
-    with the remote files.
+    which produces a :class:`Path`, through which you can do things with the remote
+    files.
 
-    It is also a context manager, so that you can (and should!) use it \
-    with a ``with`` statement, which will ensure that the connection \
-    is closed when you are done with the it. Alternatively, you can \
-    call :meth:`close` to close the connection.
-
-    If `own_term` is True, this class assumes that it owns the terminal \
-    you gave it, and that it is responsible for closing it when it's \
-    done with it. If you share an SshTerminal between an SftpFileSystem \
-    and a scheduler, or use the terminal directly yourself, then you \
-    want to use False here, and close the terminal yourself when you \
-    don't need it any more.
-
-    Args:
-        terminal: The terminal to connect through.
-        own_term: Whether to close the terminal when the file system \
-                is closed.
+    It is also a context manager, so that you can (and should!) use it with a ``with``
+    statement, which will ensure that the connection is closed when you are done with
+    the it. Alternatively, you can call :meth:`close` to close the connection.
 
     """
     def __init__(self, terminal: SshTerminal, own_term: bool = False) -> None:
+        """Create an SftpFileSystem.
+
+        If `own_term` is True, this class assumes that it owns the terminal you gave it,
+        and that it is responsible for closing it when it's done with it. If you share
+        an SshTerminal between an SftpFileSystem and a scheduler, or use the terminal
+        directly yourself, then you want to use False here, and close the terminal
+        yourself when you don't need it any more.
+
+        Args:
+            terminal: The terminal to connect through.
+            own_term: Whether to close the terminal when the file system is closed.
+        """
         self.__terminal = terminal
         self.__own_term = own_term
         self.__ensure_sftp(True)
@@ -57,15 +55,22 @@ class SftpFileSystem(FileSystemImpl):
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type: Optional[BaseExceptionType],
-                 exc_value: Optional[BaseException],
-                 traceback: Optional[TracebackType]) -> None:
+    def __exit__(
+            self, exc_type: Optional[Type[BaseException]],
+            exc_value: Optional[BaseException], traceback: Optional[TracebackType]
+            ) -> None:
         """Exit context manager."""
-        if self.__own_term:
-            self.close()
+        self.close()
 
     def close(self) -> None:
         self.__sftp.close()
+
+        if self.__sftp2 is not None:
+            self.__sftp2.close()
+
+        if self.__own_term:
+            self.__terminal.close()
+
         logger.info('Disconnected from SFTP server')
 
     def __eq__(self, other: Any) -> bool:
@@ -256,13 +261,14 @@ class SftpFileSystem(FileSystemImpl):
     def _entry_type(self, path: AbstractPath) -> EntryType:
         self.__ensure_sftp()
         lpath = cast(PurePosixPath, path)
-        mode_to_type = [(stat.S_ISDIR, EntryType.DIRECTORY),
-                        (stat.S_ISREG, EntryType.FILE),
-                        (stat.S_ISLNK, EntryType.SYMBOLIC_LINK),
-                        (stat.S_ISCHR, EntryType.CHARACTER_DEVICE),
-                        (stat.S_ISBLK, EntryType.BLOCK_DEVICE),
-                        (stat.S_ISFIFO, EntryType.FIFO),
-                        (stat.S_ISSOCK, EntryType.SOCKET)]
+        mode_to_type = [
+                (stat.S_ISDIR, EntryType.DIRECTORY),
+                (stat.S_ISREG, EntryType.FILE),
+                (stat.S_ISLNK, EntryType.SYMBOLIC_LINK),
+                (stat.S_ISCHR, EntryType.CHARACTER_DEVICE),
+                (stat.S_ISBLK, EntryType.BLOCK_DEVICE),
+                (stat.S_ISFIFO, EntryType.FIFO),
+                (stat.S_ISSOCK, EntryType.SOCKET)]
 
         try:
             mode = self.__lstat(lpath).st_mode
@@ -321,7 +327,7 @@ class SftpFileSystem(FileSystemImpl):
             mode = mode | permission.value
         else:
             mode = mode & ~permission.value
-        self._chmod(lpath, mode)
+        self._chmod(lpath, mode)    # type: ignore[arg-type]
 
     def _chmod(self, path: AbstractPath, mode: int) -> None:
         self.__ensure_sftp()

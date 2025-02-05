@@ -2,21 +2,10 @@
     :target: https://cerulean.readthedocs.io/en/latest/?badge=master
     :alt: Documentation Build Status
 
-.. image:: https://github.com/MD-Studio/cerulean/actions/workflows/ci.yaml/badge.svg?branch=master
-    :target: https://github.com/MD-Studio/cerulean/actions
+.. image:: https://github.com/NaturalHPC/cerulean/actions/workflows/ci.yaml/badge.svg?branch=master
+    :target: https://github.com/NaturalHPC/cerulean/actions
     :alt: Build Status
 
-.. image:: https://app.codacy.com/project/badge/Grade/4909f6a7c0d94cc3a4b3c83230a20248
-    :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
-    :alt: Codacy Grade
-
-.. image:: https://app.codacy.com/project/badge/Coverage/4909f6a7c0d94cc3a4b3c83230a20248
-    :target: https://www.codacy.com/gh/MD-Studio/cerulean/dashboard
-    :alt: Code Coverage
-
-.. image:: https://requires.io/github/MD-Studio/cerulean/requirements.svg?branch=master
-    :target: https://requires.io/github/MD-Studio/cerulean/requirements/?branch=master
-    :alt: Requirements Status
 
 ################################################################################
 Cerulean
@@ -95,7 +84,8 @@ documentation <https://cerulean.readthedocs.io>`_.
 License
 *******
 
-Copyright (c) 2018, The Netherlands eScience Center and VU University Amsterdam
+Copyright (c) 2018-2019 The Netherlands eScience Center and VU University Amsterdam
+Copyright (c) 2024-2025 The Netherlands eScience Center
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

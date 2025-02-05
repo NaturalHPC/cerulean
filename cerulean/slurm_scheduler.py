@@ -14,15 +14,14 @@ logger = logging.getLogger(__name__)
 class SlurmScheduler(Scheduler):
     """Represents a Slurm scheduler.
 
-    This class represents a Slurm scheduler, to which it talks through \
-    a :class:`Terminal`.
+    This class represents a Slurm scheduler, to which it talks through a
+    :class:`Terminal`.
 
-    On some machines, an additional command is needed to make Slurm
-    available to the user, e.g. 'module load slurm'. If you specify a
-    prefix, it will be prepended to any Slurm command run by this
-    class. Note that this is a plain string concatenation, so you'll
-    probably need something like 'module load slurm;', with a
-    semicolon to separate the commands.
+    On some machines, an additional command is needed to make Slurm available to the
+    user, e.g. 'module load slurm'. If you specify a prefix, it will be prepended to any
+    Slurm command run by this class. Note that this is a plain string concatenation, so
+    you'll probably need something like 'module load slurm;', with a semicolon to
+    separate the commands.
     """
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
         """Create ea SlurmScheduler.
@@ -30,14 +29,13 @@ class SlurmScheduler(Scheduler):
         Arguments:
             terminal: The terminal to use to talk to the scheduler.
             prefix: A string to prefix the SLURM commands with.
-
         """
         self.__terminal = terminal
         self.__prefix = prefix
 
         command = self.__prefix + ' sbatch'
-        exit_code, output, error = self.__terminal.run(10, command,
-                                                       ['--version'])
+        exit_code, output, error = self.__terminal.run(
+                10, command, ['--version'])
         logger.debug('sbatch --version exit code: %s', exit_code)
         logger.debug('sbatch --version output: %s', output)
         logger.debug('sbatch --version error: %s', error)
@@ -50,8 +48,8 @@ class SlurmScheduler(Scheduler):
         logger.debug('Submitting job script: %s', job_script)
 
         command = self.__prefix + ' sbatch'
-        exit_code, output, error = self.__terminal.run(10, command, [],
-                                                       job_script, None)
+        exit_code, output, error = self.__terminal.run(
+                10, command, [], job_script, None)
 
         logger.debug('sbatch exit code: %s', exit_code)
         logger.debug('sbatch output: %s', output)
@@ -112,8 +110,9 @@ class SlurmScheduler(Scheduler):
         if self.get_status(job_id) != JobStatus.DONE:
             return None
 
-        logger.debug('get_exit_code() running sacct -j %s --noheader'
-                     ' --format=ExitCode', job_id)
+        logger.debug(
+                'get_exit_code() running sacct -j %s --noheader --format=ExitCode',
+                job_id)
         command = self.__prefix + ' sacct'
         err, output, error = self.__terminal.run(
             10, command, ['-j', job_id, '--noheader', '--format=ExitCode'])
@@ -142,25 +141,22 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
         job_script += '#SBATCH --time={}\n'.format(
             _seconds_to_time(job_description.time_reserved))
 
-    job_script = _add_option(job_script, 'partition',
-                             job_description.queue_name)
+    job_script = _add_option(
+            job_script, 'partition', job_description.queue_name)
     job_script = _add_option(job_script, 'nodes', job_description.num_nodes)
-    job_script = _add_option(job_script, 'ntasks-per-node',
-                             job_description.mpi_processes_per_node)
+    job_script = _add_option(
+            job_script, 'ntasks-per-node', job_description.mpi_processes_per_node)
     if job_description.mpi_processes_per_node is not None:
         job_script = _add_option(job_script, 'overcommit', '')
 
     if job_description.system_out_file is not None:
-        job_script += '#SBATCH -o {}\n'.format(
-                job_description.system_out_file)
+        job_script += '#SBATCH -o {}\n'.format(job_description.system_out_file)
 
     if job_description.system_err_file is not None:
-        job_script += '#SBATCH -e {}\n'.format(
-                job_description.system_err_file)
+        job_script += '#SBATCH -e {}\n'.format(job_description.system_err_file)
 
     if job_description.extra_scheduler_options is not None:
-        job_script += '#SBATCH {}\n'.format(
-                job_description.extra_scheduler_options)
+        job_script += '#SBATCH {}\n'.format(job_description.extra_scheduler_options)
 
     for name, value in job_description.environment.items():
         job_script += "export {}='{}'\n".format(name, value)
@@ -179,10 +175,10 @@ def _job_desc_to_job_script(job_description: JobDescription) -> str:
     return job_script
 
 
-def _add_option(job_script: str, option: str,
-                value: Optional[Union[int, str]]) -> str:
+def _add_option(
+        job_script: str, option: str, value: Optional[Union[int, str]]) -> str:
     if value is not None:
-        if value is not '':
+        if value != '':
             return job_script + '#SBATCH --{}={}\n'.format(option, value)
         else:
             return job_script + '#SBATCH --{}\n'.format(option)
@@ -198,7 +194,6 @@ def _seconds_to_time(seconds: int) -> str:
 
     Returns:
         A string of the form DD:HH:MM:SS.
-
     """
     seconds_per_day = 60 * 60 * 24
     seconds_per_hour = 60 * 60

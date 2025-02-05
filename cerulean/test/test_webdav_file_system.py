@@ -15,32 +15,32 @@ def test_creating_http() -> None:
 
 def test_creating_http_password() -> None:
     credential = PasswordCredential('cerulean', 'kingfisher')
-    with WebdavFileSystem('http://cerulean-test-webdav/protected_files',
-                          credential) as f:
+    with WebdavFileSystem(
+            'http://cerulean-test-webdav/protected_files', credential) as f:
         assert (f / '').is_dir()
 
 
 def test_creating_https() -> None:
-    with WebdavFileSystem('https://cerulean-test-webdav/files',
-                          host_ca_cert_file='/home/cerulean/cerulean_webdav.crt'
-                          ) as f:
+    with WebdavFileSystem(
+            'https://cerulean-test-webdav/files',
+            host_ca_cert_file='/home/cerulean/cerulean_webdav.crt') as f:
         assert (f / '').is_dir()
 
 
 def test_creating_https_password() -> None:
     credential = PasswordCredential('cerulean', 'kingfisher')
-    with WebdavFileSystem('https://cerulean-test-webdav/protected_files',
-                          credential,
-                          host_ca_cert_file='/home/cerulean/cerulean_webdav.crt'
-                          ) as f:
+    with WebdavFileSystem(
+            'https://cerulean-test-webdav/protected_files',
+            credential, host_ca_cert_file='/home/cerulean/cerulean_webdav.crt') as f:
         assert (f / '').is_dir()
 
 
 # Test handling of unsupported features
 
 
-def test_entry_types(webdav_filesystem_raises: WebdavFileSystem,
-                     lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_entry_types(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
     assert filesystem._entry_type(lpaths['link']) == EntryType.FILE
@@ -58,16 +58,18 @@ def test_entry_types(webdav_filesystem_raises: WebdavFileSystem,
     assert not filesystem._is_dir(lpaths['fifo'])
 
 
-def test_owner(webdav_filesystem_raises: WebdavFileSystem,
-               lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_owner(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
     assert filesystem._uid(lpaths['root']) == 0
     assert filesystem._gid(lpaths['root']) == 0
 
 
-def test_has_permission(webdav_filesystem_raises: WebdavFileSystem,
-                        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_has_permission(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
     file_permissions = [Permission.OWNER_READ, Permission.OWNER_WRITE]
@@ -78,8 +80,9 @@ def test_has_permission(webdav_filesystem_raises: WebdavFileSystem,
         assert filesystem._has_permission(lpaths['file'], permission)
 
 
-def test_set_permission(webdav_filesystem_raises: WebdavFileSystem,
-                        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_set_permission(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
 
@@ -88,8 +91,9 @@ def test_set_permission(webdav_filesystem_raises: WebdavFileSystem,
                                    False)
 
 
-def test_chmod(webdav_filesystem_raises: WebdavFileSystem,
-               lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_chmod(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
 
@@ -97,8 +101,9 @@ def test_chmod(webdav_filesystem_raises: WebdavFileSystem,
         filesystem._chmod(lpaths['root'], 0o0755)
 
 
-def test_symlink_to(webdav_filesystem_raises: WebdavFileSystem,
-                    lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_symlink_to(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
 
@@ -106,8 +111,9 @@ def test_symlink_to(webdav_filesystem_raises: WebdavFileSystem,
         filesystem._symlink_to(lpaths['new_file'], lpaths['file'])
 
 
-def test_readlink(webdav_filesystem_raises: WebdavFileSystem,
-                  lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_readlink(
+        webdav_filesystem_raises: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_raises
     lpaths = lpaths_webdav_raises
 
@@ -118,8 +124,9 @@ def test_readlink(webdav_filesystem_raises: WebdavFileSystem,
         filesystem._readlink(lpaths['link'], True)
 
 
-def test_entry_types2(webdav_filesystem_quiet: WebdavFileSystem,
-                      lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_entry_types2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
     assert filesystem._entry_type(lpaths['link']) == EntryType.FILE
@@ -139,17 +146,18 @@ def test_entry_types2(webdav_filesystem_quiet: WebdavFileSystem,
     assert not filesystem._is_dir(lpaths['fifo'])
 
 
-def test_owner2(webdav_filesystem_quiet: WebdavFileSystem,
-                lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_owner2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
     assert filesystem._uid(lpaths['root']) == 0
     assert filesystem._gid(lpaths['root']) == 0
 
 
-def test_has_permission2(webdav_filesystem_quiet: WebdavFileSystem,
-                         lpaths_webdav_raises: Dict[str, AbstractPath]
-                         ) -> None:
+def test_has_permission2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
     file_permissions = [Permission.OWNER_READ, Permission.OWNER_WRITE]
@@ -173,8 +181,9 @@ def test_set_permission2(
         assert filesystem._has_permission(lpaths['root'], permission)
 
 
-def test_chmod2(webdav_filesystem_quiet: WebdavFileSystem,
-                lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_chmod2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
 
@@ -185,8 +194,9 @@ def test_chmod2(webdav_filesystem_quiet: WebdavFileSystem,
         assert filesystem._has_permission(lpaths['root'], permission)
 
 
-def test_symlink_to2(webdav_filesystem_quiet: WebdavFileSystem,
-                     lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_symlink_to2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
 
@@ -194,8 +204,9 @@ def test_symlink_to2(webdav_filesystem_quiet: WebdavFileSystem,
     assert not filesystem._exists(lpaths['new_file'])
 
 
-def test_readlink2(webdav_filesystem_quiet: WebdavFileSystem,
-                   lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
+def test_readlink2(
+        webdav_filesystem_quiet: WebdavFileSystem,
+        lpaths_webdav_raises: Dict[str, AbstractPath]) -> None:
     filesystem = webdav_filesystem_quiet
     lpaths = lpaths_webdav_raises
 

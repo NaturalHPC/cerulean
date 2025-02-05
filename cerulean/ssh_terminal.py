@@ -1,14 +1,14 @@
 import logging
+from pathlib import Path
 import socket
 from time import perf_counter
 from types import TracebackType
-from typing import Any, List, Optional, Tuple, Type, TYPE_CHECKING
+from typing import Any, List, Optional, Tuple, Type, Union
 
 import paramiko
 from cerulean.credential import (Credential, PasswordCredential,
                                  PubKeyCredential)
 from cerulean.terminal import Terminal
-from cerulean.util import BaseExceptionType
 
 
 logger = logging.getLogger(__name__)
@@ -17,16 +17,16 @@ logger = logging.getLogger(__name__)
 class SshTerminal(Terminal):
     """A terminal that runs commands over SSH.
 
-    This terminal connects to a host using SSH, then lets you run \
-    commands there.
-
-    Arguments:
-        host: The hostname to connect to.
-        port: The port to connect on.
-        credential: The credential to authenticate with.
-
+    This terminal connects to a host using SSH, then lets you run commands there.
     """
     def __init__(self, host: str, port: int, credential: Credential) -> None:
+        """Create an SshTerminal.
+
+        Arguments:
+            host: The hostname to connect to.
+            port: The port to connect on.
+            credential: The credential to authenticate with.
+        """
         self.__host = host
         self.__port = port
         self.__credential = credential
@@ -38,19 +38,26 @@ class SshTerminal(Terminal):
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type: Optional[BaseExceptionType],
-                 exc_value: Optional[BaseException],
-                 traceback: Optional[TracebackType]) -> None:
+    def __exit__(
+            self, exc_type: Optional[Type[BaseException]],
+            exc_value: Optional[BaseException],
+            traceback: Optional[TracebackType]) -> None:
         """Exit context manager."""
         self.close()
 
     def close(self) -> None:
         """Close the terminal.
 
-        This closes any connections and frees resources associated \
-        with the terminal.
+        This closes any connections and frees resources associated with the terminal.
         """
         self.__transport.close()
+        # work around broken Paramiko code that never calls join
+        # see https://github.com/paramiko/paramiko/issues/520
+        self.__transport.join(0.5)
+
+        if self.__transport2 is not None:
+            self.__transport2.close()
+            self.__transport2.join(0.5)
         logger.debug('Disconnected from SSH server')
 
     def __eq__(self, other: Any) -> bool:
@@ -65,16 +72,23 @@ class SshTerminal(Terminal):
     def _get_sftp_client(self) -> paramiko.SFTPClient:
         """Get an SFTP client using this terminal.
 
-        This function is used by SftpFileSystem to get an SFTP client \
-        using this Terminal's connection. This is a private function, \
-        but SftpFileSystem is a friend class.
+        This function is used by SftpFileSystem to get an SFTP client using this
+        Terminal's connection. This is a private function, but SftpFileSystem is a
+        friend class.
 
         Returns:
             An SFTP client object using this terminal's connection.
 
         """
-        self.__transport = self.__ensure_connection(self.__transport)
-        client = paramiko.SFTPClient.from_transport(self.__transport)
+        tries = 0
+        while tries < 3:
+            try:
+                self.__transport = self.__ensure_connection(self.__transport)
+                client = paramiko.SFTPClient.from_transport(self.__transport)
+                break
+            except paramiko.ssh_exception.SSHException as e:
+                tries += 1
+
         if client is None:
             raise RuntimeError('Could not open a channel for SFTP')
         return client
@@ -82,11 +96,10 @@ class SshTerminal(Terminal):
     def _get_downstream_sftp_client(self) -> paramiko.SFTPClient:
         """Gets a second SFTP client using this terminal.
 
-        This is a work-around for an issue in paramiko that keeps us \
-        from copying data upstream and downstream simultaneously \
-        through a single connection with reasonable performance. \
-        We solve it by opening a second connection for the downstream \
-        part.
+        This is a work-around for an issue in paramiko that keeps us from copying data
+        upstream and downstream simultaneously through a single connection with
+        reasonable performance. We solve it by opening a second connection for the
+        downstream part.
 
         Returns:
             An SFTP client object using a second connection.
@@ -98,12 +111,10 @@ class SshTerminal(Terminal):
             raise RuntimeError('Could not open a channel for SFTP')
         return client
 
-    def run(self,
-            timeout: float,
-            command: str,
-            args: List[str],
-            stdin_data: str = None,
-            workdir: str = None) -> Tuple[Optional[int], str, str]:
+    def run(
+            self, timeout: float, command: Union[str, Path], args: List[str],
+            stdin_data: Optional[str] = None, workdir: Optional[Union[str, Path]] = None
+            ) -> Tuple[Optional[int], str, str]:
 
         if workdir:
             cmd_str = 'cd {}; {} {}'.format(workdir, command, ' '.join(args))
@@ -143,8 +154,7 @@ class SshTerminal(Terminal):
                 session.close()
 
                 if exit_status == -1:
-                    raise EOFError('Execution failed, connection'
-                                   ' or server issue?')
+                    raise EOFError('Execution failed, connection or server issue?')
 
                 logger.debug('Command executed successfully')
                 return exit_status, stdout_text, stderr_text
@@ -161,9 +171,9 @@ class SshTerminal(Terminal):
 
         raise ConnectionError(str(last_exception))
 
-    def __get_data_from_channel(self, channel: paramiko.Channel,
-                                stream_name: str,
-                                timeout: float) -> Tuple[bool, str]:
+    def __get_data_from_channel(
+            self, channel: paramiko.Channel, stream_name: str, timeout: float
+            ) -> Tuple[bool, str]:
         """Reads text from standard output or standard error."""
         if stream_name == 'stdout':
             receive = paramiko.Channel.recv
@@ -180,12 +190,14 @@ class SshTerminal(Terminal):
                 new_data = receive(channel, 1024 * 1024)
         except socket.timeout:
             return False, data.decode('utf-8')
+        except ConnectionError:
+            return False, data.decode('utf-8')
 
         return True, data.decode('utf-8')
 
-    def __get_key_from_file(self, filename: str,
-                            passphrase: Optional[str]) -> paramiko.pkey.PKey:
-        key = None
+    def __get_key_from_file(
+            self, filename: str, passphrase: Optional[str]) -> paramiko.pkey.PKey:
+        key: Optional[paramiko.pkey.PKey] = None
         messages = ''
         try:
             key = paramiko.ed25519key.Ed25519Key.from_private_key_file(
@@ -213,15 +225,16 @@ class SshTerminal(Terminal):
         if key is None:
             logger.debug('Invalid key: %s', messages)
             raise RuntimeError(
-                'Invalid key specified, could not open as RSA, ECDSA or'
-                ' Ed25519 key'
-            )
+                'Invalid key specified, could not open as RSA, ECDSA or Ed25519 key')
 
         return key
 
-    def __ensure_connection(self, transport: Optional[paramiko.Transport],
-                            force: bool = False) -> paramiko.Transport:
+    def __ensure_connection(
+            self, transport: Optional[paramiko.Transport], force: bool = False
+            ) -> paramiko.Transport:
         if transport is None or not transport.is_active() or force:
+            if not force:
+                logger.info('Connection was lost, reconnecting...')
             if transport is not None:
                 transport.close()
             transport = paramiko.Transport((self.__host, self.__port))
@@ -242,5 +255,6 @@ class SshTerminal(Terminal):
                     raise RuntimeError('Unknown kind of credential')
                 logger.info('Connection (re)established')
             except paramiko.SSHException:
-                raise ConnectionError('Cerulean was disconnected and could not reconnect')
+                raise ConnectionError(
+                        'Cerulean was disconnected and could not reconnect')
         return transport

@@ -14,29 +14,29 @@ logger = logging.getLogger(__name__)
 class TorqueScheduler(Scheduler):
     """Represents a Torque scheduler.
 
-    This class represents a Torque scheduler, to which it talks through \
-    a :class:`Terminal`.
-
-    On some machines, an additional command is needed to make Torque
-    available to the user, e.g. 'module load torque'. If you specify a
-    prefix, it will be prepended to any Torque command run by this
-    class. Note that this is a plain string concatenation, so you'll
-    probably need something like 'module load torque;', with a
-    semicolon to separate the commands.
-
-    Arguments:
-        terminal: The terminal to use to talk to the scheduler.
-        prefix: A string to prefix the Torque commands with.
-
+    This class represents a Torque scheduler, to which it talks through a
+    :class:`Terminal`.
     """
     def __init__(self, terminal: Terminal, prefix: str = '') -> None:
+        """Create a TorqueScheduler.
+
+        On some machines, an additional command is needed to make Torque available to
+        the user, e.g. 'module load torque'. If you specify a prefix, it will be
+        prepended to any Torque command run by this class. Note that this is a plain
+        string concatenation, so you'll probably need something like 'module load
+        torque;', with a semicolon to separate the commands.
+
+        Arguments:
+            terminal: The terminal to use to talk to the scheduler.
+            prefix: A string to prefix the Torque commands with.
+        """
         self.__terminal = terminal
         self.__prefix = prefix
         logger.debug('Running qsub --version')
 
         command = self.__prefix + ' qsub'
-        exit_code, output, error = self.__terminal.run(10, 'qsub',
-                                                       ['--version'])
+        exit_code, output, error = self.__terminal.run(
+                10, 'qsub', ['--version'])
         logger.debug('qsub --version exit_code: %s', exit_code)
         logger.debug('qsub --version std output: %s', output)
         logger.debug('qsub --version std error: %s', error)
@@ -48,8 +48,8 @@ class TorqueScheduler(Scheduler):
         job_script = _job_desc_to_job_script(job_description)
         logger.debug('Running qsub with job script:\n%s', job_script)
         command = self.__prefix + ' qsub'
-        exit_code, output, error = self.__terminal.run(10, command, ['-'],
-                                                       job_script)
+        exit_code, output, error = self.__terminal.run(
+                10, command, ['-'], job_script)
 
         logger.debug('qsub exit code: %s', exit_code)
         logger.debug('qsub std output: %s', output)

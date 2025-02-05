@@ -1,4 +1,9 @@
+from contextlib import contextmanager
+from paramiko.ssh_exception import SSHException
 import pytest
+import random
+import socket
+import time
 from typing import Any, Dict, Generator, Tuple
 
 from cerulean.credential import PasswordCredential
@@ -20,6 +25,46 @@ from cerulean.webdav_file_system import WebdavFileSystem
 # PyTest does not export FixtureRequest, the type of the request attribute.
 # So they're annotated as Any.
 
+
+# TODO: use pytest-rerunfailures instead of the manual retry loop?
+
+# Number of times to try tests interrupted by network issues (for the flaky server)
+NUM_TRIES = 3
+
+
+@contextmanager
+def abort_on_network_error() -> Generator:
+    """Swallows network errors but not other errors.
+
+    Used to save some code when retrying a test when a network error occurs. That code
+    then looks like
+
+    while retries left:
+        with abort_on_network_error():
+            ...run test...
+            break
+
+    If a network error occurs during testing and an exception is raised, then we jump
+    back here and eat the exception, after which the with-block is exited and we run the
+    while loop again to retry.
+    """
+    try:
+        yield
+
+    except SSHException:
+        pass
+    except ConnectionError:
+        pass
+    except socket.timeout:
+        pass
+    except OSError as e:
+        x = f'{e.errno}|{e.strerror}|{e}|{e.args}'
+        if e.errno == 'Socket is closed':
+            pass
+        assert x == 'nope'
+        raise
+
+
 @pytest.fixture(scope='module')
 def password_credential() -> PasswordCredential:
     return PasswordCredential('cerulean', 'kingfisher')
@@ -29,6 +74,7 @@ def password_credential() -> PasswordCredential:
 def ssh_terminal(
         password_credential: PasswordCredential
         ) -> Generator[SshTerminal, None, None]:
+    time.sleep(random.uniform(0.0, 2.0))
     with SshTerminal('cerulean-test-ssh', 22, password_credential) as term:
         yield term
 
@@ -53,19 +99,20 @@ def webdav_filesystem_raises() -> Generator[WebdavFileSystem, None, None]:
 
 @pytest.fixture(scope='module')
 def webdav_filesystem_quiet() -> Generator[WebdavFileSystem, None, None]:
-    yield WebdavFileSystem('http://cerulean-test-webdav/files',
-                           unsupported_methods_raise=False)
+    yield WebdavFileSystem(
+            'http://cerulean-test-webdav/files', unsupported_methods_raise=False)
 
 
 @pytest.fixture(scope='module', params=['local', 'sftp', 'webdav'])
 def filesystem(
-        request: Any, ssh_terminal: SshTerminal
+        request: Any, password_credential: PasswordCredential
         ) -> Generator[FileSystemImpl, None, None]:
     if request.param == 'local':
         yield LocalFileSystem()
     elif request.param == 'sftp':
-        with SftpFileSystem(ssh_terminal) as fs:
-            yield fs
+        with SshTerminal('cerulean-test-sftp', 22, password_credential) as term:
+            with SftpFileSystem(term) as fs:
+                yield fs
     elif request.param == 'webdav':
         with WebdavFileSystem('http://cerulean-test-webdav/files') as wfs:
             yield wfs
@@ -78,8 +125,8 @@ def filesystem2(
     if request.param == 'local':
         yield LocalFileSystem()
     elif request.param == 'sftp':
-        # don't use the ssh_terminal fixture, we want a separate connection
-        with SshTerminal('cerulean-test-ssh', 22, password_credential) as term:
+        # Intentionally a separate connection
+        with SshTerminal('cerulean-test-sftp', 22, password_credential) as term:
             with SftpFileSystem(term) as fs:
                 yield fs
     elif request.param == 'webdav':
@@ -166,14 +213,20 @@ def terminal(
     'local_direct',
     'ssh_direct',
     'ssh_torque-6',
-    'ssh_slurm-16-05',
     'ssh_slurm-17-02',
     'ssh_slurm-17-11',
     'ssh_slurm-18-08',
     'ssh_slurm-19-05',
     'ssh_slurm-20-02',
+    'ssh_slurm-21-08',
+    'ssh_slurm-22-05',
+    'ssh_slurm-23-02',
+    'ssh_slurm-23-11',
+    'ssh_slurm-24-05',
+    'ssh_slurm-24-11',
     'flakyssh_direct',
-    'flakyssh_slurm-17-11'])
+    'flakyssh_slurm-17-11'
+    ])
 def scheduler_and_fs(
         request: Any, ssh_terminal: SshTerminal,
         password_credential: PasswordCredential

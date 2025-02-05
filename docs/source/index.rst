@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+====================================
 Welcome to Cerulean's documentation!
-==========================================================
+====================================
 
 Cerulean is a Python 3 library for connecting to HPC compute resources, such as
 compute clusters and supercomputers. It lets you copy files between local and
@@ -12,7 +13,7 @@ SFTP filesystems using a ``pathlib``-like API, it lets you start processes
 locally and remotely via SSH, and it lets you submit jobs to schedulers such as
 Slurm and Torque/PBS.
 
-Cerulean supports Python 3.4 and later.
+Cerulean supports Python 3.8 and later.
 
 .. toctree::
    :maxdepth: 2
@@ -21,13 +22,10 @@ Cerulean supports Python 3.4 and later.
    tutorial
 
 
-API Reference
-=============
-
 .. toctree::
-  :maxdepth: 1
+   :maxdepth: 1
 
-   API reference <apidocs/cerulean.rst>
+   api
 
 
 Indices and tables

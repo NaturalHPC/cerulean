@@ -1,43 +1,41 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from types import TracebackType
-from typing import Any, List, Optional, Tuple
-
-from cerulean.util import BaseExceptionType
+from typing import Any, List, Optional, Tuple, Type, Union
 
 
 class Terminal(ABC):
     """Interface for Terminals.
 
-    This is a generic interface class that all terminals inherit \
-    from, so you can use it wherever any terminal will do.
+    This is a generic interface class that all terminals inherit from, so you can use it
+    wherever any terminal will do.
 
-    In order to do something useful, you'll want an actual terminal,
-    like a :class:`LocalTerminal` or an :class:`SshTerminal`.
+    In order to do something useful, you'll want an actual terminal, like a
+    :class:`LocalTerminal` or an :class:`SshTerminal`.
 
-    Terminals may hold resources, so you should either use them \
-    with a ``with`` statement, or call :meth:`close` on them \
-    when you are done with them.
+    Terminals may hold resources, so you should either use them with a ``with``
+    statement, or call :meth:`close` on them when you are done with them.
     """
 
     def __enter__(self) -> 'Terminal':
         """Enter context manager."""
         return self
 
-    def __exit__(self, exc_type: Optional[BaseExceptionType],
-                 exc_value: Optional[BaseException],
-                 traceback: Optional[TracebackType]) -> None:
+    def __exit__(
+            self, exc_type: Optional[Type[BaseException]],
+            exc_value: Optional[BaseException],
+            traceback: Optional[TracebackType]) -> None:
         """Exit context manager."""
         pass
 
     def close(self) -> None:
         """Close the terminal.
 
-        This closes any connections and frees resources associated \
-        with the terminal. :class:`LocalTerminal` does not require \
-        this, but terminals that connect to remote machines do. You \
-        may want to always either close a Terminal, or use it as a \
-        context manager, to avoid problems if you ever change from \
-        a local terminal to a remote one.
+        This closes any connections and frees resources associated with the terminal.
+        :class:`LocalTerminal` does not require this, but terminals that connect to
+        remote machines do. You may want to always either close a Terminal, or use it as
+        a context manager, to avoid problems if you ever change from a local terminal to
+        a remote one.
         """
         pass
 
@@ -45,18 +43,15 @@ class Terminal(ABC):
         return NotImplemented
 
     @abstractmethod
-    def run(self,
-            timeout: float,
-            command: str,
-            args: List[str],
-            stdin_data: str = None,
-            workdir: str = None) -> Tuple[Optional[int], str, str]:
+    def run(
+            self, timeout: float, command: Union[str, Path], args: List[str],
+            stdin_data: Optional[str] = None, workdir: Optional[Union[str, Path]] = None
+            ) -> Tuple[Optional[int], str, str]:
         """Run a shell command.
 
-        The command will be run in the default shell, and arguments are
-        **not** quoted automatically. If you have untrusted or unknown
-        input, be sure to quote it using `quote()` from the `shlex`
-        module of the Python standard library.
+        The command will be run in the default shell, and arguments are **not** quoted
+        automatically. If you have untrusted or unknown input, be sure to quote it using
+        `quote()` from the `shlex` module of the Python standard library.
 
         Args:
             timeout: How long to wait for the result(s)
@@ -66,8 +61,7 @@ class Terminal(ABC):
             workdir: Working directory to execute in
 
         Returns:
-            A tuple containing the exit code, standard output, and \
+            A tuple containing the exit code, standard output, and
             standard error output.
-
         """
         pass
