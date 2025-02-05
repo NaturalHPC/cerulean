@@ -1,8 +1,8 @@
-.. image:: https://readthedocs.org/projects/cerulean/badge/?version=develop
-    :target: https://cerulean.readthedocs.io/en/latest/?badge=develop
+.. image:: https://readthedocs.org/projects/cerulean/badge/?version=master
+    :target: https://cerulean.readthedocs.io/en/latest/?badge=master
     :alt: Documentation Build Status
 
-.. image:: https://github.com/NaturalHPC/cerulean/actions/workflows/ci.yaml/badge.svg?branch=develop
+.. image:: https://github.com/NaturalHPC/cerulean/actions/workflows/ci.yaml/badge.svg?branch=master
     :target: https://github.com/NaturalHPC/cerulean/actions
     :alt: Build Status
 
