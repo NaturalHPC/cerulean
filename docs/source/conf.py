@@ -10,7 +10,7 @@ import sys
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Cerulean'
-copyright = '2018-2019, 2024, The Netherlands eScience Center and VU University Amsterdam'
+copyright = '2018-2019, 2024-2025, The Netherlands eScience Center and VU University Amsterdam'
 author = 'Lourens Veen'
 
 release = '0.3.8.dev0'
