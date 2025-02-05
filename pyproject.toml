@@ -4,7 +4,7 @@ authors = [{name = "Lourens Veen"}]
 description = "A Python library for talking to HPC clusters and supercomputers"
 readme = "README.rst"
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: Apache Software License',
     'Natural Language :: English',
@@ -17,7 +17,7 @@ classifiers = [
     'Programming Language :: Python :: 3.13',
     ]
 
-version = "0.3.8.dev"
+version = "1.0.1.dev0"
 requires-python = ">=3.8"
 dependencies = [
     "defusedxml",
