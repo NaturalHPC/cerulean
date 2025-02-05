@@ -13,7 +13,7 @@ SFTP filesystems using a ``pathlib``-like API, it lets you start processes
 locally and remotely via SSH, and it lets you submit jobs to schedulers such as
 Slurm and Torque/PBS.
 
-Cerulean supports Python 3.7 and later.
+Cerulean supports Python 3.8 and later.
 
 .. toctree::
    :maxdepth: 2
