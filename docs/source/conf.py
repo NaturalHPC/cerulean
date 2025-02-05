@@ -13,7 +13,7 @@ project = 'Cerulean'
 copyright = '2018-2019, 2024-2025, The Netherlands eScience Center and VU University Amsterdam'
 author = 'Lourens Veen'
 
-release = '0.3.8.dev0'
+release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
